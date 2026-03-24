@@ -34,10 +34,8 @@
   --transition:0.18s cubic-bezier(0.4,0,0.2,1);
 }
 *{box-sizing:border-box;margin:0;padding:0}
-html{scroll-behavior:smooth;scroll-padding-top:72px}
+html{scroll-behavior:smooth}
 body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(--ink);line-height:1.5}
-/* All sections get enough breathing room so sticky header never covers them */
-section[id], aside[id]{scroll-margin-top:72px}
 a{text-decoration:none;color:inherit}
 button,input,select{font:inherit}
 
@@ -471,7 +469,7 @@ button,input,select{font:inherit}
           <a class="btn btn-coffee" href="https://buymeacoffee.com/anshdt" target="_blank" rel="noopener">☕ Buy me a coffee</a>
         </div>
         <div class="hero-pills">
-          <span class="hero-pill"><span>🌸</span>Real cherry &amp; magnolia clusters</span>
+          <span class="hero-pill"><span>🌸</span>Real cherry & magnolia clusters</span>
           <span class="hero-pill"><span>👍</span>Live community votes</span>
           <span class="hero-pill"><span>📍</span>Click-to-pin map spots</span>
         </div>
@@ -758,6 +756,73 @@ function renderChips(){
   });
 }
 
+function projectToMap(lat, lng){
+  const bounds = { minLng: -0.52, maxLng: 0.30, minLat: 51.28, maxLat: 51.70 };
+  const width = 900, height = 520;
+  const pad = { left: 70, right: 70, top: 60, bottom: 50 };
+  const x = pad.left + ((lng - bounds.minLng) / (bounds.maxLng - bounds.minLng)) * (width - pad.left - pad.right);
+  const y = height - pad.bottom - ((lat - bounds.minLat) / (bounds.maxLat - bounds.minLat)) * (height - pad.top - pad.bottom);
+  return { x, y };
+}
+
+function normaliseBlooms(raw){
+  let arr;
+  if (Array.isArray(raw)) {
+    arr = raw;
+  } else if (raw && Array.isArray(raw.features)) {
+    arr = raw.features.map((f, i) => ({
+      id: f.properties?.id ?? f.properties?.uniqueid ?? `feature_${i}`,
+      name: f.properties?.name ?? f.properties?.gla_name ?? f.properties?.common_name ?? 'Unnamed spot',
+      area: f.properties?.area ?? f.properties?.borough ?? '',
+      type: f.properties?.type ?? f.properties?.bloom_type ?? '',
+      stage: f.properties?.stage ?? 'early',
+      desc: f.properties?.desc ?? '',
+      tree_count: f.properties?.tree_count ?? 1,
+      maintainer: f.properties?.maintainer ?? '',
+      location_type: f.properties?.location_type ?? f.properties?.location ?? '',
+      lat: f.geometry?.coordinates?.[1],
+      lng: f.geometry?.coordinates?.[0],
+      x: f.properties?.x,
+      y: f.properties?.y
+    }));
+  } else {
+    return [];
+  }
+  return arr.map((s, i) => {
+    const lat = Number(s.lat ?? s.latitude);
+    const lng = Number(s.lng ?? s.lon ?? s.longitude);
+    let x = Number(s.x);
+    let y = Number(s.y);
+    if (!Number.isFinite(x) || !Number.isFinite(y)) {
+      if (Number.isFinite(lat) && Number.isFinite(lng)) {
+        const p = projectToMap(lat, lng);
+        x = p.x;
+        y = p.y;
+      }
+    }
+    return {
+      id: s.id ?? `spot_${i}`,
+      name: s.name ?? 'Unnamed spot',
+      area: s.area ?? '',
+      type: String(s.type ?? '').toLowerCase(),
+      stage: String(s.stage ?? 'early').toLowerCase(),
+      desc: s.desc ?? '',
+      tree_count: Number(s.tree_count ?? 0),
+      maintainer: s.maintainer ?? '',
+      location_type: s.location_type ?? '',
+      lat: Number.isFinite(lat) ? lat : null,
+      lng: Number.isFinite(lng) ? lng : null,
+      x,
+      y
+    };
+  }).filter(s =>
+    s.name &&
+    ['cherry','magnolia','wisteria','bluebell'].includes(s.type) &&
+    Number.isFinite(s.x) &&
+    Number.isFinite(s.y)
+  );
+}
+
 function renderMap(){
   const g = document.getElementById('mapDots');
   g.innerHTML = '';
@@ -978,31 +1043,25 @@ async function wireRealtime(){
 }
 
 async function loadBlooms(){
-  // Try multiple paths in case the repo root differs from the page location
-  const paths = ['./blooms.json', '/london-blooms/blooms.json', 'blooms.json'];
-  let data = null;
-  for(const path of paths){
-    try{
-      const res = await fetch(path);
-      if(!res.ok) continue;
-      data = await res.json();
-      if(Array.isArray(data) && data.length) break;
-    }catch(e){ /* try next */ }
+  try{
+    const res = await fetch('./blooms.json', { cache: 'no-store' });
+    if(!res.ok) throw new Error(`blooms.json HTTP ${res.status}`);
+    const raw = await res.json();
+    BLOOMS = normaliseBlooms(raw);
+    availableTypes = new Set(BLOOMS.map(s=>s.type));
+    renderChips();
+    await loadUserVotes(); await loadVoteSummary();
+    selectedSpotId = BLOOMS[0]?.id ?? null;
+    refreshUI(); wireRealtime();
+    if (!BLOOMS.length) {
+      showToast('Bloom file loaded, but no usable spots were found.');
+    }
+  }catch(err){
+    console.error('Bloom load failed:', err);
+    document.getElementById('resultsLine').textContent = 'Could not load bloom data.';
+    document.getElementById('bestPicks').innerHTML = '<div class="empty">Bloom data did not load.</div>';
+    document.getElementById('spotGrid').innerHTML = '<div class="empty">Bloom data did not load.</div>';
   }
-  if(!data || !data.length){
-    const msg = 'Bloom data could not be loaded — make sure blooms.json is in the repo root.';
-    document.getElementById('resultsLine').textContent = msg;
-    document.getElementById('bestPicks').innerHTML = `<div class="empty">${msg}</div>`;
-    document.getElementById('spotGrid').innerHTML = `<div class="empty">${msg}</div>`;
-    document.getElementById('typeGuide').innerHTML = `<div class="empty">${msg}</div>`;
-    return;
-  }
-  BLOOMS = data;
-  availableTypes = new Set(BLOOMS.map(s=>s.type));
-  renderChips();
-  await loadUserVotes(); await loadVoteSummary();
-  selectedSpotId = BLOOMS[0]?.id ?? null;
-  refreshUI(); wireRealtime();
 }
 
 // Event listeners

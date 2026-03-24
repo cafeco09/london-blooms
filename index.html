@@ -1129,7 +1129,7 @@ async function loadBlooms(){
     availableTypes = new Set(BLOOMS.map(s => s.type));
     renderChips();
 
-    // Render immediately
+    // Render bloom data immediately
     selectedSpotId = BLOOMS[0]?.id ?? null;
     refreshUI();
 
@@ -1137,7 +1137,7 @@ async function loadBlooms(){
       showToast('Bloom file loaded, but no usable spots were found.');
     }
 
-    // Votes are optional; do them afterwards
+    // Votes are optional; load them afterwards
     Promise.resolve()
       .then(() => loadUserVotes())
       .then(() => loadVoteSummary())

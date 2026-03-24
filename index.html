@@ -205,8 +205,6 @@ button,input,select{font:inherit}
 .bloom-mark{pointer-events:none}
 .bloom-mark circle.core{stroke:#fff;stroke-width:2}
 .bloom-dot.is-selected circle.core{stroke:var(--ink);stroke-width:3;filter:drop-shadow(0 0 4px rgba(0,0,0,.3))}
-.bloom-dot circle.pulse{opacity:.15;animation:pulse 2.4s ease-in-out infinite;transform-origin:center}
-@keyframes pulse{0%,100%{r:13;opacity:.2}50%{r:19;opacity:.06}}
 .map-legend{
   position:absolute;left:12px;bottom:12px;
   background:rgba(255,253,250,.97);border:1px solid var(--line);
@@ -253,7 +251,7 @@ button,input,select{font:inherit}
   font-size:13px;font-weight:700;cursor:pointer;
   transition:var(--transition);color:var(--ink);
 }
-.vote-btn:hover:not([disabled]){border-color:var(--ink);transform:translateY(-1px)}
+.vote-btn:hover:not([disabled]){border-color:var(--ink)}
 .vote-btn.active-up{background:var(--green-soft);border-color:#b0d8c0;color:var(--green)}
 .vote-btn.active-down{background:#fce8ef;border-color:#f0b0c8;color:#a03560}
 .vote-btn[disabled]{opacity:.5;cursor:not-allowed}
@@ -266,7 +264,7 @@ button,input,select{font:inherit}
   margin-bottom:10px;cursor:pointer;transition:var(--transition);
 }
 .pick-card:last-child{margin-bottom:0}
-.pick-card:hover{border-color:var(--ink);box-shadow:var(--shadow-sm);transform:translateY(-1px)}
+.pick-card:hover{border-color:var(--ink);box-shadow:var(--shadow-sm)}
 .pick-card.active{border-color:var(--ink);background:var(--bg)}
 .pick-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:4px}
 .pick-rank{
@@ -275,10 +273,6 @@ button,input,select{font:inherit}
 }
 .pick-name{font-size:15px;font-weight:700;line-height:1.2;margin-bottom:2px}
 .pick-sub{font-size:12px;color:var(--muted)}
-.pick-tag{
-  padding:4px 8px;border-radius:999px;
-  font-size:11px;font-weight:700;flex-shrink:0;
-}
 
 /* ── SECTION COMMON ── */
 .section{padding:24px 0 0}
@@ -301,7 +295,7 @@ button,input,select{font:inherit}
   display:grid;gap:8px;
   transition:var(--transition);
 }
-.type-card:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
+.type-card:hover{box-shadow:var(--shadow)}
 .type-card .eyebrow{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--muted)}
 .type-card .emoji{font-size:28px;line-height:1}
 .type-card h3{font-size:18px;font-weight:700;line-height:1.2}
@@ -332,7 +326,7 @@ button,input,select{font:inherit}
   display:grid;gap:10px;
   transition:var(--transition);
 }
-.spot-card:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
+.spot-card:hover{box-shadow:var(--shadow)}
 .spot-top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
 .spot-eyebrow{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:4px}
 .spot-name{font-size:17px;font-weight:700;line-height:1.2}
@@ -435,7 +429,6 @@ button,input,select{font:inherit}
 </head>
 <body>
 
-<!-- TOPBAR -->
 <header class="topbar">
   <div class="topbar-inner">
     <a class="brand" href="#top">
@@ -455,8 +448,6 @@ button,input,select{font:inherit}
 </header>
 
 <main id="top">
-
-  <!-- HERO -->
   <section class="hero">
     <div class="container hero-grid">
       <div class="hero-card">
@@ -469,7 +460,7 @@ button,input,select{font:inherit}
           <a class="btn btn-coffee" href="https://buymeacoffee.com/anshdt" target="_blank" rel="noopener">☕ Buy me a coffee</a>
         </div>
         <div class="hero-pills">
-          <span class="hero-pill"><span>🌸</span>Real cherry & magnolia clusters</span>
+          <span class="hero-pill"><span>🌸</span>Real cherry &amp; magnolia clusters</span>
           <span class="hero-pill"><span>👍</span>Live community votes</span>
           <span class="hero-pill"><span>📍</span>Click-to-pin map spots</span>
         </div>
@@ -499,24 +490,19 @@ button,input,select{font:inherit}
     </div>
   </section>
 
-  <!-- MAP + BEST PICKS -->
   <section id="mapSection">
     <div class="container two-col">
-
-      <!-- Map Panel -->
       <div class="panel">
         <div class="panel-header">
           <h2>Bloom map</h2>
           <p>Search or filter, then tap a circle to pin a spot</p>
         </div>
 
-        <!-- Search -->
         <div class="search-wrap">
           <span class="icon">🔍</span>
           <input id="searchInput" type="search" placeholder="Search by borough, park, area or bloom type…" autocomplete="off">
         </div>
 
-        <!-- Filters -->
         <div class="filter-row" id="filterRow">
           <button class="chip active" data-type="all" type="button">All types</button>
           <button class="chip" data-type="cherry" type="button">🌸 Cherry</button>
@@ -525,13 +511,11 @@ button,input,select{font:inherit}
           <button class="chip" data-type="bluebell" type="button">💙 Bluebell</button>
         </div>
 
-        <!-- Results + Reset -->
         <div class="search-meta">
           <span class="results-count" id="resultsLine">Loading bloom spots…</span>
           <span class="reset-link" id="resetBtn" role="button" tabindex="0">Reset filters</span>
         </div>
 
-        <!-- Map -->
         <div class="map-shell">
           <svg id="mapSvg" viewBox="0 0 900 520" xmlns="http://www.w3.org/2000/svg" aria-label="London bloom map">
             <rect width="900" height="520" fill="#ddd6ce"/>
@@ -563,13 +547,11 @@ button,input,select{font:inherit}
           </div>
         </div>
 
-        <!-- Drawer -->
         <div class="drawer" id="spotDrawer">
           <div class="drawer-empty">Tap a circle on the map or a card below to pin a spot here.</div>
         </div>
       </div>
 
-      <!-- Best Picks Panel -->
       <aside class="panel picks-panel" id="bestSection">
         <div class="panel-header">
           <h2>Best current picks</h2>
@@ -580,7 +562,6 @@ button,input,select{font:inherit}
     </div>
   </section>
 
-  <!-- BROWSE BY TYPE -->
   <section class="container section">
     <div class="section-head">
       <div>
@@ -591,7 +572,6 @@ button,input,select{font:inherit}
     <div class="type-grid" id="typeGuide"></div>
   </section>
 
-  <!-- HOW TO USE -->
   <section class="container section">
     <div class="section-head">
       <div>
@@ -623,7 +603,6 @@ button,input,select{font:inherit}
     </div>
   </section>
 
-  <!-- ALL SPOTS -->
   <section class="container section" id="allSection">
     <div class="section-head">
       <div>
@@ -637,7 +616,6 @@ button,input,select{font:inherit}
     </div>
   </section>
 
-  <!-- FOOTER -->
   <footer class="footer">
     <div class="container footer-card">
       <div>
@@ -649,7 +627,6 @@ button,input,select{font:inherit}
   </footer>
 </main>
 
-<!-- MOBILE BOTTOM BAR -->
 <div class="mobile-bar">
   <a href="#top"><span class="icon">🏠</span>Home</a>
   <a href="#mapSection"><span class="icon">🗺</span>Map</a>
@@ -663,6 +640,7 @@ button,input,select{font:inherit}
 const SUPPORT_URL = 'https://buymeacoffee.com/anshdt';
 const SUPABASE_URL = 'https://esfjzhgzfbcrrewjvoan.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_nEqvvmFcsCpgVO1SK8ho3g_3K9LMOgi';
+
 const PAGE_SIZE = 12;
 const TYPE_ORDER = ['cherry','magnolia','wisteria','bluebell'];
 const TYPE_LABEL = {cherry:'Cherry blossom', magnolia:'Magnolia', wisteria:'Wisteria', bluebell:'Bluebell'};
@@ -694,7 +672,10 @@ function showToast(msg){
 
 function voterKey(){
   let k = localStorage.getItem('lb_voter_key');
-  if(!k){ k = 'v_' + Math.random().toString(36).slice(2) + Date.now().toString(36); localStorage.setItem('lb_voter_key', k); }
+  if(!k){
+    k = 'v_' + Math.random().toString(36).slice(2) + Date.now().toString(36);
+    localStorage.setItem('lb_voter_key', k);
+  }
   return k;
 }
 
@@ -705,7 +686,9 @@ function stableOffset(spot){
   return {ox:(h%9)-4, oy:(((h/9)|0)%9)-4};
 }
 
-function getVotes(id){ return voteSummary.get(String(id)) || {up:0, down:0, total:0, userVote:0}; }
+function getVotes(id){
+  return voteSummary.get(String(id)) || {up:0, down:0, total:0, userVote:0};
+}
 
 function confidence(meta){
   if(!meta.total) return {label:'No signal yet'};
@@ -720,12 +703,18 @@ function filteredBlooms(){
   return BLOOMS.filter(s => {
     if(activeType !== 'all' && s.type !== activeType) return false;
     if(!q) return true;
-    return [s.name,s.area,s.type,s.desc,s.location_type,s.maintainer].filter(Boolean).join(' ').toLowerCase().includes(q);
+    return [s.name,s.area,s.type,s.desc,s.location_type,s.maintainer]
+      .filter(Boolean)
+      .join(' ')
+      .toLowerCase()
+      .includes(q);
   });
 }
 
 function sortedVisible(){
-  return filteredBlooms().slice().sort((a,b)=>(b.tree_count||0)-(a.tree_count||0)||a.name.localeCompare(b.name));
+  return filteredBlooms()
+    .slice()
+    .sort((a,b)=>(b.tree_count||0)-(a.tree_count||0)||a.name.localeCompare(b.name));
 }
 
 function topByType(type){
@@ -737,6 +726,7 @@ function updateStats(){
   const peak = v.filter(s=>s.stage==='peak').length;
   const types = new Set(v.map(s=>s.type));
   const totalVotes = [...voteSummary.values()].reduce((n,v)=>n+v.total,0);
+
   document.getElementById('statSpots').textContent = v.length;
   document.getElementById('statPeak').textContent = peak;
   document.getElementById('statTypes').textContent = types.size;
@@ -749,9 +739,9 @@ function updateStats(){
 function renderChips(){
   document.querySelectorAll('.chip[data-type]').forEach(chip=>{
     const type = chip.dataset.type;
-    const live = type==='all' || availableTypes.has(type);
+    const live = type === 'all' || availableTypes.has(type);
     chip.classList.toggle('disabled', !live);
-    chip.classList.toggle('active', type===activeType);
+    chip.classList.toggle('active', type === activeType);
     chip.disabled = !live;
   });
 }
@@ -760,6 +750,7 @@ function projectToMap(lat, lng){
   const bounds = { minLng: -0.52, maxLng: 0.30, minLat: 51.28, maxLat: 51.70 };
   const width = 900, height = 520;
   const pad = { left: 70, right: 70, top: 60, bottom: 50 };
+
   const x = pad.left + ((lng - bounds.minLng) / (bounds.maxLng - bounds.minLng)) * (width - pad.left - pad.right);
   const y = height - pad.bottom - ((lat - bounds.minLat) / (bounds.maxLat - bounds.minLat)) * (height - pad.top - pad.bottom);
   return { x, y };
@@ -788,11 +779,13 @@ function normaliseBlooms(raw){
   } else {
     return [];
   }
+
   return arr.map((s, i) => {
     const lat = Number(s.lat ?? s.latitude);
     const lng = Number(s.lng ?? s.lon ?? s.longitude);
     let x = Number(s.x);
     let y = Number(s.y);
+
     if (!Number.isFinite(x) || !Number.isFinite(y)) {
       if (Number.isFinite(lat) && Number.isFinite(lng)) {
         const p = projectToMap(lat, lng);
@@ -800,6 +793,7 @@ function normaliseBlooms(raw){
         y = p.y;
       }
     }
+
     return {
       id: s.id ?? `spot_${i}`,
       name: s.name ?? 'Unnamed spot',
@@ -826,31 +820,41 @@ function normaliseBlooms(raw){
 function renderMap(){
   const g = document.getElementById('mapDots');
   g.innerHTML = '';
+
   sortedVisible().forEach(spot=>{
     const {ox,oy} = stableOffset(spot);
-    const x = Number(spot.x)+ox, y = Number(spot.y)+oy;
+    const x = Number(spot.x) + ox;
+    const y = Number(spot.y) + oy;
+
     const grp = document.createElementNS('http://www.w3.org/2000/svg','g');
-    grp.setAttribute('class',`bloom-dot${String(selectedSpotId)===String(spot.id)?' is-selected':''}`);
-    grp.setAttribute('transform',`translate(${x},${y})`);
+    grp.setAttribute('class', `bloom-dot${String(selectedSpotId)===String(spot.id)?' is-selected':''}`);
+    grp.setAttribute('transform', `translate(${x},${y})`);
+
     const hit = document.createElementNS('http://www.w3.org/2000/svg','circle');
-    hit.setAttribute('r','18'); hit.setAttribute('class','bloom-hit');
+    hit.setAttribute('r','18');
+    hit.setAttribute('class','bloom-hit');
     hit.addEventListener('click',()=>selectSpot(spot.id,true));
     grp.appendChild(hit);
+
     const mark = document.createElementNS('http://www.w3.org/2000/svg','g');
     mark.setAttribute('class','bloom-mark');
-    if(spot.stage==='peak'){
-      const pulse = document.createElementNS('http://www.w3.org/2000/svg','circle');
-      pulse.setAttribute('class','pulse'); pulse.setAttribute('r','13');
-      pulse.setAttribute('fill',TYPE_COLOR[spot.type]||'#888'); mark.appendChild(pulse);
-    }
+
     const core = document.createElementNS('http://www.w3.org/2000/svg','circle');
-    core.setAttribute('class','core'); core.setAttribute('r',spot.stage==='peak'?'9.5':'8');
-    core.setAttribute('fill',TYPE_COLOR[spot.type]||'#888'); mark.appendChild(core);
+    core.setAttribute('class','core');
+    core.setAttribute('r', spot.stage==='peak' ? '9.5' : '8');
+    core.setAttribute('fill', TYPE_COLOR[spot.type] || '#888');
+    mark.appendChild(core);
+
     const txt = document.createElementNS('http://www.w3.org/2000/svg','text');
-    txt.setAttribute('text-anchor','middle'); txt.setAttribute('dominant-baseline','central');
-    txt.setAttribute('font-size',spot.stage==='peak'?'8.5':'7.5'); txt.setAttribute('font-family','DM Sans');
-    txt.textContent = TYPE_EMOJI[spot.type]||'•'; mark.appendChild(txt);
-    grp.appendChild(mark); g.appendChild(grp);
+    txt.setAttribute('text-anchor','middle');
+    txt.setAttribute('dominant-baseline','central');
+    txt.setAttribute('font-size', spot.stage==='peak' ? '8.5' : '7.5');
+    txt.setAttribute('font-family','DM Sans');
+    txt.textContent = TYPE_EMOJI[spot.type] || '•';
+    mark.appendChild(txt);
+
+    grp.appendChild(mark);
+    g.appendChild(grp);
   });
 }
 
@@ -858,6 +862,7 @@ function spotDrawerHtml(spot){
   const meta = getVotes(spot.id);
   const conf = confidence(meta);
   const typeClass = spot.type;
+
   return `
     <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:10px">
       <div>
@@ -887,7 +892,12 @@ function renderDrawer(){
   const drawer = document.getElementById('spotDrawer');
   const visible = sortedVisible();
   const spot = visible.find(s=>String(s.id)===String(selectedSpotId)) || visible[0];
-  if(!spot){ drawer.innerHTML='<div class="drawer-empty">No spots match current filters.</div>'; return; }
+
+  if(!spot){
+    drawer.innerHTML = '<div class="drawer-empty">No spots match current filters.</div>';
+    return;
+  }
+
   selectedSpotId = spot.id;
   drawer.innerHTML = spotDrawerHtml(spot);
   bindVoteButtons(drawer);
@@ -896,9 +906,16 @@ function renderDrawer(){
 function renderBestPicks(){
   const host = document.getElementById('bestPicks');
   const visible = sortedVisible().slice(0,6);
-  if(!visible.length){ host.innerHTML='<div class="empty">No spots match the current filters.</div>'; return; }
+
+  if(!visible.length){
+    host.innerHTML = '<div class="empty">No spots match the current filters.</div>';
+    return;
+  }
+
   host.innerHTML = visible.map((spot,i)=>{
-    const stageBadge = spot.stage==='peak'?'<span class="badge badge-stage" style="font-size:11px">Peak 🌸</span>':'';
+    const stageBadge = spot.stage==='peak'
+      ? '<span class="badge badge-stage" style="font-size:11px">Peak 🌸</span>'
+      : '';
     return `
       <div class="pick-card${String(selectedSpotId)===String(spot.id)?' active':''}" data-show-spot="${spot.id}" role="button" tabindex="0">
         <div class="pick-top">
@@ -910,30 +927,34 @@ function renderBestPicks(){
       </div>
     `;
   }).join('');
-  host.querySelectorAll('[data-show-spot]').forEach(el=>
-    el.addEventListener('click',()=>selectSpot(el.dataset.showSpot,true))
-  );
+
+  host.querySelectorAll('[data-show-spot]').forEach(el=>{
+    el.addEventListener('click',()=>selectSpot(el.dataset.showSpot,true));
+  });
 }
 
 function renderTypeGuide(){
   const host = document.getElementById('typeGuide');
-  const cards = TYPE_ORDER.filter(t=>availableTypes.has(t)).map(type=>{
-    const top = topByType(type);
-    if(!top) return '';
-    return `
-      <div class="type-card">
-        <div class="eyebrow">${TYPE_EMOJI[type]} ${TYPE_LABEL_SHORT[type]}</div>
-        <div class="emoji">${TYPE_EMOJI[type]}</div>
-        <h3>${top.name}</h3>
-        <p>${top.area} · ${top.tree_count||0} trees · ${STAGE_LABEL[top.stage]||'Unknown'} bloom</p>
-        <button class="btn btn-secondary btn-sm" type="button" data-show-spot="${top.id}" style="margin-top:4px">Show on map</button>
-      </div>
-    `;
-  }).join('');
+  const cards = TYPE_ORDER
+    .filter(t=>availableTypes.has(t))
+    .map(type=>{
+      const top = topByType(type);
+      if(!top) return '';
+      return `
+        <div class="type-card">
+          <div class="eyebrow">${TYPE_EMOJI[type]} ${TYPE_LABEL_SHORT[type]}</div>
+          <div class="emoji">${TYPE_EMOJI[type]}</div>
+          <h3>${top.name}</h3>
+          <p>${top.area} · ${top.tree_count||0} trees · ${STAGE_LABEL[top.stage]||'Unknown'} bloom</p>
+          <button class="btn btn-secondary btn-sm" type="button" data-show-spot="${top.id}" style="margin-top:4px">Show on map</button>
+        </div>
+      `;
+    }).join('');
+
   host.innerHTML = cards || '<div class="empty">No live bloom types in the current feed.</div>';
-  host.querySelectorAll('[data-show-spot]').forEach(btn=>
-    btn.addEventListener('click',()=>selectSpot(btn.dataset.showSpot,true))
-  );
+  host.querySelectorAll('[data-show-spot]').forEach(btn=>{
+    btn.addEventListener('click',()=>selectSpot(btn.dataset.showSpot,true));
+  });
 }
 
 function renderSpotGrid(){
@@ -941,7 +962,13 @@ function renderSpotGrid(){
   const visible = sortedVisible();
   const slice = visible.slice(0, visibleLimit);
   const moreBtn = document.getElementById('loadMoreBtn');
-  if(!slice.length){ host.innerHTML='<div class="empty">No spots match the current filters.</div>'; moreBtn.hidden=true; return; }
+
+  if(!slice.length){
+    host.innerHTML = '<div class="empty">No spots match the current filters.</div>';
+    moreBtn.hidden = true;
+    return;
+  }
+
   host.innerHTML = slice.map(spot=>`
     <article class="spot-card">
       <div class="spot-top">
@@ -970,92 +997,156 @@ function renderSpotGrid(){
       </div>
     </article>
   `).join('');
-  host.querySelectorAll('[data-show-spot]').forEach(btn=>btn.addEventListener('click',()=>selectSpot(btn.dataset.showSpot,true)));
+
+  host.querySelectorAll('[data-show-spot]').forEach(btn=>{
+    btn.addEventListener('click',()=>selectSpot(btn.dataset.showSpot,true));
+  });
+
   bindVoteButtons(host);
   moreBtn.hidden = visible.length <= visibleLimit;
 }
 
 function bindVoteButtons(root){
-  root.querySelectorAll('.vote-btn').forEach(btn=>btn.addEventListener('click',onVoteClick));
+  root.querySelectorAll('.vote-btn').forEach(btn=>{
+    btn.addEventListener('click',onVoteClick);
+  });
 }
 
 function selectSpot(id, scrollToMap=false){
   selectedSpotId = id;
-  renderMap(); renderDrawer(); renderBestPicks();
+  renderMap();
+  renderDrawer();
+  renderBestPicks();
   if(scrollToMap) document.getElementById('mapSection').scrollIntoView({behavior:'smooth',block:'start'});
 }
 
 function refreshUI(){
   const visible = sortedVisible();
   if(!visible.some(s=>String(s.id)===String(selectedSpotId))) selectedSpotId = visible[0]?.id ?? null;
-  updateStats(); renderMap(); renderDrawer(); renderBestPicks(); renderTypeGuide(); renderSpotGrid();
+  updateStats();
+  renderMap();
+  renderDrawer();
+  renderBestPicks();
+  renderTypeGuide();
+  renderSpotGrid();
 }
 
 async function loadVoteSummary(){
   if(!supabase) return;
   const {data,error} = await supabase.from('spot_votes').select('spot_id, vote');
-  if(error) return;
+  if(error) throw error;
+
   const summary = new Map();
-  for(const row of data||[]){
+  for(const row of data || []){
     const id = String(row.spot_id);
-    const e = summary.get(id)||{up:0,down:0,total:0,userVote:0};
-    if(Number(row.vote)===1) e.up++;
-    if(Number(row.vote)===-1) e.down++;
-    e.total = e.up+e.down;
+    const e = summary.get(id) || {up:0,down:0,total:0,userVote:0};
+    if(Number(row.vote) === 1) e.up++;
+    if(Number(row.vote) === -1) e.down++;
+    e.total = e.up + e.down;
     summary.set(id,e);
   }
+
   for(const [id,vote] of userVotes.entries()){
-    const e = summary.get(id)||{up:0,down:0,total:0,userVote:0};
-    e.userVote = vote; summary.set(id,e);
+    const e = summary.get(id) || {up:0,down:0,total:0,userVote:0};
+    e.userVote = vote;
+    summary.set(id,e);
   }
+
   voteSummary = summary;
 }
 
 async function loadUserVotes(){
   if(!supabase) return;
-  const {data,error} = await supabase.from('spot_votes').select('spot_id, vote').eq('voter_key',voterKey());
-  if(error) return;
-  userVotes = new Map((data||[]).map(r=>[String(r.spot_id),Number(r.vote)]));
+  const {data,error} = await supabase
+    .from('spot_votes')
+    .select('spot_id, vote')
+    .eq('voter_key', voterKey());
+
+  if(error) throw error;
+  userVotes = new Map((data || []).map(r => [String(r.spot_id), Number(r.vote)]));
 }
 
 async function onVoteClick(ev){
   const btn = ev.currentTarget;
   const spotId = btn.dataset.spotId;
   const vote = Number(btn.dataset.vote);
-  if(!supabase){ showToast('Voting available once Supabase SQL is connected.'); return; }
+
+  if(!supabase){
+    showToast('Voting available once Supabase SQL is connected.');
+    return;
+  }
+
   btn.disabled = true;
   try{
-    const {error} = await supabase.rpc('cast_vote',{p_spot_id:spotId,p_voter_key:voterKey(),p_vote:vote});
+    const {error} = await supabase.rpc('cast_vote',{
+      p_spot_id: spotId,
+      p_voter_key: voterKey(),
+      p_vote: vote
+    });
     if(error) throw error;
-    await loadUserVotes(); await loadVoteSummary(); refreshUI();
+    await loadUserVotes();
+    await loadVoteSummary();
+    refreshUI();
   }catch(err){
-    console.error(err); showToast('Vote could not be saved yet. Run the Supabase SQL, then refresh.');
-  }finally{ btn.disabled=false; }
+    console.error(err);
+    showToast('Vote could not be saved yet. Run the Supabase SQL, then refresh.');
+  }finally{
+    btn.disabled = false;
+  }
 }
 
 async function wireRealtime(){
   if(!supabase) return;
-  if(liveChannel) await supabase.removeChannel(liveChannel);
-  liveChannel = supabase.channel('spot-votes-live')
-    .on('postgres_changes',{event:'*',schema:'public',table:'spot_votes'},async()=>{
-      await loadVoteSummary(); refreshUI();
-    }).subscribe();
+  try{
+    if(liveChannel) await supabase.removeChannel(liveChannel);
+    liveChannel = supabase
+      .channel('spot-votes-live')
+      .on('postgres_changes',{event:'*',schema:'public',table:'spot_votes'},async()=>{
+        try{
+          await loadVoteSummary();
+          refreshUI();
+        }catch(err){
+          console.error('Realtime refresh failed:', err);
+        }
+      })
+      .subscribe();
+  }catch(err){
+    console.error('Realtime setup failed:', err);
+  }
 }
 
+/* IMPORTANT FIX:
+   render bloom data first
+   do not block map/cards on Supabase
+*/
 async function loadBlooms(){
   try{
     const res = await fetch('./blooms.json', { cache: 'no-store' });
     if(!res.ok) throw new Error(`blooms.json HTTP ${res.status}`);
+
     const raw = await res.json();
     BLOOMS = normaliseBlooms(raw);
-    availableTypes = new Set(BLOOMS.map(s=>s.type));
+    availableTypes = new Set(BLOOMS.map(s => s.type));
     renderChips();
-    await loadUserVotes(); await loadVoteSummary();
+
+    // Render immediately
     selectedSpotId = BLOOMS[0]?.id ?? null;
-    refreshUI(); wireRealtime();
+    refreshUI();
+
     if (!BLOOMS.length) {
       showToast('Bloom file loaded, but no usable spots were found.');
     }
+
+    // Votes are optional; do them afterwards
+    Promise.resolve()
+      .then(() => loadUserVotes())
+      .then(() => loadVoteSummary())
+      .then(() => refreshUI())
+      .catch(err => {
+        console.error('Supabase vote load failed:', err);
+      });
+
+    wireRealtime().catch?.(()=>{});
   }catch(err){
     console.error('Bloom load failed:', err);
     document.getElementById('resultsLine').textContent = 'Could not load bloom data.';
@@ -1064,29 +1155,37 @@ async function loadBlooms(){
   }
 }
 
-// Event listeners
 document.getElementById('searchInput').addEventListener('input', e=>{
-  searchText = e.target.value; visibleLimit = PAGE_SIZE; refreshUI();
+  searchText = e.target.value;
+  visibleLimit = PAGE_SIZE;
+  refreshUI();
 });
 
 document.getElementById('resetBtn').addEventListener('click',()=>{
-  activeType = 'all'; searchText = ''; visibleLimit = PAGE_SIZE;
+  activeType = 'all';
+  searchText = '';
+  visibleLimit = PAGE_SIZE;
   document.getElementById('searchInput').value = '';
-  renderChips(); refreshUI();
+  renderChips();
+  refreshUI();
 });
+
 document.getElementById('resetBtn').addEventListener('keydown', e=>{
-  if(e.key==='Enter'||e.key===' ') document.getElementById('resetBtn').click();
+  if(e.key === 'Enter' || e.key === ' ') document.getElementById('resetBtn').click();
 });
 
 document.getElementById('filterRow').addEventListener('click', e=>{
   const btn = e.target.closest('.chip[data-type]');
-  if(!btn||btn.disabled) return;
-  activeType = btn.dataset.type; visibleLimit = PAGE_SIZE;
-  renderChips(); refreshUI();
+  if(!btn || btn.disabled) return;
+  activeType = btn.dataset.type;
+  visibleLimit = PAGE_SIZE;
+  renderChips();
+  refreshUI();
 });
 
 document.getElementById('loadMoreBtn').addEventListener('click',()=>{
-  visibleLimit += PAGE_SIZE; renderSpotGrid();
+  visibleLimit += PAGE_SIZE;
+  renderSpotGrid();
 });
 
 loadBlooms();

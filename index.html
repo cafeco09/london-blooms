@@ -652,6 +652,23 @@ const STAGE_LABEL = {early:'Early', peak:'Peak', fading:'Fading'};
 const createClient = window.supabase?.createClient;
 const supabase = createClient ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
+async function debugSupabaseReads() {
+  const spotsRes = await supabase.from('spots').select('*');
+  console.log('spotsRes', spotsRes);
+
+  const totalsRes = await supabase.from('spot_vote_totals').select('*');
+  console.log('totalsRes', totalsRes);
+
+  const voteRes = await supabase.rpc('cast_vote', {
+    p_spot_id: 'spot_cherry_regents',
+    p_voter_key: 'browser-debug-user',
+    p_vote: 1
+  });
+  console.log('voteRes', voteRes);
+}
+
+debugSupabaseReads();
+
 let BLOOMS = [];
 let availableTypes = new Set();
 let activeType = 'all';

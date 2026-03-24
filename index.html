@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>London Blooms — Spring 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{
+  --bg:#fbf7f3;
+  --card:#fffdfa;
+  --ink:#1f1a17;
+  --muted:#645a53;
+  --line:#eadfd6;
+  --rose:#d66d91;
+  --rose-soft:#f7d8e4;
+  --purple:#8a73b8;
+  --purple-soft:#ece5fa;
+  --gold:#ba9450;
+  --gold-soft:#f8eed8;
+  --blue:#577fb0;
+  --blue-soft:#e7eef8;
+  --green:#2f8f5b;
+  --green-soft:#d9efe4;
+  --shadow:0 14px 36px rgba(44,34,28,0.08);
+  --radius:22px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--ink)}
+a{text-decoration:none;color:inherit}
+button,input{font:inherit}
+.container{max-width:1160px;margin:0 auto;padding:0 18px}
+.topbar{position:sticky;top:0;z-index:40;background:rgba(251,247,243,.92);backdrop-filter:blur(10px);border-bottom:1px solid rgba(234,223,214,.85)}
+.topbar-inner{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:12px 0}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700}
+.brand-mark{width:38px;height:38px;border-radius:999px;background:linear-gradient(135deg,var(--rose-soft),#fff);display:grid;place-items:center;font-size:18px;box-shadow:var(--shadow)}
+.brand-name{display:flex;flex-direction:column;line-height:1.05}
+.brand-name small{font-size:11px;text-transform:uppercase;letter-spacing:.16em;color:var(--muted);font-weight:600}
+.nav{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+.nav a,.nav button.linkish{padding:10px 14px;border-radius:999px;font-size:14px;color:var(--muted);border:1px solid transparent;background:transparent;cursor:pointer}
+.nav a:hover,.nav button.linkish:hover{background:#fff;border-color:var(--line);color:var(--ink)}
+.nav .support-link{background:var(--ink);color:#fff;border-color:var(--ink)}
+.nav .support-link:hover{background:#342c27;border-color:#342c27;color:#fff}
+.hero{padding:28px 0 18px}
+.hero-grid{display:grid;grid-template-columns:1.25fr .95fr;gap:18px;align-items:stretch}
+.hero-card,.side-card,.panel,.spot-card,.drawer,.mini-stat,.type-card,.guide-card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+.hero-card{padding:26px;min-height:300px;background:radial-gradient(circle at top left,#fff, #fff7fb 35%, #fffdf9 100%)}
+.kicker{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;background:var(--rose-soft);color:#8f3f5b;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+.hero h1{font-family:'Instrument Serif',serif;font-size:clamp(48px,6vw,84px);line-height:.92;font-weight:400;margin:18px 0 12px}
+.hero p{max-width:640px;font-size:17px;line-height:1.65;color:var(--muted);margin:0 0 18px}
+.hero-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:18px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;padding:14px 18px;border-radius:999px;font-weight:700;border:1px solid var(--ink);cursor:pointer;background:var(--ink);color:#fff}
+.btn.secondary{background:#fff;color:var(--ink);border-color:var(--line)}
+.btn.secondary:hover{background:#f7f0ea}
+.btn.support{background:#fff6df;color:#6b4b14;border-color:#ead4a2}
+.hero-note{display:flex;gap:12px;flex-wrap:wrap;margin-top:18px}
+.note-pill{padding:9px 12px;border-radius:999px;background:#fff;border:1px solid var(--line);font-size:13px;color:var(--muted)}
+.side-card{padding:22px;display:grid;gap:14px}
+.side-card h2{font-size:20px;margin:0}
+.side-card p{margin:0;color:var(--muted);line-height:1.55;font-size:14px}
+.mini-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.mini-stat{padding:16px}
+.mini-stat .value{font-size:26px;font-weight:700;margin-bottom:6px}
+.mini-stat .label{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700}
+.main-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:18px;margin-top:8px}
+.panel{padding:18px}
+.panel-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.panel h2{margin:0;font-size:24px}
+.panel p.sub{margin:4px 0 0;color:var(--muted);font-size:14px}
+.controls{display:grid;gap:12px;margin-bottom:14px}
+.search-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px}
+.search-row input{width:100%;padding:14px 15px;border-radius:16px;border:1px solid var(--line);background:#fff}
+.filters{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1px solid var(--line);background:#fff;padding:10px 12px;border-radius:999px;cursor:pointer;font-weight:600;color:var(--muted)}
+.chip.active{color:#fff;border-color:transparent}
+.chip[data-type="all"].active{background:var(--ink)}
+.chip[data-type="cherry"].active{background:var(--rose)}
+.chip[data-type="magnolia"].active{background:var(--gold);color:#2c2415}
+.chip[data-type="wisteria"].active{background:var(--purple)}
+.chip[data-type="bluebell"].active{background:var(--blue)}
+.chip.disabled{opacity:.45;cursor:not-allowed}
+.results-line{font-size:13px;color:var(--muted);font-weight:600}
+.map-shell{position:relative;border:1px solid var(--line);border-radius:20px;overflow:hidden;background:#e4ddd5;min-height:460px}
+#mapSvg{display:block;width:100%;height:460px}
+.bloom-hit{fill:transparent;cursor:pointer}
+.bloom-mark{pointer-events:none}
+.bloom-mark circle.core{stroke:#fff;stroke-width:2}
+.bloom-dot.is-selected circle.core{stroke:#1f1a17;stroke-width:3}
+.bloom-dot circle.pulse{opacity:.15;animation:pulse 2.2s ease-in-out infinite;transform-origin:center}
+@keyframes pulse{0%,100%{r:13;opacity:.18}50%{r:18;opacity:.06}}
+.map-legend{position:absolute;left:14px;bottom:14px;background:rgba(255,253,250,.96);border:1px solid var(--line);border-radius:16px;padding:10px 12px;display:grid;gap:7px;min-width:175px}
+.map-legend strong{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.legend-item{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted)}
+.legend-dot{width:10px;height:10px;border-radius:50%}
+.drawer{padding:16px;margin-top:14px;display:grid;gap:10px}
+.drawer-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.drawer h3{margin:0;font-size:22px}
+.meta{color:var(--muted);font-size:14px;line-height:1.5}
+.badges{display:flex;flex-wrap:wrap;gap:8px}
+.badge-pill{padding:8px 11px;border-radius:999px;font-size:12px;font-weight:700}
+.badge-stage{background:var(--green-soft);color:var(--green)}
+.badge-count{background:#f2ece7;color:var(--muted)}
+.badge-type.cherry{background:var(--rose-soft);color:#8f3f5b}
+.badge-type.magnolia{background:var(--gold-soft);color:#7a5b1f}
+.badge-type.wisteria{background:var(--purple-soft);color:#664f8a}
+.badge-type.bluebell{background:var(--blue-soft);color:#40648f}
+.vote-row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:12px}
+.vote-summary{font-size:13px;color:var(--muted);font-weight:600}
+.vote-buttons{display:flex;gap:8px;flex-wrap:wrap}
+.vote-btn{border:1px solid var(--line);background:#fff;padding:10px 12px;border-radius:999px;cursor:pointer;font-weight:700;color:var(--ink)}
+.vote-btn.active-up{background:var(--green-soft);border-color:#b8dcc9;color:var(--green)}
+.vote-btn.active-down{background:#fde3eb;border-color:#f0bfd0;color:#ac476d}
+.vote-btn[disabled]{opacity:.55;cursor:not-allowed}
+.quick-stack{display:grid;gap:12px}
+.quick-card{padding:18px;border-radius:18px;border:1px solid var(--line);background:#fff}
+.quick-card h3{margin:0 0 6px;font-size:17px}
+.quick-card p{margin:0;color:var(--muted);font-size:14px;line-height:1.55}
+.section{padding:18px 0 0}
+.section-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:0 0 12px}
+.section-head h2{margin:0;font-size:26px}
+.section-head p{margin:6px 0 0;color:var(--muted)}
+.type-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.type-card{padding:18px;display:grid;gap:10px}
+.type-card .eyebrow{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.type-card h3{margin:0;font-size:22px}
+.type-card p{margin:0;color:var(--muted);font-size:14px;line-height:1.55}
+.type-card button{justify-self:start}
+.guide-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.guide-card{padding:18px;display:grid;gap:10px}
+.guide-card .eyebrow{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.guide-card h3{margin:0;font-size:20px}
+.guide-card p{margin:0;color:var(--muted);line-height:1.55;font-size:14px}
+.spot-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.spot-card{padding:16px;display:grid;gap:12px}
+.spot-card .top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.spot-card h3{margin:0;font-size:18px;line-height:1.25}
+.spot-card .eyebrow{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.spot-card p{margin:0;color:var(--muted);line-height:1.55;font-size:14px}
+.spot-actions{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.spot-actions .left{display:flex;gap:8px;flex-wrap:wrap}
+.muted{color:var(--muted)}
+.inline-tag{padding:7px 10px;border-radius:999px;background:#f5efe9;color:var(--muted);font-size:12px;font-weight:700}
+.load-more{margin:18px auto 0;display:flex}
+.empty{padding:26px;text-align:center;background:#fff;border:1px dashed var(--line);border-radius:18px;color:var(--muted)}
+.footer{padding:34px 0 90px;color:var(--muted)}
+.footer-card{padding:22px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;background:#fff;border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+.footer-card strong{display:block;font-size:18px;color:var(--ink);margin-bottom:4px}
+.mobile-bar{position:fixed;left:12px;right:12px;bottom:12px;z-index:45;background:rgba(31,26,23,.94);color:#fff;border-radius:18px;padding:10px 12px;display:none;grid-template-columns:repeat(3,1fr);gap:8px;box-shadow:0 18px 34px rgba(31,26,23,.28)}
+.mobile-bar a{display:flex;align-items:center;justify-content:center;padding:10px 12px;border-radius:12px;color:#fff;font-weight:700;font-size:13px}
+.mobile-bar a.active,.mobile-bar a:hover{background:rgba(255,255,255,.12)}
+.toast{position:fixed;right:16px;bottom:86px;z-index:60;background:#1f1a17;color:#fff;padding:12px 14px;border-radius:14px;box-shadow:0 16px 34px rgba(31,26,23,.25);opacity:0;transform:translateY(14px);transition:.25s ease}
+.toast.show{opacity:1;transform:translateY(0)}
+@media (max-width:980px){
+  .hero-grid,.main-grid,.type-grid,.guide-grid,.spot-grid{grid-template-columns:1fr}
+}
+@media (max-width:720px){
+  .nav a:not(.support-link):not(.map-link){display:none}
+  .hero{padding-top:18px}
+  .hero-card{padding:22px}
+  .hero h1{font-size:52px}
+  .search-row{grid-template-columns:1fr}
+  .mini-grid{grid-template-columns:1fr 1fr}
+  .mobile-bar{display:grid}
+  .footer{padding-bottom:104px}
+}
+@media (max-width:520px){
+  .mini-grid{grid-template-columns:1fr}
+  .vote-row,.spot-actions,.drawer-top{align-items:flex-start}
+  .container{padding:0 14px}
+  .hero h1{font-size:44px}
+  .quick-card,.type-card,.guide-card,.spot-card,.panel,.side-card,.hero-card{border-radius:18px}
+}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="container topbar-inner">
+    <a class="brand" href="#top">
+      <span class="brand-mark">🌸</span>
+      <span class="brand-name"><span>London Blooms</span><small>Spring 2026</small></span>
+    </a>
+    <nav class="nav">
+      <a class="map-link" href="#mapSection">Map</a>
+      <a href="#bestSection">Best now</a>
+      <a href="#allSection">All spots</a>
+      <a href="https://buymeacoffee.com/anshdt" target="_blank" rel="noopener" class="support-link">☕ Support</a>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+  <section class="hero">
+    <div class="container hero-grid">
+      <div class="hero-card">
+        <div class="kicker">Official tree-backed bloom guide</div>
+        <h1>Find blooms<br>without the endless scroll</h1>
+        <p>Use the map, check the best current picks, then jump straight to a spot. Tree locations come from the GLA public realm tree inventory. Stages are still estimated seasonally, and community votes help signal whether the estimate looks right.</p>
+        <div class="hero-actions">
+          <a class="btn" href="#mapSection">Open bloom map</a>
+          <a class="btn secondary" href="#bestSection">See best current picks</a>
+          <a class="btn support" href="https://buymeacoffee.com/anshdt" target="_blank" rel="noopener">☕ Buy me a coffee</a>
+        </div>
+        <div class="hero-note">
+          <span class="note-pill">Real cherry, magnolia and wisteria spot clusters</span>
+          <span class="note-pill">Live community thumbs up/down</span>
+          <span class="note-pill">Static frontend on GitHub Pages</span>
+        </div>
+      </div>
+      <aside class="side-card">
+        <div>
+          <h2>Start here</h2>
+          <p>Search or filter the map first. Tap any circle to pin a spot and see a stable details card instead of hover-only hints.</p>
+        </div>
+        <div class="mini-grid">
+          <div class="mini-stat"><div class="value" id="statSpots">–</div><div class="label">Visible spots</div></div>
+          <div class="mini-stat"><div class="value" id="statPeak">–</div><div class="label">Peak now</div></div>
+          <div class="mini-stat"><div class="value" id="statTypes">–</div><div class="label">Live types</div></div>
+          <div class="mini-stat"><div class="value" id="statVotes">–</div><div class="label">Community votes</div></div>
+        </div>
+        <div class="quick-stack">
+          <div class="quick-card">
+            <h3>Why it felt unstable before</h3>
+            <p>The older page relied on hover-heavy motion and a long guide layout. This version removes card lift, removes dot scaling on hover, and uses click-to-open details instead.</p>
+          </div>
+          <div class="quick-card">
+            <h3>What is live now</h3>
+            <p>Spot locations are real. Community thumbs can update live once the Supabase SQL has been run. Bloom stage is still an estimate, not verified truth.</p>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <section class="container main-grid" id="mapSection">
+    <div class="panel">
+      <div class="panel-head">
+        <div>
+          <h2>Bloom map</h2>
+          <p class="sub">Search, filter, then tap a circle. No hover chase.</p>
+        </div>
+      </div>
+      <div class="controls">
+        <div class="search-row">
+          <input id="searchInput" type="search" placeholder="Search by borough, park, area or bloom type">
+          <button class="btn secondary" id="resetBtn" type="button">Reset</button>
+        </div>
+        <div class="filters" id="filterRow">
+          <button class="chip active" data-type="all" type="button">All</button>
+          <button class="chip" data-type="cherry" type="button">Cherry</button>
+          <button class="chip" data-type="magnolia" type="button">Magnolia</button>
+          <button class="chip" data-type="wisteria" type="button">Wisteria</button>
+          <button class="chip" data-type="bluebell" type="button">Bluebell</button>
+        </div>
+        <div class="results-line" id="resultsLine">Loading bloom spots…</div>
+      </div>
+      <div class="map-shell">
+        <svg id="mapSvg" viewBox="0 0 900 520" xmlns="http://www.w3.org/2000/svg" aria-label="London bloom map">
+          <rect width="900" height="520" fill="#ddd6ce"/>
+          <path d="M75,185 Q95,80 205,62 Q315,42 425,52 Q565,56 672,92 Q792,128 832,222 Q862,302 832,382 Q792,452 682,472 Q562,492 432,487 Q302,482 192,462 Q102,442 72,372 Q46,302 75,185Z" fill="#d0cac3" opacity="0.66"/>
+          <path d="M28,312 Q118,297 190,307 Q262,317 322,302 Q382,287 442,292 Q512,297 572,282 Q642,267 722,277 Q792,287 872,267" stroke="#a8bece" stroke-width="15" fill="none" stroke-linecap="round" opacity="0.92"/>
+          <text x="462" y="297" font-size="10" fill="#6e8ea8" font-family="Inter" font-style="italic" text-anchor="middle">Thames</text>
+          <ellipse cx="292" cy="205" rx="44" ry="28" fill="#bed3a6" opacity="0.85"/>
+          <text x="292" y="208" font-size="7" fill="#506742" font-family="Inter" text-anchor="middle">Hyde / Kensington</text>
+          <ellipse cx="360" cy="143" rx="34" ry="25" fill="#bed3a6" opacity="0.85"/>
+          <text x="360" y="145" font-size="7" fill="#506742" font-family="Inter" text-anchor="middle">Regent's Park</text>
+          <ellipse cx="320" cy="370" rx="32" ry="19" fill="#bed3a6" opacity="0.85"/>
+          <text x="320" y="372" font-size="7" fill="#506742" font-family="Inter" text-anchor="middle">Battersea</text>
+          <ellipse cx="640" cy="368" rx="36" ry="24" fill="#bed3a6" opacity="0.85"/>
+          <text x="640" y="370" font-size="7" fill="#506742" font-family="Inter" text-anchor="middle">Greenwich Park</text>
+          <ellipse cx="107" cy="308" rx="28" ry="19" fill="#bed3a6" opacity="0.85"/>
+          <text x="107" y="310" font-size="7" fill="#506742" font-family="Inter" text-anchor="middle">Kew</text>
+          <ellipse cx="640" cy="193" rx="29" ry="21" fill="#bed3a6" opacity="0.85"/>
+          <text x="640" y="195" font-size="7" fill="#506742" font-family="Inter" text-anchor="middle">Victoria Park</text>
+          <ellipse cx="330" cy="93" rx="32" ry="21" fill="#bed3a6" opacity="0.85"/>
+          <text x="330" y="95" font-size="7" fill="#506742" font-family="Inter" text-anchor="middle">Hampstead Heath</text>
+          <g id="mapDots"></g>
+        </svg>
+        <div class="map-legend">
+          <strong>Legend</strong>
+          <div class="legend-item"><span class="legend-dot" style="background:var(--rose)"></span>Cherry</div>
+          <div class="legend-item"><span class="legend-dot" style="background:var(--gold)"></span>Magnolia</div>
+          <div class="legend-item"><span class="legend-dot" style="background:var(--purple)"></span>Wisteria</div>
+          <div class="legend-item"><span class="legend-dot" style="background:var(--blue)"></span>Bluebell</div>
+        </div>
+      </div>
+      <div class="drawer" id="spotDrawer">
+        <div class="muted">Pick a map circle or a card below to pin a spot here.</div>
+      </div>
+    </div>
+
+    <aside class="panel">
+      <div class="panel-head">
+        <div>
+          <h2>Best current picks</h2>
+          <p class="sub">The quickest way in. Sorted by visible tree count.</p>
+        </div>
+      </div>
+      <div class="quick-stack" id="bestPicks"></div>
+    </aside>
+  </section>
+
+  <section class="container section" id="bestSection">
+    <div class="section-head">
+      <div>
+        <h2>Browse by bloom type</h2>
+        <p>Choose a category first instead of wading through one long mixed list.</p>
+      </div>
+    </div>
+    <div class="type-grid" id="typeGuide"></div>
+  </section>
+
+  <section class="container section" id="allSection">
+    <div class="section-head">
+      <div>
+        <h2>All visible spots</h2>
+        <p>Filtered by the search and type chips above. Tap “Show on map” to jump back up.</p>
+      </div>
+    </div>
+    <div class="spot-grid" id="spotGrid"></div>
+    <button class="btn secondary load-more" id="loadMoreBtn" type="button" hidden>Show more spots</button>
+  </section>
+
+  <section class="container section">
+    <div class="section-head">
+      <div>
+        <h2>How to use it</h2>
+        <p>The quick version, without the waffle.</p>
+      </div>
+    </div>
+    <div class="guide-grid">
+      <div class="guide-card">
+        <div class="eyebrow">1 · Start with a type</div>
+        <h3>Cherry, magnolia or wisteria first</h3>
+        <p>That cuts the noise instantly. Bluebell stays hidden unless separate data exists in the feed.</p>
+      </div>
+      <div class="guide-card">
+        <div class="eyebrow">2 · Tap, don’t chase</div>
+        <h3>Map circles open a fixed details panel</h3>
+        <p>No hover chase, no shifting tooltip. The selected spot stays pinned until you choose another one.</p>
+      </div>
+      <div class="guide-card">
+        <div class="eyebrow">3 · Use community confidence</div>
+        <h3>Thumbs up/down tells you whether the estimate feels right</h3>
+        <p>That is more honest than pretending the app knows each tree’s exact stage in real time.</p>
+      </div>
+      <div class="guide-card">
+        <div class="eyebrow">4 · Support</div>
+        <h3>The coffee link is now always visible</h3>
+        <p>There is a support button in the header, the hero, and the mobile bottom bar.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="container footer-card">
+      <div>
+        <strong>London Blooms</strong>
+        <div>GLA tree inventory locations · estimated bloom stage · live community votes when Supabase is connected</div>
+      </div>
+      <a class="btn support" href="https://buymeacoffee.com/anshdt" target="_blank" rel="noopener">☕ Support this project</a>
+    </div>
+  </footer>
+</main>
+
+<div class="mobile-bar">
+  <a href="#mapSection">Map</a>
+  <a href="#bestSection">Best now</a>
+  <a href="https://buymeacoffee.com/anshdt" target="_blank" rel="noopener">☕ Support</a>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const SUPPORT_URL = 'https://buymeacoffee.com/anshdt';
+const SUPABASE_URL = 'https://esfjzhgzfbcrrewjvoan.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_nEqvvmFcsCpgVO1SK8ho3g_3K9LMOgi';
+const PAGE_SIZE = 12;
+const TYPE_ORDER = ['cherry','magnolia','wisteria','bluebell'];
+const TYPE_LABEL = {cherry:'Cherry', magnolia:'Magnolia', wisteria:'Wisteria', bluebell:'Bluebell'};
+const TYPE_EMOJI = {cherry:'🌸', magnolia:'🤍', wisteria:'💜', bluebell:'💙'};
+const TYPE_COLOR = {cherry:'#d66d91', magnolia:'#ba9450', wisteria:'#8a73b8', bluebell:'#577fb0'};
+const STAGE_LABEL = {early:'Early', peak:'Peak', fading:'Fading'};
+
+const createClient = window.supabase?.createClient;
+const supabase = createClient ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+
+let BLOOMS = [];
+let availableTypes = new Set();
+let activeType = 'all';
+let searchText = '';
+let selectedSpotId = null;
+let visibleLimit = PAGE_SIZE;
+let voteSummary = new Map();
+let userVotes = new Map();
+let liveChannel = null;
+
+function showToast(message){
+  const toast = document.getElementById('toast');
+  toast.textContent = message;
+  toast.classList.add('show');
+  clearTimeout(showToast._t);
+  showToast._t = setTimeout(()=>toast.classList.remove('show'), 2400);
+}
+
+function voterKey(){
+  let key = localStorage.getItem('lb_voter_key');
+  if(!key){ key = 'v_' + Math.random().toString(36).slice(2) + Date.now().toString(36); localStorage.setItem('lb_voter_key', key); }
+  return key;
+}
+
+function stableOffset(spot){
+  const s = String(spot.id ?? spot.name ?? '');
+  let h = 0;
+  for(let i=0;i<s.length;i++) h = (h * 33 + s.charCodeAt(i)) >>> 0;
+  return { ox: (h % 9) - 4, oy: (((h / 9) | 0) % 9) - 4 };
+}
+
+function getVotes(id){
+  return voteSummary.get(String(id)) || {up:0, down:0, total:0, userVote:0};
+}
+
+function confidence(meta){
+  if(!meta.total) return {label:'No community signal yet', className:'muted'};
+  const ratio = meta.up / meta.total;
+  if(meta.total >= 6 && ratio >= 0.72) return {label:'Community agrees', className:'good'};
+  if(meta.total >= 4 && ratio <= 0.35) return {label:'Community says not yet', className:'bad'};
+  return {label:'Mixed signal', className:'mid'};
+}
+
+function filteredBlooms(){
+  const q = searchText.trim().toLowerCase();
+  return BLOOMS.filter(spot => {
+    if(activeType !== 'all' && spot.type !== activeType) return false;
+    if(!q) return true;
+    const hay = [spot.name, spot.area, spot.type, spot.desc, spot.location_type, spot.maintainer].filter(Boolean).join(' ').toLowerCase();
+    return hay.includes(q);
+  });
+}
+
+function sortedVisible(){
+  return filteredBlooms().slice().sort((a,b)=> (b.tree_count||0) - (a.tree_count||0) || a.name.localeCompare(b.name));
+}
+
+function topByType(type){
+  return sortedVisible().filter(s => s.type === type).slice(0, 1)[0] || null;
+}
+
+function updateStats(){
+  const visible = sortedVisible();
+  const peak = visible.filter(s => s.stage === 'peak').length;
+  const types = new Set(visible.map(s => s.type));
+  const totalVotes = [...voteSummary.values()].reduce((n,v)=> n + v.total, 0);
+  document.getElementById('statSpots').textContent = visible.length;
+  document.getElementById('statPeak').textContent = peak;
+  document.getElementById('statTypes').textContent = types.size;
+  document.getElementById('statVotes').textContent = totalVotes;
+  document.getElementById('resultsLine').textContent = visible.length
+    ? `${visible.length} visible spot${visible.length === 1 ? '' : 's'} · ${peak} peak now`
+    : 'No spots match that filter yet.';
+}
+
+function renderChips(){
+  document.querySelectorAll('.chip[data-type]').forEach(chip => {
+    const type = chip.dataset.type;
+    const live = type === 'all' || availableTypes.has(type);
+    chip.classList.toggle('disabled', !live);
+    chip.classList.toggle('active', type === activeType);
+    chip.disabled = !live;
+  });
+}
+
+function renderMap(){
+  const g = document.getElementById('mapDots');
+  g.innerHTML = '';
+  const visible = sortedVisible();
+  visible.forEach(spot => {
+    const {ox, oy} = stableOffset(spot);
+    const x = Number(spot.x) + ox;
+    const y = Number(spot.y) + oy;
+
+    const group = document.createElementNS('http://www.w3.org/2000/svg','g');
+    group.setAttribute('class', `bloom-dot${String(selectedSpotId) === String(spot.id) ? ' is-selected' : ''}`);
+    group.setAttribute('transform', `translate(${x},${y})`);
+
+    const hit = document.createElementNS('http://www.w3.org/2000/svg','circle');
+    hit.setAttribute('r', '18');
+    hit.setAttribute('class', 'bloom-hit');
+    hit.addEventListener('click', () => selectSpot(spot.id, true));
+    group.appendChild(hit);
+
+    const mark = document.createElementNS('http://www.w3.org/2000/svg','g');
+    mark.setAttribute('class', 'bloom-mark');
+    if(spot.stage === 'peak'){
+      const pulse = document.createElementNS('http://www.w3.org/2000/svg','circle');
+      pulse.setAttribute('class', 'pulse');
+      pulse.setAttribute('r', '13');
+      pulse.setAttribute('fill', TYPE_COLOR[spot.type] || '#888');
+      mark.appendChild(pulse);
+    }
+    const core = document.createElementNS('http://www.w3.org/2000/svg','circle');
+    core.setAttribute('class', 'core');
+    core.setAttribute('r', spot.stage === 'peak' ? '9.5' : '8');
+    core.setAttribute('fill', TYPE_COLOR[spot.type] || '#888');
+    mark.appendChild(core);
+
+    const txt = document.createElementNS('http://www.w3.org/2000/svg','text');
+    txt.setAttribute('text-anchor','middle');
+    txt.setAttribute('dominant-baseline','central');
+    txt.setAttribute('font-size', spot.stage === 'peak' ? '8.5' : '7.5');
+    txt.setAttribute('font-family', 'Inter');
+    txt.textContent = TYPE_EMOJI[spot.type] || '•';
+    mark.appendChild(txt);
+    group.appendChild(mark);
+    g.appendChild(group);
+  });
+}
+
+function spotMetaHtml(spot){
+  const meta = getVotes(spot.id);
+  const conf = confidence(meta);
+  return `
+    <div class="badges">
+      <span class="badge-pill badge-type ${spot.type}">${TYPE_EMOJI[spot.type]} ${TYPE_LABEL[spot.type]}</span>
+      <span class="badge-pill badge-stage">${STAGE_LABEL[spot.stage] || 'Unknown'} bloom</span>
+      <span class="badge-pill badge-count">${spot.tree_count || 0} trees</span>
+      <span class="badge-pill badge-count">${conf.label}</span>
+    </div>
+    <div class="meta">${spot.area} · ${spot.location_type || 'Public realm'}${spot.maintainer ? ' · ' + spot.maintainer : ''}</div>
+    <div class="meta">${spot.desc || ''}</div>
+    <div class="vote-row">
+      <div class="vote-summary">👍 ${meta.up} · 👎 ${meta.down} · ${meta.total} vote${meta.total === 1 ? '' : 's'}</div>
+      <div class="vote-buttons">
+        <button class="vote-btn ${meta.userVote === 1 ? 'active-up' : ''}" data-vote="1" data-spot-id="${spot.id}">👍 Looks right</button>
+        <button class="vote-btn ${meta.userVote === -1 ? 'active-down' : ''}" data-vote="-1" data-spot-id="${spot.id}">👎 Not yet</button>
+      </div>
+    </div>
+  `;
+}
+
+function renderDrawer(){
+  const drawer = document.getElementById('spotDrawer');
+  const visible = sortedVisible();
+  const spot = visible.find(s => String(s.id) === String(selectedSpotId)) || visible[0];
+  if(!spot){
+    drawer.innerHTML = '<div class="muted">No visible spots match the current filters.</div>';
+    return;
+  }
+  selectedSpotId = spot.id;
+  drawer.innerHTML = `
+    <div class="drawer-top">
+      <div>
+        <h3>${spot.name}</h3>
+        <div class="meta">Pinned from the map</div>
+      </div>
+      <a class="btn secondary" href="#allSection">Browse cards</a>
+    </div>
+    ${spotMetaHtml(spot)}
+  `;
+  bindVoteButtons(drawer);
+}
+
+function renderBestPicks(){
+  const host = document.getElementById('bestPicks');
+  const visible = sortedVisible().slice(0, 6);
+  if(!visible.length){
+    host.innerHTML = '<div class="empty">No spots match the current filters.</div>';
+    return;
+  }
+  host.innerHTML = visible.map((spot, idx) => `
+    <div class="quick-card">
+      <div class="eyebrow">#${idx + 1} · ${TYPE_LABEL[spot.type]}</div>
+      <h3>${spot.name}</h3>
+      <p>${spot.area} · ${spot.tree_count || 0} trees · ${STAGE_LABEL[spot.stage] || 'Unknown'} bloom</p>
+      <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn secondary" type="button" data-show-spot="${spot.id}">Show on map</button>
+      </div>
+    </div>
+  `).join('');
+  host.querySelectorAll('[data-show-spot]').forEach(btn => btn.addEventListener('click', () => selectSpot(btn.dataset.showSpot, true)));
+}
+
+function renderTypeGuide(){
+  const host = document.getElementById('typeGuide');
+  const cards = TYPE_ORDER.filter(type => availableTypes.has(type)).map(type => {
+    const top = topByType(type);
+    if(!top) return '';
+    return `
+      <div class="type-card">
+        <div class="eyebrow">${TYPE_EMOJI[type]} ${TYPE_LABEL[type]}</div>
+        <h3>${top.name}</h3>
+        <p>${top.area} · ${top.tree_count || 0} trees · ${STAGE_LABEL[top.stage] || 'Unknown'} bloom</p>
+        <button class="btn secondary" type="button" data-show-spot="${top.id}">Show on map</button>
+      </div>
+    `;
+  }).join('');
+  host.innerHTML = cards || '<div class="empty">No live bloom types available in the current feed.</div>';
+  host.querySelectorAll('[data-show-spot]').forEach(btn => btn.addEventListener('click', () => selectSpot(btn.dataset.showSpot, true)));
+}
+
+function renderSpotGrid(){
+  const host = document.getElementById('spotGrid');
+  const visible = sortedVisible();
+  const slice = visible.slice(0, visibleLimit);
+  const moreBtn = document.getElementById('loadMoreBtn');
+  if(!slice.length){
+    host.innerHTML = '<div class="empty">No spots match the current filters.</div>';
+    moreBtn.hidden = true;
+    return;
+  }
+  host.innerHTML = slice.map(spot => `
+    <article class="spot-card">
+      <div class="top">
+        <div>
+          <div class="eyebrow">${TYPE_LABEL[spot.type]} · ${spot.area}</div>
+          <h3>${spot.name}</h3>
+        </div>
+        <span class="inline-tag">${spot.tree_count || 0} trees</span>
+      </div>
+      <p>${spot.desc || ''}</p>
+      <div class="spot-actions">
+        <div class="left">
+          <span class="inline-tag">${STAGE_LABEL[spot.stage] || 'Unknown'} bloom</span>
+          <span class="inline-tag">${confidence(getVotes(spot.id)).label}</span>
+        </div>
+        <button class="btn secondary" type="button" data-show-spot="${spot.id}">Show on map</button>
+      </div>
+      ${spotMetaHtml(spot)}
+    </article>
+  `).join('');
+  host.querySelectorAll('[data-show-spot]').forEach(btn => btn.addEventListener('click', () => selectSpot(btn.dataset.showSpot, true)));
+  bindVoteButtons(host);
+  moreBtn.hidden = visible.length <= visibleLimit;
+}
+
+function bindVoteButtons(root){
+  root.querySelectorAll('.vote-btn').forEach(btn => btn.addEventListener('click', onVoteClick));
+}
+
+function selectSpot(id, scrollToMap = false){
+  selectedSpotId = id;
+  renderMap();
+  renderDrawer();
+  if(scrollToMap) document.getElementById('mapSection').scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+function refreshUI(){
+  const visible = sortedVisible();
+  if(!visible.some(s => String(s.id) === String(selectedSpotId))) selectedSpotId = visible[0]?.id ?? null;
+  updateStats();
+  renderMap();
+  renderDrawer();
+  renderBestPicks();
+  renderTypeGuide();
+  renderSpotGrid();
+}
+
+async function loadVoteSummary(){
+  if(!supabase) return;
+  const { data, error } = await supabase.from('spot_votes').select('spot_id, vote');
+  if(error) return;
+  const summary = new Map();
+  for(const row of data || []){
+    const id = String(row.spot_id);
+    const entry = summary.get(id) || {up:0, down:0, total:0, userVote:0};
+    if(Number(row.vote) === 1) entry.up += 1;
+    if(Number(row.vote) === -1) entry.down += 1;
+    entry.total = entry.up + entry.down;
+    summary.set(id, entry);
+  }
+  for(const [id, vote] of userVotes.entries()){
+    const entry = summary.get(id) || {up:0, down:0, total:0, userVote:0};
+    entry.userVote = vote;
+    summary.set(id, entry);
+  }
+  voteSummary = summary;
+}
+
+async function loadUserVotes(){
+  if(!supabase) return;
+  const { data, error } = await supabase.from('spot_votes').select('spot_id, vote').eq('voter_key', voterKey());
+  if(error) return;
+  userVotes = new Map((data || []).map(r => [String(r.spot_id), Number(r.vote)]));
+}
+
+async function onVoteClick(ev){
+  const btn = ev.currentTarget;
+  const spotId = btn.dataset.spotId;
+  const vote = Number(btn.dataset.vote);
+  if(!supabase){ showToast('Supabase is not available in this build yet.'); return; }
+  btn.disabled = true;
+  try{
+    const { error } = await supabase.rpc('cast_vote', { p_spot_id: spotId, p_voter_key: voterKey(), p_vote: vote });
+    if(error) throw error;
+    await loadUserVotes();
+    await loadVoteSummary();
+    refreshUI();
+  }catch(err){
+    console.error(err);
+    showToast('Vote could not be saved yet. Run the Supabase SQL, then refresh.');
+  }finally{
+    btn.disabled = false;
+  }
+}
+
+async function wireRealtime(){
+  if(!supabase) return;
+  if(liveChannel) await supabase.removeChannel(liveChannel);
+  liveChannel = supabase.channel('spot-votes-live')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'spot_votes' }, async () => {
+      await loadVoteSummary();
+      refreshUI();
+    })
+    .subscribe();
+}
+
+async function loadBlooms(){
+  try{
+    const res = await fetch('./blooms.json');
+    BLOOMS = await res.json();
+    availableTypes = new Set(BLOOMS.map(s => s.type));
+    renderChips();
+    await loadUserVotes();
+    await loadVoteSummary();
+    selectedSpotId = BLOOMS[0]?.id ?? null;
+    refreshUI();
+    wireRealtime();
+  }catch(err){
+    console.error(err);
+    document.getElementById('resultsLine').textContent = 'Could not load bloom data.';
+    document.getElementById('bestPicks').innerHTML = '<div class="empty">Bloom data did not load.</div>';
+    document.getElementById('spotGrid').innerHTML = '<div class="empty">Bloom data did not load.</div>';
+  }
+}
+
+document.getElementById('searchInput').addEventListener('input', e => {
+  searchText = e.target.value;
+  visibleLimit = PAGE_SIZE;
+  refreshUI();
+});
+
+document.getElementById('resetBtn').addEventListener('click', () => {
+  activeType = 'all';
+  searchText = '';
+  visibleLimit = PAGE_SIZE;
+  document.getElementById('searchInput').value = '';
+  renderChips();
+  refreshUI();
+});
+
+document.getElementById('filterRow').addEventListener('click', e => {
+  const btn = e.target.closest('.chip[data-type]');
+  if(!btn || btn.disabled) return;
+  activeType = btn.dataset.type;
+  visibleLimit = PAGE_SIZE;
+  renderChips();
+  refreshUI();
+});
+
+document.getElementById('loadMoreBtn').addEventListener('click', () => {
+  visibleLimit += PAGE_SIZE;
+  renderSpotGrid();
+});
+
+loadBlooms();
+</script>
+</body>
+</html>

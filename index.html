@@ -1,4 +1,482 @@
-<script>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>London Blooms 🌸</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <!-- Supabase MUST come before your app script -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #fffaf7;
+      --surface:   #ffffff;
+      --border:    #ede8e3;
+      --text:      #1a1310;
+      --muted:     #7a6e68;
+      --accent:    #c95a7f;
+      --radius:    12px;
+      --shadow:    0 2px 12px rgba(0,0,0,.07);
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    .site-header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .site-header h1 {
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: -.3px;
+    }
+    .site-header a.support-link {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--accent);
+      text-decoration: none;
+      border: 1.5px solid var(--accent);
+      border-radius: 99px;
+      padding: 5px 14px;
+      transition: background .15s;
+    }
+    .site-header a.support-link:hover { background: var(--accent); color: #fff; }
+
+    /* ── Stats bar ── */
+    .stats-bar {
+      display: flex;
+      gap: 0;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      overflow-x: auto;
+    }
+    .stat-item {
+      flex: 1;
+      min-width: 80px;
+      text-align: center;
+      padding: 12px 8px;
+      border-right: 1px solid var(--border);
+    }
+    .stat-item:last-child { border-right: none; }
+    .stat-num  { font-size: 22px; font-weight: 700; line-height: 1; }
+    .stat-label { font-size: 11px; color: var(--muted); margin-top: 3px; }
+
+    /* ── Container ── */
+    .container { max-width: 960px; margin: 0 auto; padding: 20px 16px; }
+
+    /* ── Filter row ── */
+    .filter-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    .search-wrap { position: relative; flex: 1; min-width: 180px; }
+    .search-wrap input {
+      width: 100%;
+      border: 1.5px solid var(--border);
+      border-radius: 99px;
+      padding: 8px 16px;
+      font-family: inherit;
+      font-size: 14px;
+      background: var(--surface);
+      outline: none;
+      transition: border-color .15s;
+    }
+    .search-wrap input:focus { border-color: var(--accent); }
+
+    .chip {
+      border: 1.5px solid var(--border);
+      border-radius: 99px;
+      padding: 7px 14px;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      background: var(--surface);
+      cursor: pointer;
+      transition: all .15s;
+      white-space: nowrap;
+    }
+    .chip:hover:not(:disabled)  { border-color: var(--accent); color: var(--accent); }
+    .chip.active                { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .chip.disabled, .chip:disabled { opacity: .4; cursor: not-allowed; }
+    .chip[data-type="reset"]    { background: none; color: var(--muted); border-color: var(--border); }
+
+    .results-line { font-size: 13px; color: var(--muted); margin-bottom: 20px; }
+
+    /* ── Map section ── */
+    #mapSection {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin-bottom: 20px;
+      box-shadow: var(--shadow);
+    }
+    .map-wrap {
+      position: relative;
+      width: 100%;
+      overflow: hidden;
+    }
+    .map-wrap svg {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+
+    /* Map dots */
+    .bloom-hit  { fill: transparent; cursor: pointer; }
+    .bloom-mark { pointer-events: none; }
+    .bloom-dot.is-selected .core { stroke: #fff; stroke-width: 2.5; }
+    .bloom-dot.is-selected .bloom-hit { /* ring */ }
+
+    .pulse {
+      animation: pulse-ring 1.8s ease-out infinite;
+      transform-origin: center;
+    }
+    @keyframes pulse-ring {
+      0%   { opacity: .55; transform: scale(1); }
+      70%  { opacity: 0;   transform: scale(1.9); }
+      100% { opacity: 0;   transform: scale(1.9); }
+    }
+
+    /* ── Drawer ── */
+    .spot-drawer {
+      border-top: 1px solid var(--border);
+      padding: 16px;
+      min-height: 110px;
+    }
+    .drawer-spot-name { font-size: 16px; font-weight: 700; }
+    .drawer-meta      { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .drawer-empty     { color: var(--muted); font-size: 14px; padding: 8px 0; }
+
+    /* ── Badges ── */
+    .badges { display: flex; gap: 6px; flex-wrap: wrap; margin: 8px 0; }
+    .badge  {
+      font-size: 12px; font-weight: 600;
+      padding: 3px 9px; border-radius: 99px;
+      background: #f0ebe6; color: var(--text);
+    }
+    .badge-cherry   { background: #fce8ef; color: #c95a7f; }
+    .badge-magnolia { background: #fdf5e0; color: #8a6020; }
+    .badge-wisteria { background: #ede8f8; color: #5a4a90; }
+    .badge-bluebell { background: #e6eef8; color: #3a5a90; }
+    .badge-stage    { background: #e8f5e9; color: #2e7d32; }
+    .badge-neutral  { background: #f0ebe6; color: var(--muted); }
+
+    /* ── Vote bar ── */
+    .vote-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid var(--border);
+    }
+    .vote-summary { font-size: 12px; color: var(--muted); font-weight: 600; }
+    .vote-btns    { display: flex; gap: 6px; }
+    .vote-btn {
+      border: 1.5px solid var(--border);
+      border-radius: 99px;
+      padding: 6px 14px;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      background: var(--surface);
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .vote-btn:hover      { border-color: var(--accent); }
+    .vote-btn.active-up  { background: #e8f5e9; border-color: #2e7d32; color: #2e7d32; }
+    .vote-btn.active-down{ background: #fdecea; border-color: #c62828; color: #c62828; }
+    .vote-btn:disabled   { opacity: .5; cursor: not-allowed; }
+
+    /* ── Section headings ── */
+    .section-title {
+      font-size: 17px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      margin-top: 28px;
+    }
+
+    /* ── Best picks ── */
+    .picks-row {
+      display: flex;
+      gap: 10px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+      margin-bottom: 24px;
+    }
+    .pick-card {
+      flex: 0 0 180px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px;
+      background: var(--surface);
+      cursor: pointer;
+      transition: border-color .15s, box-shadow .15s;
+    }
+    .pick-card:hover, .pick-card.active {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(201,90,127,.12);
+    }
+    .pick-top  { display: flex; align-items: center; justify-content: space-between; gap:6px; margin-bottom:4px; }
+    .pick-rank { font-size: 11px; font-weight: 700; color: var(--muted); }
+    .pick-name { font-size: 14px; font-weight: 700; line-height: 1.3; }
+    .pick-sub  { font-size: 12px; color: var(--muted); margin-top: 3px; }
+
+    /* ── Type guide ── */
+    .type-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 12px;
+      margin-bottom: 28px;
+    }
+    .type-card {
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      background: var(--surface);
+      text-align: center;
+    }
+    .type-card .eyebrow { font-size: 11px; font-weight: 700; color: var(--muted); margin-bottom: 6px; }
+    .type-card .emoji   { font-size: 28px; margin-bottom: 6px; }
+    .type-card h3       { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+    .type-card p        { font-size: 12px; color: var(--muted); line-height: 1.4; }
+
+    /* ── Spot grid ── */
+    .spot-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .spot-card {
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px;
+      background: var(--surface);
+      box-shadow: var(--shadow);
+    }
+    .spot-top    { display: flex; align-items: flex-start; justify-content: space-between; gap:8px; margin-bottom:6px; }
+    .spot-eyebrow{ font-size: 11px; font-weight: 700; color: var(--muted); }
+    .spot-name   { font-size: 15px; font-weight: 700; margin-top: 2px; }
+    .spot-tree-tag {
+      font-size: 11px; font-weight: 700;
+      background: #f0ebe6; color: var(--muted);
+      border-radius: 99px; padding: 3px 9px;
+      white-space: nowrap; flex-shrink: 0;
+    }
+    .spot-desc   { font-size: 13px; color: var(--muted); line-height: 1.5; margin-bottom: 8px; }
+    .spot-footer { display: flex; align-items: center; justify-content: space-between; flex-wrap:wrap; gap:6px; }
+    .spot-tags   { display: flex; gap: 5px; flex-wrap: wrap; }
+    .inline-tag  {
+      font-size: 11px; font-weight: 600;
+      background: #f0ebe6; color: var(--muted);
+      border-radius: 99px; padding: 3px 8px;
+    }
+
+    /* ── Buttons ── */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      font-family: inherit; font-weight: 600; border-radius: 99px;
+      cursor: pointer; text-decoration: none; transition: all .15s;
+      border: 1.5px solid transparent;
+    }
+    .btn-secondary {
+      background: var(--surface);
+      border-color: var(--border);
+      color: var(--text);
+      font-size: 13px; padding: 7px 16px;
+    }
+    .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+    .btn-sm { font-size: 12px; padding: 5px 12px; }
+
+    /* ── Load more ── */
+    #loadMoreBtn {
+      display: block;
+      width: 100%;
+      padding: 12px;
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 600;
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      cursor: pointer;
+      color: var(--text);
+      margin-bottom: 32px;
+      transition: border-color .15s;
+    }
+    #loadMoreBtn:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* ── Empty / error states ── */
+    .empty { color: var(--muted); font-size: 14px; padding: 16px 0; }
+
+    /* ── Toast ── */
+    #toast {
+      position: fixed;
+      bottom: 24px; left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: #1a1310; color: #fff;
+      font-size: 13px; font-weight: 600;
+      padding: 10px 20px;
+      border-radius: 99px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .2s, transform .2s;
+      z-index: 999;
+      white-space: nowrap;
+    }
+    #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* ── Footer ── */
+    .site-footer {
+      text-align: center;
+      font-size: 12px;
+      color: var(--muted);
+      padding: 24px 16px;
+      border-top: 1px solid var(--border);
+    }
+    .site-footer a { color: var(--accent); text-decoration: none; }
+
+    /* ── Responsive ── */
+    @media (max-width: 600px) {
+      .stat-num  { font-size: 18px; }
+      .spot-grid { grid-template-columns: 1fr; }
+      .type-grid { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="site-header">
+    <h1>London Blooms 🌸</h1>
+    <a class="support-link" href="https://buymeacoffee.com/anshdt" target="_blank" rel="noopener">☕ Support</a>
+  </header>
+
+  <!-- Stats bar -->
+  <div class="stats-bar">
+    <div class="stat-item">
+      <div class="stat-num"  id="statSpots">—</div>
+      <div class="stat-label">Spots</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num"  id="statPeak">—</div>
+      <div class="stat-label">At peak</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num"  id="statTypes">—</div>
+      <div class="stat-label">Types</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num"  id="statVotes">—</div>
+      <div class="stat-label">Votes</div>
+    </div>
+  </div>
+
+  <main class="container">
+
+    <!-- Filter row -->
+    <div class="filter-row" id="filterRow">
+      <div class="search-wrap">
+        <input id="searchInput" type="search" placeholder="Search spots, areas…" autocomplete="off" />
+      </div>
+      <button class="chip" data-type="all">All</button>
+      <button class="chip" data-type="cherry">🌸 Cherry</button>
+      <button class="chip" data-type="magnolia">🤍 Magnolia</button>
+      <button class="chip" data-type="wisteria">💜 Wisteria</button>
+      <button class="chip" data-type="bluebell">💙 Bluebell</button>
+      <button class="chip" id="resetBtn" data-type="reset">✕ Reset</button>
+    </div>
+    <p class="results-line" id="resultsLine">Loading…</p>
+
+    <!-- Map -->
+    <section id="mapSection">
+      <div class="map-wrap">
+        <!--
+          London bounding box: SW(-0.52, 51.28) → NE(0.30, 51.70)
+          SVG canvas: 900 × 520, padding left/right 70, top 60, bottom 50
+        -->
+        <svg viewBox="0 0 900 520" xmlns="http://www.w3.org/2000/svg" aria-label="Map of London bloom spots">
+          <!-- Background -->
+          <rect width="900" height="520" fill="#f5f0ea" rx="0" />
+
+          <!-- Very rough London borough outlines as a light backdrop -->
+          <g fill="#ede8e0" stroke="#d8d0c6" stroke-width="1">
+            <rect x="70" y="60" width="760" height="410" rx="6" />
+          </g>
+
+          <!-- Thames rough path (decorative) -->
+          <path
+            d="M 80 295 C 160 285, 220 300, 300 290 C 360 282, 400 295, 460 288
+               C 520 280, 570 295, 630 285 C 690 275, 740 288, 830 280"
+            fill="none" stroke="#aac8e0" stroke-width="7" stroke-linecap="round" opacity=".6"
+          />
+          <text x="320" y="308" font-size="10" fill="#7aaac0" font-family="DM Sans" opacity=".8">River Thames</text>
+
+          <!-- Compass rose -->
+          <text x="856" y="76" font-size="11" fill="#b0a898" font-family="DM Sans" font-weight="700" text-anchor="middle">N</text>
+          <line x1="856" y1="80" x2="856" y2="94" stroke="#b0a898" stroke-width="1.5"/>
+
+          <!-- Bloom dots group — populated by JS -->
+          <g id="mapDots"></g>
+        </svg>
+      </div>
+
+      <!-- Spot drawer -->
+      <div class="spot-drawer" id="spotDrawer">
+        <div class="drawer-empty">Loading spots…</div>
+      </div>
+    </section>
+
+    <!-- Best picks -->
+    <h2 class="section-title">✨ Best picks</h2>
+    <div class="picks-row" id="bestPicks"></div>
+
+    <!-- Type guide -->
+    <h2 class="section-title">🌿 By type</h2>
+    <div class="type-grid" id="typeGuide"></div>
+
+    <!-- All spots -->
+    <h2 class="section-title" id="allSection">🗂 All spots</h2>
+    <div class="spot-grid" id="spotGrid"></div>
+    <button id="loadMoreBtn" hidden>Load more spots</button>
+
+  </main>
+
+  <!-- Toast -->
+  <div id="toast"></div>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    Built with 🌸 · <a href="https://buymeacoffee.com/anshdt" target="_blank" rel="noopener">Support this project</a>
+  </footer>
+
+  <!-- App script (must come AFTER Supabase CDN in <head>) -->
+  <script>
 // ─── Constants ────────────────────────────────────────────────────────────────
 const SUPPORT_URL       = 'https://buymeacoffee.com/anshdt';
 const SUPABASE_URL      = 'https://esfjzhgzfbcrrewjvoan.supabase.co';
@@ -31,7 +509,7 @@ let voteSummary      = new Map();
 let userVotes        = new Map();
 let liveChannel      = null;
 let _searchDebounce  = null;
-let _sortedCache     = null;   // invalidated on filter/data change
+let _sortedCache     = null;
 
 // ─── Toast ────────────────────────────────────────────────────────────────────
 let _toastTimer = null;
@@ -76,14 +554,10 @@ function confidence(meta) {
   return { label:'Mixed signal' };
 }
 
-// Minimal HTML escaper — prevents XSS from Supabase string fields
 function esc(v) {
   return String(v ?? '')
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
 // ─── Data helpers ─────────────────────────────────────────────────────────────
@@ -99,7 +573,6 @@ function filteredBlooms() {
   });
 }
 
-// Cached: sortedVisible() is called ~6× per refreshUI — no need to sort each time
 function sortedVisible() {
   if (_sortedCache) return _sortedCache;
   _sortedCache = filteredBlooms()
@@ -108,7 +581,6 @@ function sortedVisible() {
   return _sortedCache;
 }
 
-// topByType: avoids a redundant full sort — just find first match in filtered list
 function topByType(type) {
   return filteredBlooms().find(s => s.type === type) || null;
 }
@@ -125,46 +597,27 @@ function normaliseBlooms(raw) {
   return (raw || []).map((s, i) => {
     const lat = Number(s.lat ?? s.latitude);
     const lng = Number(s.lng ?? s.lon ?? s.longitude);
-
-    let x = Number(s.x);
-    let y = Number(s.y);
-
+    let x = Number(s.x), y = Number(s.y);
     if (!Number.isFinite(x) || !Number.isFinite(y)) {
-      if (Number.isFinite(lat) && Number.isFinite(lng)) {
-        ({ x, y } = projectToMap(lat, lng));
-      }
+      if (Number.isFinite(lat) && Number.isFinite(lng)) ({ x, y } = projectToMap(lat, lng));
     }
-
     return {
-      id:            s.id ?? `spot_${i}`,
-      name:          s.name ?? 'Unnamed spot',
-      area:          s.area ?? '',
-      type:          String(s.type ?? '').toLowerCase(),
-      stage:         String(s.stage ?? 'early').toLowerCase(),
-      desc:          s.description ?? s.desc ?? '',
-      tree_count:    Number(s.tree_count ?? 0),
-      maintainer:    s.maintainer ?? '',
-      location_type: s.location_type ?? '',
-      lat:           Number.isFinite(lat) ? lat : null,
-      lng:           Number.isFinite(lng) ? lng : null,
-      x,
-      y
+      id: s.id ?? `spot_${i}`, name: s.name ?? 'Unnamed spot',
+      area: s.area ?? '', type: String(s.type ?? '').toLowerCase(),
+      stage: String(s.stage ?? 'early').toLowerCase(),
+      desc: s.description ?? s.desc ?? '', tree_count: Number(s.tree_count ?? 0),
+      maintainer: s.maintainer ?? '', location_type: s.location_type ?? '',
+      lat: Number.isFinite(lat) ? lat : null, lng: Number.isFinite(lng) ? lng : null, x, y
     };
-  }).filter(s =>
-    s.name &&
-    VALID_TYPES.includes(s.type) &&
-    Number.isFinite(s.x) &&
-    Number.isFinite(s.y)
-  );
+  }).filter(s => s.name && VALID_TYPES.includes(s.type) && Number.isFinite(s.x) && Number.isFinite(s.y));
 }
 
 // ─── Stats bar ────────────────────────────────────────────────────────────────
 function updateStats() {
-  const v         = sortedVisible();
-  const peak      = v.filter(s => s.stage === 'peak').length;
-  const types     = new Set(v.map(s => s.type));
+  const v          = sortedVisible();
+  const peak       = v.filter(s => s.stage === 'peak').length;
+  const types      = new Set(v.map(s => s.type));
   const totalVotes = [...voteSummary.values()].reduce((n, e) => n + e.total, 0);
-
   document.getElementById('statSpots').textContent  = v.length;
   document.getElementById('statPeak').textContent   = peak;
   document.getElementById('statTypes').textContent  = types.size;
@@ -178,6 +631,7 @@ function updateStats() {
 function renderChips() {
   document.querySelectorAll('.chip[data-type]').forEach(chip => {
     const type = chip.dataset.type;
+    if (type === 'reset') return;
     const live = type === 'all' || availableTypes.has(type);
     chip.classList.toggle('disabled', !live);
     chip.classList.toggle('active',   type === activeType);
@@ -188,13 +642,12 @@ function renderChips() {
 // ─── Map ──────────────────────────────────────────────────────────────────────
 function renderMap() {
   const g    = document.getElementById('mapDots');
-  const frag = document.createDocumentFragment();   // batch DOM inserts → 1 reflow
+  const frag = document.createDocumentFragment();
   const ns   = 'http://www.w3.org/2000/svg';
 
   sortedVisible().forEach(spot => {
     const { ox, oy } = stableOffset(spot);
-    const x          = spot.x + ox;
-    const y          = spot.y + oy;
+    const x = spot.x + ox, y = spot.y + oy;
     const isPeak     = spot.stage === 'peak';
     const isSelected = String(selectedSpotId) === String(spot.id);
     const color      = TYPE_COLOR[spot.type] || '#888';
@@ -204,8 +657,7 @@ function renderMap() {
     grp.setAttribute('transform', `translate(${x},${y})`);
 
     const hit = document.createElementNS(ns, 'circle');
-    hit.setAttribute('r', '18');
-    hit.setAttribute('class', 'bloom-hit');
+    hit.setAttribute('r', '18'); hit.setAttribute('class', 'bloom-hit');
     hit.addEventListener('click', () => selectSpot(spot.id, true));
     grp.appendChild(hit);
 
@@ -214,23 +666,17 @@ function renderMap() {
 
     if (isPeak) {
       const pulse = document.createElementNS(ns, 'circle');
-      pulse.setAttribute('class', 'pulse');
-      pulse.setAttribute('r', '13');
-      pulse.setAttribute('fill', color);
+      pulse.setAttribute('class', 'pulse'); pulse.setAttribute('r', '13'); pulse.setAttribute('fill', color);
       mark.appendChild(pulse);
     }
 
     const core = document.createElementNS(ns, 'circle');
-    core.setAttribute('class', 'core');
-    core.setAttribute('r', isPeak ? '9.5' : '8');
-    core.setAttribute('fill', color);
+    core.setAttribute('class', 'core'); core.setAttribute('r', isPeak ? '9.5' : '8'); core.setAttribute('fill', color);
     mark.appendChild(core);
 
     const txt = document.createElementNS(ns, 'text');
-    txt.setAttribute('text-anchor', 'middle');
-    txt.setAttribute('dominant-baseline', 'central');
-    txt.setAttribute('font-size', isPeak ? '8.5' : '7.5');
-    txt.setAttribute('font-family', 'DM Sans');
+    txt.setAttribute('text-anchor', 'middle'); txt.setAttribute('dominant-baseline', 'central');
+    txt.setAttribute('font-size', isPeak ? '8.5' : '7.5'); txt.setAttribute('font-family', 'DM Sans');
     txt.textContent = TYPE_EMOJI[spot.type] || '•';
     mark.appendChild(txt);
 
@@ -246,12 +692,11 @@ function renderMap() {
 function spotDrawerHtml(spot) {
   const meta = getVotes(spot.id);
   const conf = confidence(meta);
-
   return `
     <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:10px">
       <div>
         <div class="drawer-spot-name">${esc(spot.name)}</div>
-        <div class="drawer-meta">${esc(spot.area)}${spot.location_type ? ' · ' + esc(spot.location_type) : ''}${spot.maintainer ? ' · ' + esc(spot.maintainer) : ''}</div>
+        <div class="drawer-meta">${esc(spot.area)}${spot.location_type ? ' · '+esc(spot.location_type) : ''}${spot.maintainer ? ' · '+esc(spot.maintainer) : ''}</div>
       </div>
       <a class="btn btn-secondary btn-sm" href="#allSection">Browse all</a>
     </div>
@@ -263,25 +708,19 @@ function spotDrawerHtml(spot) {
     </div>
     ${spot.desc ? `<div style="font-size:13px;color:var(--muted);line-height:1.55;margin:8px 0">${esc(spot.desc)}</div>` : ''}
     <div class="vote-bar">
-      <span class="vote-summary">👍 ${meta.up} · 👎 ${meta.down} · ${meta.total} vote${meta.total === 1 ? '' : 's'}</span>
+      <span class="vote-summary">👍 ${meta.up} · 👎 ${meta.down} · ${meta.total} vote${meta.total===1?'':'s'}</span>
       <div class="vote-btns">
-        <button class="vote-btn${meta.userVote ===  1 ? ' active-up'   : ''}" data-vote="1"  data-spot-id="${esc(spot.id)}">👍 Looks right</button>
-        <button class="vote-btn${meta.userVote === -1 ? ' active-down' : ''}" data-vote="-1" data-spot-id="${esc(spot.id)}">👎 Not yet</button>
+        <button class="vote-btn${meta.userVote===1?' active-up':''}"  data-vote="1"  data-spot-id="${esc(spot.id)}">👍 Looks right</button>
+        <button class="vote-btn${meta.userVote===-1?' active-down':''}" data-vote="-1" data-spot-id="${esc(spot.id)}">👎 Not yet</button>
       </div>
-    </div>
-  `;
+    </div>`;
 }
 
 function renderDrawer() {
   const drawer  = document.getElementById('spotDrawer');
   const visible = sortedVisible();
   const spot    = visible.find(s => String(s.id) === String(selectedSpotId)) || visible[0];
-
-  if (!spot) {
-    drawer.innerHTML = '<div class="drawer-empty">No spots match current filters.</div>';
-    return;
-  }
-
+  if (!spot) { drawer.innerHTML = '<div class="drawer-empty">No spots match current filters.</div>'; return; }
   selectedSpotId   = spot.id;
   drawer.innerHTML = spotDrawerHtml(spot);
   bindVoteButtons(drawer);
@@ -291,32 +730,18 @@ function renderDrawer() {
 function renderBestPicks() {
   const host    = document.getElementById('bestPicks');
   const visible = sortedVisible().slice(0, 6);
-
-  if (!visible.length) {
-    host.innerHTML = '<div class="empty">No spots match the current filters.</div>';
-    return;
-  }
-
-  host.innerHTML = visible.map((spot, i) => {
-    const stageBadge = spot.stage === 'peak'
-      ? '<span class="badge badge-stage" style="font-size:11px">Peak 🌸</span>'
-      : '';
-
-    return `
-      <div class="pick-card${String(selectedSpotId) === String(spot.id) ? ' active' : ''}" data-show-spot="${spot.id}" role="button" tabindex="0">
-        <div class="pick-top">
-          <div class="pick-rank">#${i + 1} · ${TYPE_EMOJI[spot.type]} ${TYPE_LABEL_SHORT[spot.type]}</div>
-          ${stageBadge}
-        </div>
-        <div class="pick-name">${esc(spot.name)}</div>
-        <div class="pick-sub">${esc(spot.area)} · ${spot.tree_count || 0} trees</div>
+  if (!visible.length) { host.innerHTML = '<div class="empty">No spots match the current filters.</div>'; return; }
+  host.innerHTML = visible.map((spot, i) => `
+    <div class="pick-card${String(selectedSpotId)===String(spot.id)?' active':''}" data-show-spot="${spot.id}" role="button" tabindex="0">
+      <div class="pick-top">
+        <div class="pick-rank">#${i+1} · ${TYPE_EMOJI[spot.type]} ${TYPE_LABEL_SHORT[spot.type]}</div>
+        ${spot.stage==='peak'?'<span class="badge badge-stage" style="font-size:11px">Peak 🌸</span>':''}
       </div>
-    `;
-  }).join('');
-
+      <div class="pick-name">${esc(spot.name)}</div>
+      <div class="pick-sub">${esc(spot.area)} · ${spot.tree_count||0} trees</div>
+    </div>`).join('');
   host.querySelectorAll('[data-show-spot]').forEach(el =>
-    el.addEventListener('click', () => selectSpot(el.dataset.showSpot, true))
-  );
+    el.addEventListener('click', () => selectSpot(el.dataset.showSpot, true)));
 }
 
 // ─── Type guide ───────────────────────────────────────────────────────────────
@@ -325,22 +750,18 @@ function renderTypeGuide() {
   const cards = TYPE_ORDER.filter(t => availableTypes.has(t)).map(type => {
     const top = topByType(type);
     if (!top) return '';
-
     return `
       <div class="type-card">
         <div class="eyebrow">${TYPE_EMOJI[type]} ${TYPE_LABEL_SHORT[type]}</div>
         <div class="emoji">${TYPE_EMOJI[type]}</div>
         <h3>${esc(top.name)}</h3>
-        <p>${esc(top.area)} · ${top.tree_count || 0} trees · ${esc(STAGE_LABEL[top.stage] || 'Unknown')} bloom</p>
+        <p>${esc(top.area)} · ${top.tree_count||0} trees · ${esc(STAGE_LABEL[top.stage]||'Unknown')} bloom</p>
         <button class="btn btn-secondary btn-sm" type="button" data-show-spot="${top.id}" style="margin-top:4px">Show on map</button>
-      </div>
-    `;
+      </div>`;
   }).join('');
-
   host.innerHTML = cards || '<div class="empty">No live bloom types in the current feed.</div>';
   host.querySelectorAll('[data-show-spot]').forEach(btn =>
-    btn.addEventListener('click', () => selectSpot(btn.dataset.showSpot, true))
-  );
+    btn.addEventListener('click', () => selectSpot(btn.dataset.showSpot, true)));
 }
 
 // ─── Spot grid ────────────────────────────────────────────────────────────────
@@ -349,15 +770,9 @@ function renderSpotGrid() {
   const moreBtn = document.getElementById('loadMoreBtn');
   const visible = sortedVisible();
   const slice   = visible.slice(0, visibleLimit);
-
-  if (!slice.length) {
-    host.innerHTML = '<div class="empty">No spots match the current filters.</div>';
-    moreBtn.hidden = true;
-    return;
-  }
-
+  if (!slice.length) { host.innerHTML = '<div class="empty">No spots match the current filters.</div>'; moreBtn.hidden = true; return; }
   host.innerHTML = slice.map(spot => {
-    const v = getVotes(spot.id);   // read once per card, not 3×
+    const v = getVotes(spot.id);
     return `
       <article class="spot-card">
         <div class="spot-top">
@@ -365,12 +780,12 @@ function renderSpotGrid() {
             <div class="spot-eyebrow">${TYPE_EMOJI[spot.type]} ${TYPE_LABEL_SHORT[spot.type]} · ${esc(spot.area)}</div>
             <div class="spot-name">${esc(spot.name)}</div>
           </div>
-          <span class="spot-tree-tag">${spot.tree_count || 0} trees</span>
+          <span class="spot-tree-tag">${spot.tree_count||0} trees</span>
         </div>
-        ${spot.desc ? `<div class="spot-desc">${esc(spot.desc)}</div>` : ''}
+        ${spot.desc?`<div class="spot-desc">${esc(spot.desc)}</div>`:''}
         <div class="spot-footer">
           <div class="spot-tags">
-            <span class="inline-tag">${esc(STAGE_LABEL[spot.stage] || 'Unknown')} bloom</span>
+            <span class="inline-tag">${esc(STAGE_LABEL[spot.stage]||'Unknown')} bloom</span>
             <span class="inline-tag">${esc(confidence(v).label)}</span>
           </div>
           <button class="btn btn-secondary btn-sm" type="button" data-show-spot="${spot.id}">Show on map</button>
@@ -378,63 +793,40 @@ function renderSpotGrid() {
         <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:8px">
           <span style="font-size:12px;color:var(--muted);font-weight:600">👍 ${v.up} · 👎 ${v.down}</span>
           <div style="display:flex;gap:6px">
-            <button class="vote-btn${v.userVote ===  1 ? ' active-up'   : ''}" data-vote="1"  data-spot-id="${spot.id}" style="padding:6px 10px;font-size:12px">👍</button>
-            <button class="vote-btn${v.userVote === -1 ? ' active-down' : ''}" data-vote="-1" data-spot-id="${spot.id}" style="padding:6px 10px;font-size:12px">👎</button>
+            <button class="vote-btn${v.userVote===1?' active-up':''}"   data-vote="1"  data-spot-id="${spot.id}" style="padding:6px 10px;font-size:12px">👍</button>
+            <button class="vote-btn${v.userVote===-1?' active-down':''}" data-vote="-1" data-spot-id="${spot.id}" style="padding:6px 10px;font-size:12px">👎</button>
           </div>
         </div>
-      </article>
-    `;
+      </article>`;
   }).join('');
-
   host.querySelectorAll('[data-show-spot]').forEach(btn =>
-    btn.addEventListener('click', () => selectSpot(btn.dataset.showSpot, true))
-  );
+    btn.addEventListener('click', () => selectSpot(btn.dataset.showSpot, true)));
   bindVoteButtons(host);
   moreBtn.hidden = visible.length <= visibleLimit;
 }
 
-// ─── Vote buttons ─────────────────────────────────────────────────────────────
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 function bindVoteButtons(root) {
   root.querySelectorAll('.vote-btn').forEach(btn => btn.addEventListener('click', onVoteClick));
 }
 
-// ─── Select spot ──────────────────────────────────────────────────────────────
 function selectSpot(id, scrollToMap = false) {
   selectedSpotId = id;
-  renderMap();
-  renderDrawer();
-  renderBestPicks();
-
-  if (scrollToMap) {
-    document.getElementById('mapSection').scrollIntoView({ behavior:'smooth', block:'start' });
-  }
+  renderMap(); renderDrawer(); renderBestPicks();
+  if (scrollToMap) document.getElementById('mapSection').scrollIntoView({ behavior:'smooth', block:'start' });
 }
 
-// ─── Full UI refresh ──────────────────────────────────────────────────────────
 function refreshUI() {
   invalidateCache();
   const visible = sortedVisible();
-
-  if (!visible.some(s => String(s.id) === String(selectedSpotId))) {
-    selectedSpotId = visible[0]?.id ?? null;
-  }
-
-  updateStats();
-  renderMap();
-  renderDrawer();
-  renderBestPicks();
-  renderTypeGuide();
-  renderSpotGrid();
+  if (!visible.some(s => String(s.id) === String(selectedSpotId))) selectedSpotId = visible[0]?.id ?? null;
+  updateStats(); renderMap(); renderDrawer(); renderBestPicks(); renderTypeGuide(); renderSpotGrid();
 }
 
 // ─── Supabase: votes ──────────────────────────────────────────────────────────
 async function loadVoteSummary() {
-  const { data, error } = await supabaseClient
-    .from('spot_votes')
-    .select('spot_id, vote');
-
+  const { data, error } = await supabaseClient.from('spot_votes').select('spot_id, vote');
   if (error) { console.error('loadVoteSummary error', error); return; }
-
   const summary = new Map();
   for (const row of data || []) {
     const id = String(row.spot_id);
@@ -444,44 +836,29 @@ async function loadVoteSummary() {
     e.total = e.up + e.down;
     summary.set(id, e);
   }
-
-  // Overlay current user's vote markers
   for (const [id, vote] of userVotes.entries()) {
     const e = summary.get(id) || { up:0, down:0, total:0, userVote:0 };
     e.userVote = vote;
     summary.set(id, e);
   }
-
   voteSummary = summary;
 }
 
 async function loadUserVotes() {
-  const { data, error } = await supabaseClient
-    .from('spot_votes')
-    .select('spot_id, vote')
-    .eq('voter_key', voterKey());
-
+  const { data, error } = await supabaseClient.from('spot_votes').select('spot_id, vote').eq('voter_key', voterKey());
   if (error) { console.error('loadUserVotes error', error); return; }
-
   userVotes = new Map((data || []).map(r => [String(r.spot_id), Number(r.vote)]));
 }
 
-// ─── Vote click handler ───────────────────────────────────────────────────────
+// ─── Vote click ───────────────────────────────────────────────────────────────
 async function onVoteClick(ev) {
-  const btn    = ev.currentTarget;
+  const btn = ev.currentTarget;
   const spotId = btn.dataset.spotId;
   const vote   = Number(btn.dataset.vote);
-
   btn.disabled = true;
   try {
-    const { error } = await supabaseClient.rpc('cast_vote', {
-      p_spot_id:   spotId,
-      p_voter_key: voterKey(),
-      p_vote:      vote
-    });
+    const { error } = await supabaseClient.rpc('cast_vote', { p_spot_id: spotId, p_voter_key: voterKey(), p_vote: vote });
     if (error) throw error;
-
-    // Fetch user votes + summary in parallel — saves one round-trip
     await Promise.all([loadUserVotes(), loadVoteSummary()]);
     refreshUI();
   } catch (err) {
@@ -492,24 +869,13 @@ async function onVoteClick(ev) {
   }
 }
 
-// ─── Realtime subscription ────────────────────────────────────────────────────
+// ─── Realtime ─────────────────────────────────────────────────────────────────
 async function wireRealtime() {
-  if (liveChannel) {
-    await supabaseClient.removeChannel(liveChannel);
-    liveChannel = null;
-  }
-
-  liveChannel = supabaseClient
-    .channel('spot-votes-live')
-    .on(
-      'postgres_changes',
-      { event:'*', schema:'public', table:'spot_votes' },
-      async () => {
-        await loadVoteSummary();
-        refreshUI();
-      }
-    )
-    .subscribe();
+  if (liveChannel) { await supabaseClient.removeChannel(liveChannel); liveChannel = null; }
+  liveChannel = supabaseClient.channel('spot-votes-live')
+    .on('postgres_changes', { event:'*', schema:'public', table:'spot_votes' }, async () => {
+      await loadVoteSummary(); refreshUI();
+    }).subscribe();
 }
 
 // ─── Boot ─────────────────────────────────────────────────────────────────────
@@ -517,22 +883,14 @@ async function loadBlooms() {
   try {
     const { data, error } = await supabaseClient.from('spots').select('*');
     if (error) throw error;
-
     BLOOMS         = normaliseBlooms(data || []);
     availableTypes = new Set(BLOOMS.map(s => s.type));
     renderChips();
-
-    // Fetch user votes + summary in parallel — saves one round-trip
     await Promise.all([loadUserVotes(), loadVoteSummary()]);
-
     selectedSpotId = BLOOMS[0]?.id ?? null;
     refreshUI();
-
-    // Fire-and-forget: realtime setup doesn't need to block the UI
     wireRealtime().catch(err => console.error('Realtime wire failed:', err));
-
     if (!BLOOMS.length) showToast('No bloom spots found in Supabase.');
-
   } catch (err) {
     console.error('Supabase load failed:', err);
     document.getElementById('resultsLine').textContent = 'Could not load bloom data.';
@@ -548,43 +906,34 @@ window.debugBlooms = async function () {
     supabaseClient.from('spots').select('*').limit(5),
     supabaseClient.from('spot_votes').select('*').limit(5)
   ]);
-  console.log('spots', spots);
-  console.log('votes', votes);
+  console.log('spots', spots); console.log('votes', votes);
 };
 
 // ─── Event listeners ──────────────────────────────────────────────────────────
 document.getElementById('searchInput').addEventListener('input', e => {
-  searchText   = e.target.value;
-  visibleLimit = PAGE_SIZE;
-  // Debounce: avoids re-rendering on every keystroke
+  searchText = e.target.value; visibleLimit = PAGE_SIZE;
   clearTimeout(_searchDebounce);
   _searchDebounce = setTimeout(refreshUI, 200);
 });
 
 document.getElementById('resetBtn').addEventListener('click', () => {
-  activeType   = 'all';
-  searchText   = '';
-  visibleLimit = PAGE_SIZE;
+  activeType = 'all'; searchText = ''; visibleLimit = PAGE_SIZE;
   document.getElementById('searchInput').value = '';
-  renderChips();
-  refreshUI();
+  renderChips(); refreshUI();
 });
-// NOTE: The redundant 'keydown' Enter/Space listener on resetBtn has been removed.
-// Buttons already fire 'click' on Enter/Space natively — the extra handler was a no-op.
 
 document.getElementById('filterRow').addEventListener('click', e => {
   const btn = e.target.closest('.chip[data-type]');
-  if (!btn || btn.disabled) return;
-  activeType   = btn.dataset.type;
-  visibleLimit = PAGE_SIZE;
-  renderChips();
-  refreshUI();
+  if (!btn || btn.disabled || btn.id === 'resetBtn') return;
+  activeType = btn.dataset.type; visibleLimit = PAGE_SIZE;
+  renderChips(); refreshUI();
 });
 
 document.getElementById('loadMoreBtn').addEventListener('click', () => {
-  visibleLimit += PAGE_SIZE;
-  renderSpotGrid();
+  visibleLimit += PAGE_SIZE; renderSpotGrid();
 });
 
 loadBlooms();
-</script>
+  </script>
+</body>
+</html>

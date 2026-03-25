@@ -671,7 +671,7 @@ const TYPE_EMOJI = {cherry:'🌸', magnolia:'🤍', wisteria:'💜', bluebell:'�
 const TYPE_COLOR = {cherry:'#c95a7f', magnolia:'#b08030', wisteria:'#7060aa', bluebell:'#4a72a8'};
 const STAGE_LABEL = {early:'Early', peak:'Peak', fading:'Fading'};
 
-const supabase = window.supabase.createClient(
+const supabaseClient = window.supabase.createClient(
   SUPABASE_URL,
   SUPABASE_ANON_KEY
 );
@@ -994,8 +994,8 @@ function refreshUI(){
 }
 
 async function loadVoteSummary(){
-  if(!supabase) return;
-  const {data,error} = await supabase.from('spot_votes').select('spot_id, vote');
+  
+  const {data,error} = await supabaseClient.from('spot_votes').select('spot_id, vote');
   if(error) return;
   const summary = new Map();
   for(const row of data||[]){
@@ -1014,8 +1014,8 @@ async function loadVoteSummary(){
 }
 
 async function loadUserVotes(){
-  if(!supabase) return;
-  const {data,error} = await supabase.from('spot_votes').select('spot_id, vote').eq('voter_key',voterKey());
+  
+  const {data,error} = await supabaseClient.from('spot_votes').select('spot_id, vote').eq('voter_key',voterKey());
   if(error) return;
   userVotes = new Map((data||[]).map(r=>[String(r.spot_id),Number(r.vote)]));
 }
@@ -1024,10 +1024,10 @@ async function onVoteClick(ev){
   const btn = ev.currentTarget;
   const spotId = btn.dataset.spotId;
   const vote = Number(btn.dataset.vote);
-  if(!supabase){ showToast('Voting available once Supabase SQL is connected.'); return; }
+  
   btn.disabled = true;
   try{
-    const {error} = await supabase.rpc('cast_vote',{p_spot_id:spotId,p_voter_key:voterKey(),p_vote:vote});
+    const {error} = await supabaseClient.rpc('cast_vote',{p_spot_id:spotId,p_voter_key:voterKey(),p_vote:vote});
     if(error) throw error;
     await loadUserVotes(); await loadVoteSummary(); refreshUI();
   }catch(err){
@@ -1036,9 +1036,9 @@ async function onVoteClick(ev){
 }
 
 async function wireRealtime(){
-  if(!supabase) return;
-  if(liveChannel) await supabase.removeChannel(liveChannel);
-  liveChannel = supabase.channel('spot-votes-live')
+  
+  if(liveChannel) await supabaseClient.removeChannel(liveChannel);
+  liveChannel = supabaseClient.channel('spot-votes-live')
     .on('postgres_changes',{event:'*',schema:'public',table:'spot_votes'},async()=>{
       await loadVoteSummary(); refreshUI();
     }).subscribe();
@@ -1076,8 +1076,8 @@ async function loadBlooms(){
 }
 
 window.debugBlooms = async function(){
-  const spots = await supabase.from('spots').select('*').limit(5);
-  const votes = await supabase.from('spot_votes').select('*').limit(5);
+  const spots = await supabaseClient.from('spots').select('*').limit(5);
+  const votes = await supabaseClient.from('spot_votes').select('*').limit(5);
   console.log('spots', spots);
   console.log('votes', votes);
 };

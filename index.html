@@ -664,14 +664,15 @@ const SUPPORT_URL = 'https://buymeacoffee.com/anshdt';
 const SUPABASE_URL = 'https://esfjzhgzfbcrrewjvoan.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_nEqvvmFcsCpgVO1SK8ho3g_3K9LMOgi';
 const PAGE_SIZE = 12;
-const TYPE_ORDER = ['cherry', 'magnolia', 'wisteria', 'bluebell'];
-const TYPE_LABEL = { cherry: 'Cherry blossom', magnolia: 'Magnolia', wisteria: 'Wisteria', bluebell: 'Bluebell' };
-const TYPE_LABEL_SHORT = { cherry: 'Cherry', magnolia: 'Magnolia', wisteria: 'Wisteria', bluebell: 'Bluebell' };
-const TYPE_EMOJI = { cherry: '🌸', magnolia: '🤍', wisteria: '💜', bluebell: '💙' };
-const TYPE_COLOR = { cherry: '#c95a7f', magnolia: '#b08030', wisteria: '#7060aa', bluebell: '#4a72a8' };
-const STAGE_LABEL = { early: 'Early', peak: 'Peak', fading: 'Fading' };
+const TYPE_ORDER = ['cherry','magnolia','wisteria','bluebell'];
+const TYPE_LABEL = {cherry:'Cherry blossom', magnolia:'Magnolia', wisteria:'Wisteria', bluebell:'Bluebell'};
+const TYPE_LABEL_SHORT = {cherry:'Cherry', magnolia:'Magnolia', wisteria:'Wisteria', bluebell:'Bluebell'};
+const TYPE_EMOJI = {cherry:'🌸', magnolia:'🤍', wisteria:'💜', bluebell:'💙'};
+const TYPE_COLOR = {cherry:'#c95a7f', magnolia:'#b08030', wisteria:'#7060aa', bluebell:'#4a72a8'};
+const STAGE_LABEL = {early:'Early', peak:'Peak', fading:'Fading'};
 
-const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const createClient = window.supabase?.createClient;
+const supabase = createClient ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
 let BLOOMS = [];
 let availableTypes = new Set();
@@ -683,101 +684,88 @@ let voteSummary = new Map();
 let userVotes = new Map();
 let liveChannel = null;
 
-function showToast(msg) {
+function showToast(msg){
   const t = document.getElementById('toast');
-  if (!t) return;
   t.textContent = msg;
   t.classList.add('show');
   clearTimeout(showToast._t);
-  showToast._t = setTimeout(() => t.classList.remove('show'), 2600);
+  showToast._t = setTimeout(()=>t.classList.remove('show'), 2600);
 }
 
-function voterKey() {
+function voterKey(){
   let k = localStorage.getItem('lb_voter_key');
-  if (!k) {
-    k = 'v_' + Math.random().toString(36).slice(2) + Date.now().toString(36);
-    localStorage.setItem('lb_voter_key', k);
-  }
+  if(!k){ k = 'v_' + Math.random().toString(36).slice(2) + Date.now().toString(36); localStorage.setItem('lb_voter_key', k); }
   return k;
 }
 
-function stableOffset(spot) {
+function stableOffset(spot){
   const s = String(spot.id ?? spot.name ?? '');
   let h = 0;
-  for (let i = 0; i < s.length; i += 1) h = (h * 33 + s.charCodeAt(i)) >>> 0;
-  return { ox: (h % 9) - 4, oy: (((h / 9) | 0) % 9) - 4 };
+  for(let i=0;i<s.length;i++) h = (h * 33 + s.charCodeAt(i)) >>> 0;
+  return {ox:(h%9)-4, oy:(((h/9)|0)%9)-4};
 }
 
-function getVotes(id) {
-  return voteSummary.get(String(id)) || { up: 0, down: 0, total: 0, userVote: 0 };
-}
+function getVotes(id){ return voteSummary.get(String(id)) || {up:0, down:0, total:0, userVote:0}; }
 
-function confidence(meta) {
-  if (!meta.total) return { label: 'No signal yet' };
+function confidence(meta){
+  if(!meta.total) return {label:'No signal yet'};
   const r = meta.up / meta.total;
-  if (meta.total >= 6 && r >= 0.72) return { label: '✅ Community agrees' };
-  if (meta.total >= 4 && r <= 0.35) return { label: '⚠️ Not yet, says community' };
-  return { label: 'Mixed signal' };
+  if(meta.total >= 6 && r >= 0.72) return {label:'✅ Community agrees'};
+  if(meta.total >= 4 && r <= 0.35) return {label:'⚠️ Not yet, says community'};
+  return {label:'Mixed signal'};
 }
 
-function filteredBlooms() {
+function filteredBlooms(){
   const q = searchText.trim().toLowerCase();
-  return BLOOMS.filter((s) => {
-    if (activeType !== 'all' && s.type !== activeType) return false;
-    if (!q) return true;
-    return [s.name, s.area, s.type, s.desc, s.location_type, s.maintainer]
-      .filter(Boolean)
-      .join(' ')
-      .toLowerCase()
-      .includes(q);
+  return BLOOMS.filter(s => {
+    if(activeType !== 'all' && s.type !== activeType) return false;
+    if(!q) return true;
+    return [s.name,s.area,s.type,s.desc,s.location_type,s.maintainer].filter(Boolean).join(' ').toLowerCase().includes(q);
   });
 }
 
-function sortedVisible() {
-  return filteredBlooms()
-    .slice()
-    .sort((a, b) => (b.tree_count || 0) - (a.tree_count || 0) || a.name.localeCompare(b.name));
+function sortedVisible(){
+  return filteredBlooms().slice().sort((a,b)=>(b.tree_count||0)-(a.tree_count||0)||a.name.localeCompare(b.name));
 }
 
-function topByType(type) {
-  return sortedVisible().filter((s) => s.type === type)[0] || null;
+function topByType(type){
+  return sortedVisible().filter(s=>s.type===type)[0] || null;
 }
 
-function updateStats() {
+function updateStats(){
   const v = sortedVisible();
-  const peak = v.filter((s) => s.stage === 'peak').length;
-  const types = new Set(v.map((s) => s.type));
-  const totalVotes = [...voteSummary.values()].reduce((n, val) => n + val.total, 0);
+  const peak = v.filter(s=>s.stage==='peak').length;
+  const types = new Set(v.map(s=>s.type));
+  const totalVotes = [...voteSummary.values()].reduce((n,v)=>n+v.total,0);
   document.getElementById('statSpots').textContent = v.length;
   document.getElementById('statPeak').textContent = peak;
   document.getElementById('statTypes').textContent = types.size;
   document.getElementById('statVotes').textContent = totalVotes;
   document.getElementById('resultsLine').textContent = v.length
-    ? `${v.length} spot${v.length === 1 ? '' : 's'} · ${peak} at peak bloom`
+    ? `${v.length} spot${v.length===1?'':'s'} · ${peak} at peak bloom`
     : 'No spots match that filter.';
 }
 
-function renderChips() {
-  document.querySelectorAll('.chip[data-type]').forEach((chip) => {
+function renderChips(){
+  document.querySelectorAll('.chip[data-type]').forEach(chip=>{
     const type = chip.dataset.type;
-    const live = type === 'all' || availableTypes.has(type);
+    const live = type==='all' || availableTypes.has(type);
     chip.classList.toggle('disabled', !live);
-    chip.classList.toggle('active', type === activeType);
+    chip.classList.toggle('active', type===activeType);
     chip.disabled = !live;
   });
 }
 
-function projectToMap(lat, lng) {
+function projectToMap(lat, lng){
   const bounds = { minLng: -0.52, maxLng: 0.30, minLat: 51.28, maxLat: 51.70 };
-  const width = 900;
-  const height = 520;
+  const width = 900, height = 520;
   const pad = { left: 70, right: 70, top: 60, bottom: 50 };
   const x = pad.left + ((lng - bounds.minLng) / (bounds.maxLng - bounds.minLng)) * (width - pad.left - pad.right);
   const y = height - pad.bottom - ((lat - bounds.minLat) / (bounds.maxLat - bounds.minLat)) * (height - pad.top - pad.bottom);
   return { x, y };
 }
 
-function normaliseBlooms(raw) {
+function normaliseBlooms(raw){
   let arr;
   if (Array.isArray(raw)) {
     arr = raw;
@@ -788,99 +776,85 @@ function normaliseBlooms(raw) {
       area: f.properties?.area ?? f.properties?.borough ?? '',
       type: f.properties?.type ?? f.properties?.bloom_type ?? '',
       stage: f.properties?.stage ?? 'early',
-      description: f.properties?.description ?? f.properties?.desc ?? '',
+      desc: f.properties?.desc ?? '',
       tree_count: f.properties?.tree_count ?? 1,
       maintainer: f.properties?.maintainer ?? '',
       location_type: f.properties?.location_type ?? f.properties?.location ?? '',
-      reports: f.properties?.reports ?? 0,
       lat: f.geometry?.coordinates?.[1],
       lng: f.geometry?.coordinates?.[0],
       x: f.properties?.x,
-      y: f.properties?.y,
+      y: f.properties?.y
     }));
   } else {
     return [];
   }
-
-  return arr
-    .map((s, i) => {
-      const lat = Number(s.lat ?? s.latitude);
-      const lng = Number(s.lng ?? s.lon ?? s.longitude);
-      let x = Number(s.x);
-      let y = Number(s.y);
-      if (!Number.isFinite(x) || !Number.isFinite(y)) {
-        if (Number.isFinite(lat) && Number.isFinite(lng)) {
-          const p = projectToMap(lat, lng);
-          x = p.x;
-          y = p.y;
-        }
+  return arr.map((s, i) => {
+    const lat = Number(s.lat ?? s.latitude);
+    const lng = Number(s.lng ?? s.lon ?? s.longitude);
+    let x = Number(s.x);
+    let y = Number(s.y);
+    if (!Number.isFinite(x) || !Number.isFinite(y)) {
+      if (Number.isFinite(lat) && Number.isFinite(lng)) {
+        const p = projectToMap(lat, lng);
+        x = p.x;
+        y = p.y;
       }
-      return {
-        id: s.id ?? `spot_${i}`,
-        name: s.name ?? 'Unnamed spot',
-        area: s.area ?? '',
-        type: String(s.type ?? '').toLowerCase(),
-        stage: String(s.stage ?? 'early').toLowerCase(),
-        desc: s.desc ?? s.description ?? '',
-        tree_count: Number(s.tree_count ?? 0),
-        maintainer: s.maintainer ?? '',
-        location_type: s.location_type ?? '',
-        reports: Number(s.reports ?? 0),
-        lat: Number.isFinite(lat) ? lat : null,
-        lng: Number.isFinite(lng) ? lng : null,
-        x,
-        y,
-      };
-    })
-    .filter((s) => s.name && TYPE_ORDER.includes(s.type) && Number.isFinite(s.x) && Number.isFinite(s.y));
+    }
+    return {
+      id: s.id ?? `spot_${i}`,
+      name: s.name ?? 'Unnamed spot',
+      area: s.area ?? '',
+      type: String(s.type ?? '').toLowerCase(),
+      stage: String(s.stage ?? 'early').toLowerCase(),
+      desc: s.desc ?? '',
+      tree_count: Number(s.tree_count ?? 0),
+      maintainer: s.maintainer ?? '',
+      location_type: s.location_type ?? '',
+      lat: Number.isFinite(lat) ? lat : null,
+      lng: Number.isFinite(lng) ? lng : null,
+      x,
+      y
+    };
+  }).filter(s =>
+    s.name &&
+    ['cherry','magnolia','wisteria','bluebell'].includes(s.type) &&
+    Number.isFinite(s.x) &&
+    Number.isFinite(s.y)
+  );
 }
 
-function renderMap() {
+function renderMap(){
   const g = document.getElementById('mapDots');
   g.innerHTML = '';
-  sortedVisible().forEach((spot) => {
-    const { ox, oy } = stableOffset(spot);
-    const x = Number(spot.x) + ox;
-    const y = Number(spot.y) + oy;
-    const grp = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-    grp.setAttribute('class', `bloom-dot${String(selectedSpotId) === String(spot.id) ? ' is-selected' : ''}`);
-    grp.setAttribute('transform', `translate(${x},${y})`);
-
-    const hit = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-    hit.setAttribute('r', '18');
-    hit.setAttribute('class', 'bloom-hit');
-    hit.addEventListener('click', () => selectSpot(spot.id, true));
+  sortedVisible().forEach(spot=>{
+    const {ox,oy} = stableOffset(spot);
+    const x = Number(spot.x)+ox, y = Number(spot.y)+oy;
+    const grp = document.createElementNS('http://www.w3.org/2000/svg','g');
+    grp.setAttribute('class',`bloom-dot${String(selectedSpotId)===String(spot.id)?' is-selected':''}`);
+    grp.setAttribute('transform',`translate(${x},${y})`);
+    const hit = document.createElementNS('http://www.w3.org/2000/svg','circle');
+    hit.setAttribute('r','18'); hit.setAttribute('class','bloom-hit');
+    hit.addEventListener('click',()=>selectSpot(spot.id,true));
     grp.appendChild(hit);
-
-    const mark = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-    mark.setAttribute('class', 'bloom-mark');
-    if (spot.stage === 'peak') {
-      const pulse = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-      pulse.setAttribute('class', 'pulse');
-      pulse.setAttribute('r', '13');
-      pulse.setAttribute('fill', TYPE_COLOR[spot.type] || '#888');
-      mark.appendChild(pulse);
+    const mark = document.createElementNS('http://www.w3.org/2000/svg','g');
+    mark.setAttribute('class','bloom-mark');
+    if(spot.stage==='peak'){
+      const pulse = document.createElementNS('http://www.w3.org/2000/svg','circle');
+      pulse.setAttribute('class','pulse'); pulse.setAttribute('r','13');
+      pulse.setAttribute('fill',TYPE_COLOR[spot.type]||'#888'); mark.appendChild(pulse);
     }
-    const core = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-    core.setAttribute('class', 'core');
-    core.setAttribute('r', spot.stage === 'peak' ? '9.5' : '8');
-    core.setAttribute('fill', TYPE_COLOR[spot.type] || '#888');
-    mark.appendChild(core);
-
-    const txt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-    txt.setAttribute('text-anchor', 'middle');
-    txt.setAttribute('dominant-baseline', 'central');
-    txt.setAttribute('font-size', spot.stage === 'peak' ? '8.5' : '7.5');
-    txt.setAttribute('font-family', 'DM Sans');
-    txt.textContent = TYPE_EMOJI[spot.type] || '•';
-    mark.appendChild(txt);
-
-    grp.appendChild(mark);
-    g.appendChild(grp);
+    const core = document.createElementNS('http://www.w3.org/2000/svg','circle');
+    core.setAttribute('class','core'); core.setAttribute('r',spot.stage==='peak'?'9.5':'8');
+    core.setAttribute('fill',TYPE_COLOR[spot.type]||'#888'); mark.appendChild(core);
+    const txt = document.createElementNS('http://www.w3.org/2000/svg','text');
+    txt.setAttribute('text-anchor','middle'); txt.setAttribute('dominant-baseline','central');
+    txt.setAttribute('font-size',spot.stage==='peak'?'8.5':'7.5'); txt.setAttribute('font-family','DM Sans');
+    txt.textContent = TYPE_EMOJI[spot.type]||'•'; mark.appendChild(txt);
+    grp.appendChild(mark); g.appendChild(grp);
   });
 }
 
-function spotDrawerHtml(spot) {
+function spotDrawerHtml(spot){
   const meta = getVotes(spot.id);
   const conf = confidence(meta);
   const typeClass = spot.type;
@@ -888,109 +862,99 @@ function spotDrawerHtml(spot) {
     <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:10px">
       <div>
         <div class="drawer-spot-name">${spot.name}</div>
-        <div class="drawer-meta">${spot.area}${spot.location_type ? ' · ' + spot.location_type : ''}${spot.maintainer ? ' · ' + spot.maintainer : ''}</div>
+        <div class="drawer-meta">${spot.area}${spot.location_type?' · '+spot.location_type:''}${spot.maintainer?' · '+spot.maintainer:''}</div>
       </div>
       <a class="btn btn-secondary btn-sm" href="#allSection">Browse all</a>
     </div>
     <div class="badges">
       <span class="badge badge-${typeClass}">${TYPE_EMOJI[spot.type]} ${TYPE_LABEL_SHORT[spot.type]}</span>
-      <span class="badge badge-stage">${STAGE_LABEL[spot.stage] || 'Unknown'} bloom</span>
-      <span class="badge badge-neutral">${spot.tree_count || 0} trees</span>
+      <span class="badge badge-stage">${STAGE_LABEL[spot.stage]||'Unknown'} bloom</span>
+      <span class="badge badge-neutral">${spot.tree_count||0} trees</span>
       <span class="badge badge-neutral">${conf.label}</span>
     </div>
     ${spot.desc ? `<div style="font-size:13px;color:var(--muted);line-height:1.55;margin:8px 0">${spot.desc}</div>` : ''}
     <div class="vote-bar">
-      <span class="vote-summary">👍 ${meta.up} · 👎 ${meta.down} · ${meta.total} vote${meta.total === 1 ? '' : 's'}</span>
+      <span class="vote-summary">👍 ${meta.up} · 👎 ${meta.down} · ${meta.total} vote${meta.total===1?'':'s'}</span>
       <div class="vote-btns">
-        <button class="vote-btn${meta.userVote === 1 ? ' active-up' : ''}" data-vote="1" data-spot-id="${spot.id}">👍 Looks right</button>
-        <button class="vote-btn${meta.userVote === -1 ? ' active-down' : ''}" data-vote="-1" data-spot-id="${spot.id}">👎 Not yet</button>
+        <button class="vote-btn${meta.userVote===1?' active-up':''}" data-vote="1" data-spot-id="${spot.id}">👍 Looks right</button>
+        <button class="vote-btn${meta.userVote===-1?' active-down':''}" data-vote="-1" data-spot-id="${spot.id}">👎 Not yet</button>
       </div>
     </div>
   `;
 }
 
-function renderDrawer() {
+function renderDrawer(){
   const drawer = document.getElementById('spotDrawer');
   const visible = sortedVisible();
-  const spot = visible.find((s) => String(s.id) === String(selectedSpotId)) || visible[0];
-  if (!spot) {
-    drawer.innerHTML = '<div class="drawer-empty">No spots match current filters.</div>';
-    return;
-  }
+  const spot = visible.find(s=>String(s.id)===String(selectedSpotId)) || visible[0];
+  if(!spot){ drawer.innerHTML='<div class="drawer-empty">No spots match current filters.</div>'; return; }
   selectedSpotId = spot.id;
   drawer.innerHTML = spotDrawerHtml(spot);
   bindVoteButtons(drawer);
 }
 
-function renderBestPicks() {
+function renderBestPicks(){
   const host = document.getElementById('bestPicks');
-  const visible = sortedVisible().slice(0, 6);
-  if (!visible.length) {
-    host.innerHTML = '<div class="empty">No spots match the current filters.</div>';
-    return;
-  }
-  host.innerHTML = visible.map((spot, i) => {
-    const stageBadge = spot.stage === 'peak' ? '<span class="badge badge-stage" style="font-size:11px">Peak 🌸</span>' : '';
+  const visible = sortedVisible().slice(0,6);
+  if(!visible.length){ host.innerHTML='<div class="empty">No spots match the current filters.</div>'; return; }
+  host.innerHTML = visible.map((spot,i)=>{
+    const stageBadge = spot.stage==='peak'?'<span class="badge badge-stage" style="font-size:11px">Peak 🌸</span>':'';
     return `
-      <div class="pick-card${String(selectedSpotId) === String(spot.id) ? ' active' : ''}" data-show-spot="${spot.id}" role="button" tabindex="0">
+      <div class="pick-card${String(selectedSpotId)===String(spot.id)?' active':''}" data-show-spot="${spot.id}" role="button" tabindex="0">
         <div class="pick-top">
-          <div class="pick-rank">#${i + 1} · ${TYPE_EMOJI[spot.type]} ${TYPE_LABEL_SHORT[spot.type]}</div>
+          <div class="pick-rank">#${i+1} · ${TYPE_EMOJI[spot.type]} ${TYPE_LABEL_SHORT[spot.type]}</div>
           ${stageBadge}
         </div>
         <div class="pick-name">${spot.name}</div>
-        <div class="pick-sub">${spot.area} · ${spot.tree_count || 0} trees</div>
+        <div class="pick-sub">${spot.area} · ${spot.tree_count||0} trees</div>
       </div>
     `;
   }).join('');
-  host.querySelectorAll('[data-show-spot]').forEach((el) =>
-    el.addEventListener('click', () => selectSpot(el.dataset.showSpot, true))
+  host.querySelectorAll('[data-show-spot]').forEach(el=>
+    el.addEventListener('click',()=>selectSpot(el.dataset.showSpot,true))
   );
 }
 
-function renderTypeGuide() {
+function renderTypeGuide(){
   const host = document.getElementById('typeGuide');
-  const cards = TYPE_ORDER.filter((t) => availableTypes.has(t)).map((type) => {
+  const cards = TYPE_ORDER.filter(t=>availableTypes.has(t)).map(type=>{
     const top = topByType(type);
-    if (!top) return '';
+    if(!top) return '';
     return `
       <div class="type-card">
         <div class="eyebrow">${TYPE_EMOJI[type]} ${TYPE_LABEL_SHORT[type]}</div>
         <div class="emoji">${TYPE_EMOJI[type]}</div>
         <h3>${top.name}</h3>
-        <p>${top.area} · ${top.tree_count || 0} trees · ${STAGE_LABEL[top.stage] || 'Unknown'} bloom</p>
+        <p>${top.area} · ${top.tree_count||0} trees · ${STAGE_LABEL[top.stage]||'Unknown'} bloom</p>
         <button class="btn btn-secondary btn-sm" type="button" data-show-spot="${top.id}" style="margin-top:4px">Show on map</button>
       </div>
     `;
   }).join('');
   host.innerHTML = cards || '<div class="empty">No live bloom types in the current feed.</div>';
-  host.querySelectorAll('[data-show-spot]').forEach((btn) =>
-    btn.addEventListener('click', () => selectSpot(btn.dataset.showSpot, true))
+  host.querySelectorAll('[data-show-spot]').forEach(btn=>
+    btn.addEventListener('click',()=>selectSpot(btn.dataset.showSpot,true))
   );
 }
 
-function renderSpotGrid() {
+function renderSpotGrid(){
   const host = document.getElementById('spotGrid');
   const visible = sortedVisible();
   const slice = visible.slice(0, visibleLimit);
   const moreBtn = document.getElementById('loadMoreBtn');
-  if (!slice.length) {
-    host.innerHTML = '<div class="empty">No spots match the current filters.</div>';
-    moreBtn.hidden = true;
-    return;
-  }
-  host.innerHTML = slice.map((spot) => `
+  if(!slice.length){ host.innerHTML='<div class="empty">No spots match the current filters.</div>'; moreBtn.hidden=true; return; }
+  host.innerHTML = slice.map(spot=>`
     <article class="spot-card">
       <div class="spot-top">
         <div>
           <div class="spot-eyebrow">${TYPE_EMOJI[spot.type]} ${TYPE_LABEL_SHORT[spot.type]} · ${spot.area}</div>
           <div class="spot-name">${spot.name}</div>
         </div>
-        <span class="spot-tree-tag">${spot.tree_count || 0} trees</span>
+        <span class="spot-tree-tag">${spot.tree_count||0} trees</span>
       </div>
-      ${spot.desc ? `<div class="spot-desc">${spot.desc}</div>` : ''}
+      ${spot.desc?`<div class="spot-desc">${spot.desc}</div>`:''}
       <div class="spot-footer">
         <div class="spot-tags">
-          <span class="inline-tag">${STAGE_LABEL[spot.stage] || 'Unknown'} bloom</span>
+          <span class="inline-tag">${STAGE_LABEL[spot.stage]||'Unknown'} bloom</span>
           <span class="inline-tag">${confidence(getVotes(spot.id)).label}</span>
         </div>
         <button class="btn btn-secondary btn-sm" type="button" data-show-spot="${spot.id}">Show on map</button>
@@ -1000,218 +964,130 @@ function renderSpotGrid() {
           👍 ${getVotes(spot.id).up} · 👎 ${getVotes(spot.id).down}
         </span>
         <div style="display:flex;gap:6px">
-          <button class="vote-btn${getVotes(spot.id).userVote === 1 ? ' active-up' : ''}" data-vote="1" data-spot-id="${spot.id}" style="padding:6px 10px;font-size:12px">👍</button>
-          <button class="vote-btn${getVotes(spot.id).userVote === -1 ? ' active-down' : ''}" data-vote="-1" data-spot-id="${spot.id}" style="padding:6px 10px;font-size:12px">👎</button>
+          <button class="vote-btn${getVotes(spot.id).userVote===1?' active-up':''}" data-vote="1" data-spot-id="${spot.id}" style="padding:6px 10px;font-size:12px">👍</button>
+          <button class="vote-btn${getVotes(spot.id).userVote===-1?' active-down':''}" data-vote="-1" data-spot-id="${spot.id}" style="padding:6px 10px;font-size:12px">👎</button>
         </div>
       </div>
     </article>
   `).join('');
-  host.querySelectorAll('[data-show-spot]').forEach((btn) => btn.addEventListener('click', () => selectSpot(btn.dataset.showSpot, true)));
+  host.querySelectorAll('[data-show-spot]').forEach(btn=>btn.addEventListener('click',()=>selectSpot(btn.dataset.showSpot,true)));
   bindVoteButtons(host);
   moreBtn.hidden = visible.length <= visibleLimit;
 }
 
-function bindVoteButtons(root) {
-  root.querySelectorAll('.vote-btn').forEach((btn) => btn.addEventListener('click', onVoteClick));
+function bindVoteButtons(root){
+  root.querySelectorAll('.vote-btn').forEach(btn=>btn.addEventListener('click',onVoteClick));
 }
 
-function selectSpot(id, scrollToMap = false) {
+function selectSpot(id, scrollToMap=false){
   selectedSpotId = id;
-  renderMap();
-  renderDrawer();
-  renderBestPicks();
-  if (scrollToMap) document.getElementById('mapSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  renderMap(); renderDrawer(); renderBestPicks();
+  if(scrollToMap) document.getElementById('mapSection').scrollIntoView({behavior:'smooth',block:'start'});
 }
 
-function mergeUserVotesIntoSummary() {
-  for (const [id, vote] of userVotes.entries()) {
-    const existing = voteSummary.get(id) || { up: 0, down: 0, total: 0, userVote: 0 };
-    existing.userVote = vote;
-    voteSummary.set(id, existing);
-  }
-}
-
-function refreshUI() {
+function refreshUI(){
   const visible = sortedVisible();
-  if (!visible.some((s) => String(s.id) === String(selectedSpotId))) selectedSpotId = visible[0]?.id ?? null;
-  updateStats();
-  renderMap();
-  renderDrawer();
-  renderBestPicks();
-  renderTypeGuide();
-  renderSpotGrid();
+  if(!visible.some(s=>String(s.id)===String(selectedSpotId))) selectedSpotId = visible[0]?.id ?? null;
+  updateStats(); renderMap(); renderDrawer(); renderBestPicks(); renderTypeGuide(); renderSpotGrid();
 }
 
-async function loadVoteSummary() {
-  const { data, error } = await supabaseClient.from('spot_votes').select('spot_id, vote');
-  if (error) {
-    console.error('Vote summary load failed:', error);
-    return;
-  }
+async function loadVoteSummary(){
+  if(!supabase) return;
+  const {data,error} = await supabase.from('spot_votes').select('spot_id, vote');
+  if(error) return;
   const summary = new Map();
-  for (const row of data || []) {
+  for(const row of data||[]){
     const id = String(row.spot_id);
-    const entry = summary.get(id) || { up: 0, down: 0, total: 0, userVote: 0 };
-    if (Number(row.vote) === 1) entry.up += 1;
-    if (Number(row.vote) === -1) entry.down += 1;
-    entry.total = entry.up + entry.down;
-    summary.set(id, entry);
+    const e = summary.get(id)||{up:0,down:0,total:0,userVote:0};
+    if(Number(row.vote)===1) e.up++;
+    if(Number(row.vote)===-1) e.down++;
+    e.total = e.up+e.down;
+    summary.set(id,e);
+  }
+  for(const [id,vote] of userVotes.entries()){
+    const e = summary.get(id)||{up:0,down:0,total:0,userVote:0};
+    e.userVote = vote; summary.set(id,e);
   }
   voteSummary = summary;
-  mergeUserVotesIntoSummary();
 }
 
-async function loadUserVotes() {
-  const { data, error } = await supabaseClient
-    .from('spot_votes')
-    .select('spot_id, vote')
-    .eq('voter_key', voterKey());
-  if (error) {
-    console.error('User votes load failed:', error);
-    return;
-  }
-  userVotes = new Map((data || []).map((r) => [String(r.spot_id), Number(r.vote)]));
-  mergeUserVotesIntoSummary();
+async function loadUserVotes(){
+  if(!supabase) return;
+  const {data,error} = await supabase.from('spot_votes').select('spot_id, vote').eq('voter_key',voterKey());
+  if(error) return;
+  userVotes = new Map((data||[]).map(r=>[String(r.spot_id),Number(r.vote)]));
 }
 
-async function onVoteClick(ev) {
-  ev.preventDefault();
-  ev.stopPropagation();
-
+async function onVoteClick(ev){
   const btn = ev.currentTarget;
   const spotId = btn.dataset.spotId;
   const vote = Number(btn.dataset.vote);
-  if (!spotId || ![1, -1].includes(vote)) return;
-
+  if(!supabase){ showToast('Voting available once Supabase SQL is connected.'); return; }
   btn.disabled = true;
-  try {
-    const { error } = await supabaseClient.rpc('cast_vote', {
-      p_spot_id: String(spotId),
-      p_voter_key: voterKey(),
-      p_vote: vote,
-    });
-    if (error) throw error;
-
-    userVotes.set(String(spotId), vote);
-    await loadVoteSummary();
-    refreshUI();
-    showToast('Vote saved.');
-  } catch (err) {
-    console.error(err);
-    showToast('Vote could not be saved.');
-  } finally {
-    btn.disabled = false;
-  }
+  try{
+    const {error} = await supabase.rpc('cast_vote',{p_spot_id:spotId,p_voter_key:voterKey(),p_vote:vote});
+    if(error) throw error;
+    await loadUserVotes(); await loadVoteSummary(); refreshUI();
+  }catch(err){
+    console.error(err); showToast('Vote could not be saved yet. Run the Supabase SQL, then refresh.');
+  }finally{ btn.disabled=false; }
 }
 
-async function wireRealtime() {
-  if (liveChannel) await supabaseClient.removeChannel(liveChannel);
-  liveChannel = supabaseClient
-    .channel('spot-votes-live')
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'spot_votes' }, async () => {
-      await loadUserVotes();
-      await loadVoteSummary();
-      refreshUI();
-    })
-    .subscribe();
+async function wireRealtime(){
+  if(!supabase) return;
+  if(liveChannel) await supabase.removeChannel(liveChannel);
+  liveChannel = supabase.channel('spot-votes-live')
+    .on('postgres_changes',{event:'*',schema:'public',table:'spot_votes'},async()=>{
+      await loadVoteSummary(); refreshUI();
+    }).subscribe();
 }
 
-async function loadBloomsFromSupabase() {
-  const { data, error } = await supabaseClient
-    .from('spots')
-    .select('*')
-    .order('name', { ascending: true });
-  if (error) throw error;
-  return normaliseBlooms(data || []);
-}
-
-async function loadBloomsFromJson() {
-  const res = await fetch('./blooms.json', { cache: 'no-store' });
-  if (!res.ok) throw new Error(`blooms.json HTTP ${res.status}`);
-  const raw = await res.json();
-  return normaliseBlooms(raw);
-}
-
-async function loadBlooms() {
-  let source = 'supabase';
-  try {
-    BLOOMS = await loadBloomsFromSupabase();
+async function loadBlooms(){
+  try{
+    const res = await fetch('./blooms.json', { cache: 'no-store' });
+    if(!res.ok) throw new Error(`blooms.json HTTP ${res.status}`);
+    const raw = await res.json();
+    BLOOMS = normaliseBlooms(raw);
+    availableTypes = new Set(BLOOMS.map(s=>s.type));
+    renderChips();
+    await loadUserVotes(); await loadVoteSummary();
+    selectedSpotId = BLOOMS[0]?.id ?? null;
+    refreshUI(); wireRealtime();
     if (!BLOOMS.length) {
-      source = 'blooms.json';
-      BLOOMS = await loadBloomsFromJson();
+      showToast('Bloom file loaded, but no usable spots were found.');
     }
-  } catch (err) {
-    console.warn('Supabase spots load failed, falling back to blooms.json:', err);
-    try {
-      source = 'blooms.json';
-      BLOOMS = await loadBloomsFromJson();
-    } catch (jsonErr) {
-      console.error('Bloom load failed:', jsonErr);
-      document.getElementById('resultsLine').textContent = 'Could not load bloom data.';
-      document.getElementById('bestPicks').innerHTML = '<div class="empty">Bloom data did not load.</div>';
-      document.getElementById('spotGrid').innerHTML = '<div class="empty">Bloom data did not load.</div>';
-      return;
-    }
-  }
-
-  availableTypes = new Set(BLOOMS.map((s) => s.type));
-  renderChips();
-  await loadUserVotes();
-  await loadVoteSummary();
-  selectedSpotId = BLOOMS[0]?.id ?? null;
-  refreshUI();
-  await wireRealtime();
-
-  if (!BLOOMS.length) {
-    showToast('Data loaded, but no usable spots were found.');
-  } else if (source === 'blooms.json') {
-    showToast('Using fallback bloom file. Votes are still live.');
+  }catch(err){
+    console.error('Bloom load failed:', err);
+    document.getElementById('resultsLine').textContent = 'Could not load bloom data.';
+    document.getElementById('bestPicks').innerHTML = '<div class="empty">Bloom data did not load.</div>';
+    document.getElementById('spotGrid').innerHTML = '<div class="empty">Bloom data did not load.</div>';
   }
 }
 
-document.getElementById('searchInput').addEventListener('input', (e) => {
-  searchText = e.target.value;
-  visibleLimit = PAGE_SIZE;
-  refreshUI();
+// Event listeners
+document.getElementById('searchInput').addEventListener('input', e=>{
+  searchText = e.target.value; visibleLimit = PAGE_SIZE; refreshUI();
 });
 
-document.getElementById('resetBtn').addEventListener('click', () => {
-  activeType = 'all';
-  searchText = '';
-  visibleLimit = PAGE_SIZE;
+document.getElementById('resetBtn').addEventListener('click',()=>{
+  activeType = 'all'; searchText = ''; visibleLimit = PAGE_SIZE;
   document.getElementById('searchInput').value = '';
-  renderChips();
-  refreshUI();
+  renderChips(); refreshUI();
+});
+document.getElementById('resetBtn').addEventListener('keydown', e=>{
+  if(e.key==='Enter'||e.key===' ') document.getElementById('resetBtn').click();
 });
 
-document.getElementById('resetBtn').addEventListener('keydown', (e) => {
-  if (e.key === 'Enter' || e.key === ' ') document.getElementById('resetBtn').click();
-});
-
-document.getElementById('filterRow').addEventListener('click', (e) => {
+document.getElementById('filterRow').addEventListener('click', e=>{
   const btn = e.target.closest('.chip[data-type]');
-  if (!btn || btn.disabled) return;
-  activeType = btn.dataset.type;
-  visibleLimit = PAGE_SIZE;
-  renderChips();
-  refreshUI();
+  if(!btn||btn.disabled) return;
+  activeType = btn.dataset.type; visibleLimit = PAGE_SIZE;
+  renderChips(); refreshUI();
 });
 
-document.getElementById('loadMoreBtn').addEventListener('click', () => {
-  visibleLimit += PAGE_SIZE;
-  renderSpotGrid();
+document.getElementById('loadMoreBtn').addEventListener('click',()=>{
+  visibleLimit += PAGE_SIZE; renderSpotGrid();
 });
-
-window.debugBlooms = async function debugBlooms() {
-  console.log('supabaseClient', supabaseClient);
-  console.log('BLOOMS', BLOOMS);
-  console.log('voteSummary', [...voteSummary.entries()]);
-  console.log('userVotes', [...userVotes.entries()]);
-  const spotsRes = await supabaseClient.from('spots').select('*');
-  console.log('spotsRes', spotsRes);
-  const totalsRes = await supabaseClient.from('spot_vote_totals').select('*');
-  console.log('totalsRes', totalsRes);
-};
 
 loadBlooms();
 </script>

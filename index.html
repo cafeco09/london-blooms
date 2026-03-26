@@ -738,7 +738,7 @@ function filteredBlooms() {
   return BLOOMS.filter(s => {
     if (activeType !== 'all' && s.type !== activeType) return false;
     if (!q) return true;
-    return [s.name, s.area, s.type, s.desc, s.location_type, s.maintainer]
+    return [s.name, s.area, s.borough, s.type, s.desc, s.location_type, s.maintainer]
       .filter(Boolean)
       .join(' ')
       .toLowerCase()
@@ -758,21 +758,59 @@ function topByType(type) {
   return filteredBlooms().find(s => s.type === type) || null;
 }
 
+// ─── FIX: broader coordinate field detection + borough vs area distinction ───
 function normaliseBlooms(raw) {
+  // Log the first raw record so we can see actual field names in the console
+  if (raw && raw.length > 0) {
+    console.log('[LondonBlooms] sample raw record keys:', Object.keys(raw[0]));
+    console.log('[LondonBlooms] sample raw record:', raw[0]);
+  }
+
   return (raw || []).map((s, i) => {
-    const lat = Number(s.lat ?? s.latitude);
-    const lng = Number(s.lng ?? s.lon ?? s.longitude);
+    // Try every plausible coordinate field name from Supabase
+    const lat = Number(
+      s.lat ?? s.latitude ?? s.lat_wgs84 ?? s.y ?? s.geo_lat ?? null
+    );
+    const lng = Number(
+      s.lng ?? s.lon ?? s.longitude ?? s.long ?? s.lng_wgs84 ?? s.x ?? s.geo_lon ?? s.geo_lng ?? null
+    );
+
+    // Build a display area: prefer a specific neighbourhood/park over a generic borough name.
+    // Common Supabase column names tried in order of specificity:
+    const specificArea =
+      s.neighbourhood  ??
+      s.neighborhood   ??
+      s.park           ??
+      s.park_name      ??
+      s.location_name  ??
+      s.locality       ??
+      s.district       ??
+      null;
+
+    const boroughArea =
+      s.borough        ??
+      s.area           ??   // ← 'area' is kept but de-prioritised
+      s.council        ??
+      s.local_authority??
+      '';
+
+    // Use the more specific label if it exists AND differs from the borough label,
+    // otherwise fall back to borough. This prevents every spot showing "LB Barnet".
+    const displayArea = (specificArea && specificArea !== boroughArea)
+      ? specificArea
+      : boroughArea;
 
     return {
       id: s.id ?? `spot_${i}`,
       name: s.name ?? 'Unnamed spot',
-      area: s.area ?? '',
+      area: String(displayArea ?? ''),
+      borough: String(boroughArea ?? ''),   // kept separately for search
       type: String(s.type ?? '').toLowerCase(),
       stage: String(s.stage ?? 'early').toLowerCase(),
       desc: s.description ?? s.desc ?? '',
-      tree_count: Number(s.tree_count ?? 0),
-      maintainer: s.maintainer ?? '',
-      location_type: s.location_type ?? '',
+      tree_count: Number(s.tree_count ?? s.trees ?? 0),
+      maintainer: s.maintainer ?? s.managed_by ?? '',
+      location_type: s.location_type ?? s.site_type ?? '',
       lat: Number.isFinite(lat) ? lat : null,
       lng: Number.isFinite(lng) ? lng : null
     };
@@ -783,6 +821,7 @@ function normaliseBlooms(raw) {
     Number.isFinite(s.lng)
   );
 }
+// ─────────────────────────────────────────────────────────────────────────────
 
 function updateStats() {
   const v = sortedVisible();
@@ -829,11 +868,16 @@ function popupHtml(spot) {
   const copyText = `${spot.name} — ${spot.lat}, ${spot.lng}`;
   const mapsUrl = makeGoogleMapsUrl(spot);
 
+  // Show borough in parentheses if area differs from it
+  const areaLabel = (spot.borough && spot.area !== spot.borough)
+    ? `${esc(spot.area)} (${esc(spot.borough)})`
+    : esc(spot.area);
+
   return `
     <div style="min-width:220px">
       <div style="font-weight:700;font-size:14px;margin-bottom:4px">${esc(spot.name)}</div>
       <div style="font-size:12px;color:#7a6e68;margin-bottom:8px">
-        ${esc(spot.area)}${spot.location_type ? ' · ' + esc(spot.location_type) : ''}${spot.maintainer ? ' · ' + esc(spot.maintainer) : ''}
+        ${areaLabel}${spot.location_type ? ' · ' + esc(spot.location_type) : ''}${spot.maintainer ? ' · ' + esc(spot.maintainer) : ''}
       </div>
       <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">
         <span class="badge badge-${esc(spot.type)}">${TYPE_EMOJI[spot.type]} ${esc(TYPE_LABEL_SHORT[spot.type])}</span>
@@ -903,11 +947,15 @@ function spotDrawerHtml(spot) {
   const googleMapsUrl = makeGoogleMapsUrl(spot);
   const copyText = `${spot.name} — ${spot.lat}, ${spot.lng}`;
 
+  const areaLabel = (spot.borough && spot.area !== spot.borough)
+    ? `${esc(spot.area)} (${esc(spot.borough)})`
+    : esc(spot.area);
+
   return `
     <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:10px;flex-wrap:wrap">
       <div>
         <div class="drawer-spot-name">${esc(spot.name)}</div>
-        <div class="drawer-meta">${esc(spot.area)}${spot.location_type ? ' · ' + esc(spot.location_type) : ''}${spot.maintainer ? ' · ' + esc(spot.maintainer) : ''}</div>
+        <div class="drawer-meta">${areaLabel}${spot.location_type ? ' · ' + esc(spot.location_type) : ''}${spot.maintainer ? ' · ' + esc(spot.maintainer) : ''}</div>
       </div>
 
       <div style="display:flex;gap:6px;flex-wrap:wrap">
@@ -1187,13 +1235,17 @@ async function loadBlooms() {
   }
 }
 
+// Debug helper — run window.debugBlooms() in the console to inspect raw data
 window.debugBlooms = async function () {
   const [spots, votes] = await Promise.all([
     supabaseClient.from('spots').select('*').limit(5),
     supabaseClient.from('spot_votes').select('*').limit(5)
   ]);
-  console.log('spots', spots);
-  console.log('votes', votes);
+  console.log('spots sample:', spots.data);
+  console.log('votes sample:', votes.data);
+  if (spots.data && spots.data.length) {
+    console.log('column names:', Object.keys(spots.data[0]));
+  }
 };
 
 document.getElementById('searchInput').addEventListener('input', e => {

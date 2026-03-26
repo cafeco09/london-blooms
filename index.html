@@ -1,5 +1,651 @@
-<script>
-// ─── Constants ────────────────────────────────────────────────────────────────
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>London Blooms 🌸</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #fffaf7;
+      --surface:   #ffffff;
+      --border:    #ede8e3;
+      --text:      #1a1310;
+      --muted:     #7a6e68;
+      --accent:    #c95a7f;
+      --radius:    12px;
+      --shadow:    0 2px 12px rgba(0,0,0,.07);
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    .site-header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .site-header h1 {
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: -.3px;
+    }
+
+    .site-header a.support-link {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--accent);
+      text-decoration: none;
+      border: 1.5px solid var(--accent);
+      border-radius: 99px;
+      padding: 5px 14px;
+      transition: background .15s;
+    }
+
+    .site-header a.support-link:hover {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .stats-bar {
+      display: flex;
+      gap: 0;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      overflow-x: auto;
+    }
+
+    .stat-item {
+      flex: 1;
+      min-width: 80px;
+      text-align: center;
+      padding: 12px 8px;
+      border-right: 1px solid var(--border);
+    }
+
+    .stat-item:last-child { border-right: none; }
+
+    .stat-num {
+      font-size: 22px;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    .stat-label {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 3px;
+    }
+
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 20px 16px;
+    }
+
+    .filter-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .search-wrap {
+      position: relative;
+      flex: 1;
+      min-width: 180px;
+    }
+
+    .search-wrap input {
+      width: 100%;
+      border: 1.5px solid var(--border);
+      border-radius: 99px;
+      padding: 8px 16px;
+      font-family: inherit;
+      font-size: 14px;
+      background: var(--surface);
+      outline: none;
+      transition: border-color .15s;
+    }
+
+    .search-wrap input:focus {
+      border-color: var(--accent);
+    }
+
+    .chip {
+      border: 1.5px solid var(--border);
+      border-radius: 99px;
+      padding: 7px 14px;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      background: var(--surface);
+      cursor: pointer;
+      transition: all .15s;
+      white-space: nowrap;
+    }
+
+    .chip:hover:not(:disabled) {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .chip.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    .chip.disabled, .chip:disabled {
+      opacity: .4;
+      cursor: not-allowed;
+    }
+
+    .chip[data-type="reset"] {
+      background: none;
+      color: var(--muted);
+      border-color: var(--border);
+    }
+
+    .results-line {
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 20px;
+    }
+
+    #mapSection {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin-bottom: 20px;
+      box-shadow: var(--shadow);
+    }
+
+    .map-wrap {
+      position: relative;
+      width: 100%;
+      overflow: hidden;
+    }
+
+    .map-wrap svg {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+
+    .bloom-hit { fill: transparent; cursor: pointer; }
+    .bloom-mark { pointer-events: none; }
+    .bloom-dot.is-selected .core { stroke: #fff; stroke-width: 2.5; }
+
+    .pulse {
+      animation: pulse-ring 1.8s ease-out infinite;
+      transform-origin: center;
+    }
+
+    @keyframes pulse-ring {
+      0%   { opacity: .55; transform: scale(1); }
+      70%  { opacity: 0; transform: scale(1.9); }
+      100% { opacity: 0; transform: scale(1.9); }
+    }
+
+    .spot-drawer {
+      border-top: 1px solid var(--border);
+      padding: 16px;
+      min-height: 110px;
+    }
+
+    .drawer-spot-name {
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    .drawer-meta {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    .drawer-empty {
+      color: var(--muted);
+      font-size: 14px;
+      padding: 8px 0;
+    }
+
+    .badges {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin: 8px 0;
+    }
+
+    .badge {
+      font-size: 12px;
+      font-weight: 600;
+      padding: 3px 9px;
+      border-radius: 99px;
+      background: #f0ebe6;
+      color: var(--text);
+    }
+
+    .badge-cherry   { background: #fce8ef; color: #c95a7f; }
+    .badge-magnolia { background: #fdf5e0; color: #8a6020; }
+    .badge-wisteria { background: #ede8f8; color: #5a4a90; }
+    .badge-bluebell { background: #e6eef8; color: #3a5a90; }
+    .badge-stage    { background: #e8f5e9; color: #2e7d32; }
+    .badge-neutral  { background: #f0ebe6; color: var(--muted); }
+
+    .vote-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid var(--border);
+    }
+
+    .vote-summary {
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    .vote-btns { display: flex; gap: 6px; }
+
+    .vote-btn {
+      border: 1.5px solid var(--border);
+      border-radius: 99px;
+      padding: 6px 14px;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      background: var(--surface);
+      cursor: pointer;
+      transition: all .15s;
+    }
+
+    .vote-btn:hover { border-color: var(--accent); }
+    .vote-btn.active-up { background: #e8f5e9; border-color: #2e7d32; color: #2e7d32; }
+    .vote-btn.active-down { background: #fdecea; border-color: #c62828; color: #c62828; }
+    .vote-btn:disabled { opacity: .5; cursor: not-allowed; }
+
+    .section-title {
+      font-size: 17px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      margin-top: 28px;
+    }
+
+    .picks-row {
+      display: flex;
+      gap: 10px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+      margin-bottom: 24px;
+    }
+
+    .pick-card {
+      flex: 0 0 180px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px;
+      background: var(--surface);
+      cursor: pointer;
+      transition: border-color .15s, box-shadow .15s;
+    }
+
+    .pick-card:hover, .pick-card.active {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(201,90,127,.12);
+    }
+
+    .pick-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      margin-bottom: 4px;
+    }
+
+    .pick-rank {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--muted);
+    }
+
+    .pick-name {
+      font-size: 14px;
+      font-weight: 700;
+      line-height: 1.3;
+    }
+
+    .pick-sub {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 3px;
+    }
+
+    .type-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 12px;
+      margin-bottom: 28px;
+    }
+
+    .type-card {
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      background: var(--surface);
+      text-align: center;
+    }
+
+    .type-card .eyebrow {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    .type-card .emoji {
+      font-size: 28px;
+      margin-bottom: 6px;
+    }
+
+    .type-card h3 {
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .type-card p {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+
+    .spot-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .spot-card {
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px;
+      background: var(--surface);
+      box-shadow: var(--shadow);
+    }
+
+    .spot-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+
+    .spot-eyebrow {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--muted);
+    }
+
+    .spot-name {
+      font-size: 15px;
+      font-weight: 700;
+      margin-top: 2px;
+    }
+
+    .spot-tree-tag {
+      font-size: 11px;
+      font-weight: 700;
+      background: #f0ebe6;
+      color: var(--muted);
+      border-radius: 99px;
+      padding: 3px 9px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .spot-desc {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.5;
+      margin-bottom: 8px;
+    }
+
+    .spot-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .spot-tags {
+      display: flex;
+      gap: 5px;
+      flex-wrap: wrap;
+    }
+
+    .inline-tag {
+      font-size: 11px;
+      font-weight: 600;
+      background: #f0ebe6;
+      color: var(--muted);
+      border-radius: 99px;
+      padding: 3px 8px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-family: inherit;
+      font-weight: 600;
+      border-radius: 99px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all .15s;
+      border: 1.5px solid transparent;
+    }
+
+    .btn-secondary {
+      background: var(--surface);
+      border-color: var(--border);
+      color: var(--text);
+      font-size: 13px;
+      padding: 7px 16px;
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .btn-sm {
+      font-size: 12px;
+      padding: 5px 12px;
+    }
+
+    #loadMoreBtn {
+      display: block;
+      width: 100%;
+      padding: 12px;
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 600;
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      cursor: pointer;
+      color: var(--text);
+      margin-bottom: 32px;
+      transition: border-color .15s;
+    }
+
+    #loadMoreBtn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .empty {
+      color: var(--muted);
+      font-size: 14px;
+      padding: 16px 0;
+    }
+
+    #toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: #1a1310;
+      color: #fff;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 10px 20px;
+      border-radius: 99px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .2s, transform .2s;
+      z-index: 999;
+      white-space: nowrap;
+    }
+
+    #toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .site-footer {
+      text-align: center;
+      font-size: 12px;
+      color: var(--muted);
+      padding: 24px 16px;
+      border-top: 1px solid var(--border);
+    }
+
+    .site-footer a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    @media (max-width: 600px) {
+      .stat-num { font-size: 18px; }
+      .spot-grid { grid-template-columns: 1fr; }
+      .type-grid { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="site-header">
+    <h1>London Blooms 🌸</h1>
+    <a class="support-link" href="https://buymeacoffee.com/anshdt" target="_blank" rel="noopener">☕ Support</a>
+  </header>
+
+  <div class="stats-bar">
+    <div class="stat-item">
+      <div class="stat-num" id="statSpots">—</div>
+      <div class="stat-label">Spots</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num" id="statPeak">—</div>
+      <div class="stat-label">At peak</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num" id="statTypes">—</div>
+      <div class="stat-label">Types</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num" id="statVotes">—</div>
+      <div class="stat-label">Votes</div>
+    </div>
+  </div>
+
+  <main class="container">
+
+    <div class="filter-row" id="filterRow">
+      <div class="search-wrap">
+        <input id="searchInput" type="search" placeholder="Search spots, areas…" autocomplete="off" />
+      </div>
+      <button class="chip active" data-type="all">All</button>
+      <button class="chip" data-type="cherry">🌸 Cherry</button>
+      <button class="chip" data-type="magnolia">🤍 Magnolia</button>
+      <button class="chip" data-type="wisteria">💜 Wisteria</button>
+      <button class="chip" data-type="bluebell">💙 Bluebell</button>
+      <button class="chip" id="resetBtn" data-type="reset">✕ Reset</button>
+    </div>
+
+    <p class="results-line" id="resultsLine">Loading…</p>
+
+    <section id="mapSection">
+      <div class="map-wrap">
+        <svg viewBox="0 0 900 520" xmlns="http://www.w3.org/2000/svg" aria-label="Map of London bloom spots">
+          <rect width="900" height="520" fill="#f5f0ea" rx="0" />
+          <g fill="#ede8e0" stroke="#d8d0c6" stroke-width="1">
+            <rect x="70" y="60" width="760" height="410" rx="6" />
+          </g>
+          <path
+            d="M 80 295 C 160 285, 220 300, 300 290 C 360 282, 400 295, 460 288
+               C 520 280, 570 295, 630 285 C 690 275, 740 288, 830 280"
+            fill="none" stroke="#aac8e0" stroke-width="7" stroke-linecap="round" opacity=".6"
+          />
+          <text x="320" y="308" font-size="10" fill="#7aaac0" font-family="DM Sans" opacity=".8">River Thames</text>
+          <text x="856" y="76" font-size="11" fill="#b0a898" font-family="DM Sans" font-weight="700" text-anchor="middle">N</text>
+          <line x1="856" y1="80" x2="856" y2="94" stroke="#b0a898" stroke-width="1.5"/>
+          <g id="mapDots"></g>
+        </svg>
+      </div>
+
+      <div class="spot-drawer" id="spotDrawer">
+        <div class="drawer-empty">Loading spots…</div>
+      </div>
+    </section>
+
+    <h2 class="section-title">✨ Best picks</h2>
+    <div class="picks-row" id="bestPicks"></div>
+
+    <h2 class="section-title">🌿 By type</h2>
+    <div class="type-grid" id="typeGuide"></div>
+
+    <h2 class="section-title" id="allSection">🗂 All spots</h2>
+    <div class="spot-grid" id="spotGrid"></div>
+    <button id="loadMoreBtn" hidden>Load more spots</button>
+
+  </main>
+
+  <div id="toast"></div>
+
+  <footer class="site-footer">
+    Built with 🌸 · <a href="https://buymeacoffee.com/anshdt" target="_blank" rel="noopener">Support this project</a>
+  </footer>
+
+  <script>
 const SUPPORT_URL       = 'https://buymeacoffee.com/anshdt';
 const SUPABASE_URL      = 'https://esfjzhgzfbcrrewjvoan.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_nEqvvmFcsCpgVO1SK8ho3g_3K9LMOgi';
@@ -8,7 +654,7 @@ const VALID_TYPES       = ['cherry', 'magnolia', 'wisteria', 'bluebell'];
 
 const TYPE_ORDER       = VALID_TYPES;
 const TYPE_LABEL       = { cherry:'Cherry blossom', magnolia:'Magnolia', wisteria:'Wisteria', bluebell:'Bluebell' };
-const TYPE_LABEL_SHORT = { cherry:'Cherry',         magnolia:'Magnolia', wisteria:'Wisteria', bluebell:'Bluebell' };
+const TYPE_LABEL_SHORT = { cherry:'Cherry', magnolia:'Magnolia', wisteria:'Wisteria', bluebell:'Bluebell' };
 const TYPE_EMOJI       = { cherry:'🌸', magnolia:'🤍', wisteria:'💜', bluebell:'💙' };
 const TYPE_COLOR       = { cherry:'#c95a7f', magnolia:'#b08030', wisteria:'#7060aa', bluebell:'#4a72a8' };
 const STAGE_LABEL      = { early:'Early', peak:'Peak', fading:'Fading' };
@@ -17,27 +663,25 @@ const MAP_BOUNDS = { minLng:-0.52, maxLng:0.30, minLat:51.28, maxLat:51.70 };
 const MAP_W = 900, MAP_H = 520;
 const MAP_PAD = { left:70, right:70, top:60, bottom:50 };
 
-// ─── Supabase ─────────────────────────────────────────────────────────────────
 if (!window.supabase || typeof window.supabase.createClient !== 'function') {
   throw new Error('Supabase SDK failed to load');
 }
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// ─── State ────────────────────────────────────────────────────────────────────
-let BLOOMS           = [];
-let availableTypes   = new Set();
-let activeType       = 'all';
-let searchText       = '';
-let selectedSpotId   = null;
-let visibleLimit     = PAGE_SIZE;
-let voteSummary      = new Map();
-let userVotes        = new Map();
-let liveChannel      = null;
-let _searchDebounce  = null;
-let _sortedCache     = null;
-
-// ─── Toast ────────────────────────────────────────────────────────────────────
+let BLOOMS = [];
+let availableTypes = new Set();
+let activeType = 'all';
+let searchText = '';
+let selectedSpotId = null;
+let visibleLimit = PAGE_SIZE;
+let voteSummary = new Map();
+let userVotes = new Map();
+let liveChannel = null;
+let _searchDebounce = null;
+let _sortedCache = null;
 let _toastTimer = null;
+let _cachedVoterKey = null;
+
 function showToast(msg) {
   const t = document.getElementById('toast');
   if (!t) return;
@@ -47,7 +691,6 @@ function showToast(msg) {
   _toastTimer = setTimeout(() => t.classList.remove('show'), 2600);
 }
 
-// ─── Clipboard helper ─────────────────────────────────────────────────────────
 async function copyLocationText(text) {
   try {
     await navigator.clipboard.writeText(text);
@@ -58,8 +701,6 @@ async function copyLocationText(text) {
   }
 }
 
-// ─── Voter key (cached) ───────────────────────────────────────────────────────
-let _cachedVoterKey = null;
 function voterKey() {
   if (_cachedVoterKey) return _cachedVoterKey;
   let k = localStorage.getItem('lb_voter_key');
@@ -70,7 +711,6 @@ function voterKey() {
   return (_cachedVoterKey = k);
 }
 
-// ─── Misc helpers ─────────────────────────────────────────────────────────────
 function stableOffset(spot) {
   const s = String(spot.id ?? spot.name ?? '');
   let h = 0;
@@ -92,12 +732,16 @@ function confidence(meta) {
 
 function esc(v) {
   return String(v ?? '')
-    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
 }
 
-// ─── Data helpers ─────────────────────────────────────────────────────────────
-function invalidateCache() { _sortedCache = null; }
+function invalidateCache() {
+  _sortedCache = null;
+}
 
 function filteredBlooms() {
   const q = searchText.trim().toLowerCase();
@@ -105,7 +749,10 @@ function filteredBlooms() {
     if (activeType !== 'all' && s.type !== activeType) return false;
     if (!q) return true;
     return [s.name, s.area, s.type, s.desc, s.location_type, s.maintainer]
-      .filter(Boolean).join(' ').toLowerCase().includes(q);
+      .filter(Boolean)
+      .join(' ')
+      .toLowerCase()
+      .includes(q);
   });
 }
 
@@ -123,9 +770,9 @@ function topByType(type) {
 
 function projectToMap(lat, lng) {
   const x = MAP_PAD.left + ((lng - MAP_BOUNDS.minLng) / (MAP_BOUNDS.maxLng - MAP_BOUNDS.minLng))
-              * (MAP_W - MAP_PAD.left - MAP_PAD.right);
+    * (MAP_W - MAP_PAD.left - MAP_PAD.right);
   const y = MAP_H - MAP_PAD.bottom - ((lat - MAP_BOUNDS.minLat) / (MAP_BOUNDS.maxLat - MAP_BOUNDS.minLat))
-              * (MAP_H - MAP_PAD.top - MAP_PAD.bottom);
+    * (MAP_H - MAP_PAD.top - MAP_PAD.bottom);
   return { x, y };
 }
 
@@ -133,10 +780,13 @@ function normaliseBlooms(raw) {
   return (raw || []).map((s, i) => {
     const lat = Number(s.lat ?? s.latitude);
     const lng = Number(s.lng ?? s.lon ?? s.longitude);
-    let x = Number(s.x), y = Number(s.y);
+    let x = Number(s.x);
+    let y = Number(s.y);
 
     if (!Number.isFinite(x) || !Number.isFinite(y)) {
-      if (Number.isFinite(lat) && Number.isFinite(lng)) ({ x, y } = projectToMap(lat, lng));
+      if (Number.isFinite(lat) && Number.isFinite(lng)) {
+        ({ x, y } = projectToMap(lat, lng));
+      }
     }
 
     return {
@@ -157,7 +807,6 @@ function normaliseBlooms(raw) {
   }).filter(s => s.name && VALID_TYPES.includes(s.type) && Number.isFinite(s.x) && Number.isFinite(s.y));
 }
 
-// ─── Stats bar ────────────────────────────────────────────────────────────────
 function updateStats() {
   const v = sortedVisible();
   const peak = v.filter(s => s.stage === 'peak').length;
@@ -173,7 +822,6 @@ function updateStats() {
     : 'No spots match that filter.';
 }
 
-// ─── Chips ────────────────────────────────────────────────────────────────────
 function renderChips() {
   document.querySelectorAll('.chip[data-type]').forEach(chip => {
     const type = chip.dataset.type;
@@ -185,7 +833,6 @@ function renderChips() {
   });
 }
 
-// ─── Map ──────────────────────────────────────────────────────────────────────
 function renderMap() {
   const g = document.getElementById('mapDots');
   const frag = document.createDocumentFragment();
@@ -242,11 +889,10 @@ function renderMap() {
   g.appendChild(frag);
 }
 
-// ─── Drawer ───────────────────────────────────────────────────────────────────
 function spotDrawerHtml(spot) {
   const meta = getVotes(spot.id);
   const conf = confidence(meta);
-  const googleMapsUrl = `https://www.google.com/maps?q=${encodeURIComponent(`${spot.lat},${spot.lng}`)}`;
+  const googleMapsUrl = `https://www.google.com/maps?q=${encodeURIComponent(String(spot.lat) + ',' + String(spot.lng))}`;
   const copyText = `${spot.name} — ${spot.lat}, ${spot.lng}`;
 
   return `
@@ -313,7 +959,6 @@ function renderDrawer() {
   bindVoteButtons(drawer);
 }
 
-// ─── Best picks ───────────────────────────────────────────────────────────────
 function renderBestPicks() {
   const host = document.getElementById('bestPicks');
   const visible = sortedVisible().slice(0, 6);
@@ -338,7 +983,6 @@ function renderBestPicks() {
   );
 }
 
-// ─── Type guide ───────────────────────────────────────────────────────────────
 function renderTypeGuide() {
   const host = document.getElementById('typeGuide');
   const cards = TYPE_ORDER.filter(t => availableTypes.has(t)).map(type => {
@@ -361,7 +1005,6 @@ function renderTypeGuide() {
   );
 }
 
-// ─── Spot grid ────────────────────────────────────────────────────────────────
 function renderSpotGrid() {
   const host = document.getElementById('spotGrid');
   const moreBtn = document.getElementById('loadMoreBtn');
@@ -410,7 +1053,6 @@ function renderSpotGrid() {
   moreBtn.hidden = visible.length <= visibleLimit;
 }
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
 function bindVoteButtons(root) {
   root.querySelectorAll('.vote-btn').forEach(btn => btn.addEventListener('click', onVoteClick));
 }
@@ -439,7 +1081,6 @@ function refreshUI() {
   renderSpotGrid();
 }
 
-// ─── Supabase: votes ──────────────────────────────────────────────────────────
 async function loadVoteSummary() {
   const { data, error } = await supabaseClient.from('spot_votes').select('spot_id, vote');
   if (error) {
@@ -480,7 +1121,6 @@ async function loadUserVotes() {
   userVotes = new Map((data || []).map(r => [String(r.spot_id), Number(r.vote)]));
 }
 
-// ─── Vote click ───────────────────────────────────────────────────────────────
 async function onVoteClick(ev) {
   const btn = ev.currentTarget;
   const spotId = btn.dataset.spotId;
@@ -506,7 +1146,6 @@ async function onVoteClick(ev) {
   }
 }
 
-// ─── Realtime ─────────────────────────────────────────────────────────────────
 async function wireRealtime() {
   if (liveChannel) {
     await supabaseClient.removeChannel(liveChannel);
@@ -522,7 +1161,6 @@ async function wireRealtime() {
     .subscribe();
 }
 
-// ─── Boot ─────────────────────────────────────────────────────────────────────
 async function loadBlooms() {
   try {
     const { data, error } = await supabaseClient.from('spots').select('*');
@@ -549,7 +1187,6 @@ async function loadBlooms() {
   }
 }
 
-// ─── Debug ────────────────────────────────────────────────────────────────────
 window.debugBlooms = async function () {
   const [spots, votes] = await Promise.all([
     supabaseClient.from('spots').select('*').limit(5),
@@ -559,7 +1196,6 @@ window.debugBlooms = async function () {
   console.log('votes', votes);
 };
 
-// ─── Event listeners ──────────────────────────────────────────────────────────
 document.getElementById('searchInput').addEventListener('input', e => {
   searchText = e.target.value;
   visibleLimit = PAGE_SIZE;
@@ -591,4 +1227,6 @@ document.getElementById('loadMoreBtn').addEventListener('click', () => {
 });
 
 loadBlooms();
-</script>
+  </script>
+</body>
+</html>

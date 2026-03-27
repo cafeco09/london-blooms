@@ -16,6 +16,7 @@
   <script src="./config.js"></script>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+  <script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
@@ -31,7 +32,7 @@
       --cream: #ffffff;
       --border: #f0dde3;
       --shadow: rgba(180,100,120,0.10);
-      --sidebar-w: 390px;
+      --sidebar-w: 400px;
       --header-h: 58px;
       --font-display: 'Cormorant Garamond', Georgia, serif;
       --font-body: 'DM Sans', system-ui, sans-serif;
@@ -251,27 +252,65 @@
       font-weight: 700;
     }
 
+    .chip.active.mode {
+      background: #f8eef2;
+      border-color: #d9b0bd;
+      color: var(--deep-rose);
+      font-weight: 700;
+    }
+
     .flower-chip {
       display: flex;
       align-items: center;
       gap: 5px;
     }
 
-    #googleAutocompleteMount {
-      margin-bottom: 10px;
+    .inputWrap {
+      margin-bottom: 12px;
     }
 
-    .autocomplete-shell {
+    #locationInput {
+      width: 100%;
+      font-family: var(--font-body);
+      font-size: 0.84rem;
+      padding: 11px 12px;
       border: 1.5px solid var(--border);
       border-radius: 12px;
       background: #fff;
-      padding: 2px 4px;
-      overflow: hidden;
+      outline: none;
     }
 
-    #googleAutocompleteMount gmp-place-autocomplete {
+    #locationInput:focus {
+      border-color: var(--blush);
+    }
+
+    .radiusRow {
+      margin-bottom: 14px;
+    }
+
+    .radiusTop {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .radiusValue {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--rose);
+    }
+
+    #radiusRange {
       width: 100%;
-      display: block;
+      accent-color: var(--rose);
+    }
+
+    .miniHint {
+      font-size: 0.74rem;
+      color: #9a868a;
+      margin-top: 4px;
+      line-height: 1.45;
     }
 
     #resetBtn {
@@ -564,13 +603,13 @@
 
       #sidebar {
         width: 100%;
-        height: 48vh;
+        height: 50vh;
         border-right: none;
         border-bottom: 1px solid var(--border);
       }
 
       #mapWrap {
-        height: 52vh;
+        height: 50vh;
       }
 
       #bloomBadge {
@@ -657,7 +696,24 @@
       <div id="flowerGrid" class="chipGroup"></div>
 
       <div class="filterLabel">Location</div>
-      <div id="googleAutocompleteMount" class="autocomplete-shell"></div>
+      <div class="inputWrap">
+        <input id="locationInput" type="text" placeholder="Search place, borough, park…" />
+        <div class="miniHint">Pick a place from suggestions, or press Enter to search it directly.</div>
+      </div>
+
+      <div class="radiusRow">
+        <div class="radiusTop">
+          <div class="filterLabel" style="margin:0;">Radius</div>
+          <div class="radiusValue"><span id="radiusValue">5</span> miles</div>
+        </div>
+        <input id="radiusRange" type="range" min="1" max="15" step="1" value="5" />
+      </div>
+
+      <div class="filterLabel">Map mode</div>
+      <div id="modeChips" class="chipGroup">
+        <button class="chip mode active" data-mode="markers" type="button">Markers</button>
+        <button class="chip mode" data-mode="heatmap" type="button">Heatmap</button>
+      </div>
 
       <button id="resetBtn" type="button">Reset filters</button>
       <div id="statusBar">Loading…</div>
@@ -696,8 +752,8 @@
 
   const TABLE_NAME = "spring_trees";
   const WEATHER_URL = "https://api.open-meteo.com/v1/forecast?latitude=51.5074&longitude=-0.1278&daily=temperature_2m_mean&current=temperature_2m&timezone=Europe%2FLondon&forecast_days=1&past_days=7";
+
   const PER_SPECIES_LIMIT = 220;
-  const SEARCH_RADIUS_MILES = 5;
 
   const FLOWERS = [
     { icon:"🌸", name:"Cherry" },
@@ -741,19 +797,21 @@
     visibleTrees: [],
     selectedId: null,
     filters: { month: "all", name: "" },
+    searchCenter: null,
+    searchRadiusMiles: 5,
+    mapMode: "markers",
     markersById: new Map(),
     votesBySpot: new Map(),
     myVotesBySpot: new Map(),
-    hasInitialFit: false,
-    searchCenter: null
+    hasInitialFit: false
   };
 
-  let map, markerClusterLayer, LONDON_BOUNDS;
-  let selectedSearchPlace = null;
-  let googleAutocompleteEl = null;
-  let googleMapsLoaded = false;
+  let map, markerClusterLayer, heatLayer, LONDON_BOUNDS, googleAutocomplete;
 
   const flowerGridEl = document.getElementById("flowerGrid");
+  const locationInput = document.getElementById("locationInput");
+  const radiusRangeEl = document.getElementById("radiusRange");
+  const radiusValueEl = document.getElementById("radiusValue");
   const nearbyResultsEl = document.getElementById("nearbyResults");
   const nearbyResultsListEl = document.getElementById("nearbyResultsList");
   const statusEl = document.getElementById("statusBar");
@@ -901,79 +959,115 @@
     });
   }
 
+  function setMapMode(mode) {
+    state.mapMode = mode;
+    document.querySelectorAll('#modeChips .chip').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.mode === mode);
+    });
+
+    if (mode === "markers") {
+      if (!map.hasLayer(markerClusterLayer)) map.addLayer(markerClusterLayer);
+      if (map.hasLayer(heatLayer)) map.removeLayer(heatLayer);
+    } else {
+      if (map.hasLayer(markerClusterLayer)) map.removeLayer(markerClusterLayer);
+      if (!map.hasLayer(heatLayer)) map.addLayer(heatLayer);
+    }
+  }
+
   function loadGoogleMaps() {
     return new Promise((resolve, reject) => {
-      if (googleMapsLoaded && window.google?.maps?.places) {
+      if (window.google?.maps?.places) {
         resolve();
         return;
       }
 
-      const existing = document.querySelector('script[data-google-maps-loader="true"]');
+      const existing = document.querySelector('script[data-google-loader="true"]');
       if (existing) {
-        existing.addEventListener("load", () => resolve());
-        existing.addEventListener("error", () => reject(new Error("Google Maps failed to load")));
+        existing.addEventListener("load", () => resolve(), { once: true });
+        existing.addEventListener("error", () => reject(new Error("Google Maps failed to load")), { once: true });
         return;
       }
 
       const script = document.createElement("script");
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(GOOGLE_MAPS_API_KEY)}&loading=async&libraries=places`;
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(GOOGLE_MAPS_API_KEY)}&libraries=places`;
       script.async = true;
       script.defer = true;
-      script.dataset.googleMapsLoader = "true";
-      script.onload = () => {
-        googleMapsLoaded = true;
-        resolve();
-      };
+      script.dataset.googleLoader = "true";
+      script.onload = () => resolve();
       script.onerror = () => reject(new Error("Google Maps failed to load"));
       document.head.appendChild(script);
     });
   }
 
-  async function initGoogleAutocomplete() {
+  async function geocodeFallback(query) {
+    if (!window.google?.maps?.Geocoder) return null;
+    const geocoder = new google.maps.Geocoder();
+
+    return new Promise((resolve) => {
+      geocoder.geocode(
+        { address: query, componentRestrictions: { country: "GB" } },
+        (results, status) => {
+          if (status === "OK" && results && results[0]?.geometry?.location) {
+            resolve({
+              label: results[0].formatted_address || query,
+              lat: results[0].geometry.location.lat(),
+              lon: results[0].geometry.location.lng()
+            });
+          } else {
+            resolve(null);
+          }
+        }
+      );
+    });
+  }
+
+  async function setSearchCenter(placeObj) {
+    state.searchCenter = placeObj;
+    applyFilters();
+
+    const validVisible = state.visibleTrees.filter(t => Number.isFinite(t.lat) && Number.isFinite(t.lon));
+    if (validVisible.length) {
+      const bounds = L.latLngBounds(validVisible.map(t => [t.lat, t.lon]));
+      if (bounds.isValid()) map.fitBounds(bounds, { padding: [28, 28] });
+    } else if (placeObj) {
+      map.flyTo([placeObj.lat, placeObj.lon], 13, { duration: 0.7 });
+    }
+  }
+
+  async function initGoogleAutocompleteClassic() {
     await loadGoogleMaps();
 
-    if (!window.google?.maps?.places?.PlaceAutocompleteElement) {
-      console.warn("Google PlaceAutocompleteElement not available.");
+    if (!window.google?.maps?.places?.Autocomplete) {
+      console.warn("Google Places Autocomplete not available");
       return;
     }
 
-    const mount = document.getElementById("googleAutocompleteMount");
-    mount.innerHTML = "";
-
-    googleAutocompleteEl = new google.maps.places.PlaceAutocompleteElement({
-      includedRegionCodes: ["gb"]
+    googleAutocomplete = new google.maps.places.Autocomplete(locationInput, {
+      componentRestrictions: { country: "gb" },
+      fields: ["formatted_address", "geometry", "name"]
     });
 
-    mount.appendChild(googleAutocompleteEl);
+    googleAutocomplete.addListener("place_changed", async () => {
+      const place = googleAutocomplete.getPlace();
+      if (!place.geometry?.location) return;
 
-    googleAutocompleteEl.addEventListener("gmp-select", async ({ placePrediction }) => {
-      if (!placePrediction) return;
+      await setSearchCenter({
+        label: place.name || place.formatted_address || locationInput.value.trim(),
+        lat: place.geometry.location.lat(),
+        lon: place.geometry.location.lng()
+      });
+    });
 
-      const place = placePrediction.toPlace();
-      await place.fetchFields({ fields: ["displayName", "formattedAddress", "location"] });
+    locationInput.addEventListener("keydown", async (e) => {
+      if (e.key !== "Enter") return;
+      e.preventDefault();
 
-      if (!place.location) return;
+      const query = locationInput.value.trim();
+      if (!query) return;
 
-      selectedSearchPlace = {
-        label: place.displayName || place.formattedAddress || "Selected place",
-        lat: place.location.lat(),
-        lon: place.location.lng()
-      };
-
-      state.searchCenter = selectedSearchPlace;
-      applyFilters();
-
-      if (state.visibleTrees.length) {
-        const bounds = L.latLngBounds(
-          state.visibleTrees
-            .filter(t => Number.isFinite(t.lat) && Number.isFinite(t.lon))
-            .map(t => [t.lat, t.lon])
-        );
-        if (bounds.isValid()) {
-          map.fitBounds(bounds, { padding: [28, 28] });
-        }
-      } else {
-        map.flyTo([selectedSearchPlace.lat, selectedSearchPlace.lon], 13, { duration: 0.7 });
+      const fallback = await geocodeFallback(query);
+      if (fallback) {
+        await setSearchCenter(fallback);
       }
     });
   }
@@ -1146,7 +1240,7 @@
       .slice(0, 8);
 
     if (!nearest.length) {
-      nearbyResultsListEl.innerHTML = `<div style="font-size:0.78rem;color:#8f7b80;">No blossom spots found within ${SEARCH_RADIUS_MILES} miles.</div>`;
+      nearbyResultsListEl.innerHTML = `<div style="font-size:0.78rem;color:#8f7b80;">No blossom spots found within ${state.searchRadiusMiles} miles.</div>`;
       nearbyResultsEl.style.display = "block";
       return;
     }
@@ -1180,7 +1274,7 @@
           state.searchCenter.lon,
           t.lat,
           t.lon
-        ) <= SEARCH_RADIUS_MILES;
+        ) <= state.searchRadiusMiles;
       });
     } else {
       state.visibleTrees = base;
@@ -1189,6 +1283,7 @@
     renderStats();
     renderStatus();
     renderMarkers();
+    renderHeatmap();
     renderNearbyResults();
   }
 
@@ -1208,9 +1303,9 @@
 
     if (state.searchCenter) {
       if (!state.visibleTrees.length) {
-        statusEl.textContent = `No blossom spots found within ${SEARCH_RADIUS_MILES} miles.`;
+        statusEl.textContent = `No blossom spots found within ${state.searchRadiusMiles} miles.`;
       } else {
-        statusEl.textContent = `${state.visibleTrees.length.toLocaleString()} blossom spots within ${SEARCH_RADIUS_MILES} miles`;
+        statusEl.textContent = `${state.visibleTrees.length.toLocaleString()} blossom spots within ${state.searchRadiusMiles} miles`;
       }
       return;
     }
@@ -1286,6 +1381,14 @@
       map.fitBounds(bounds, { padding: [28, 28] });
       state.hasInitialFit = true;
     }
+  }
+
+  function renderHeatmap() {
+    const points = state.visibleTrees
+      .filter(t => Number.isFinite(t.lat) && Number.isFinite(t.lon))
+      .map(t => [t.lat, t.lon, 0.6]);
+
+    heatLayer.setLatLngs(points);
   }
 
   function renderInsightsForSelected() {
@@ -1383,7 +1486,11 @@
     state.filters = { month: "all", name: "" };
     state.selectedId = null;
     state.searchCenter = null;
-    selectedSearchPlace = null;
+    state.searchRadiusMiles = 5;
+
+    radiusRangeEl.value = "5";
+    radiusValueEl.textContent = "5";
+    locationInput.value = "";
 
     document.querySelectorAll("#monthChips .chip").forEach(btn => btn.classList.remove("active"));
     document.querySelector('#monthChips .chip[data-month="all"]')?.classList.add("active");
@@ -1394,11 +1501,6 @@
 
     if (LONDON_BOUNDS) {
       map.fitBounds(LONDON_BOUNDS, { padding: [24, 24] });
-    }
-
-    if (googleAutocompleteEl) {
-      const input = googleAutocompleteEl.shadowRoot?.querySelector("input");
-      if (input) input.value = "";
     }
   }
 
@@ -1427,6 +1529,12 @@
       zoomToBoundsOnClick: true,
       disableClusteringAtZoom: 16,
       maxClusterRadius: 50
+    });
+
+    heatLayer = L.heatLayer([], {
+      radius: 22,
+      blur: 16,
+      maxZoom: 17
     });
 
     map.addLayer(markerClusterLayer);
@@ -1480,14 +1588,27 @@
       });
     });
 
+    document.querySelectorAll("#modeChips .chip").forEach(btn => {
+      btn.addEventListener("click", () => {
+        setMapMode(btn.dataset.mode);
+      });
+    });
+
+    radiusRangeEl.addEventListener("input", () => {
+      state.searchRadiusMiles = Number(radiusRangeEl.value);
+      radiusValueEl.textContent = String(state.searchRadiusMiles);
+      applyFilters();
+    });
+
     document.getElementById("resetBtn").addEventListener("click", resetFilters);
 
-    await initGoogleAutocomplete();
+    await initGoogleAutocompleteClassic();
     await fetchWeather();
     await fetchTrees();
     await fetchVoteTotals();
     await fetchMyVotes();
     renderMarkers();
+    renderHeatmap();
     renderInsightsForSelected();
   });
 </script>

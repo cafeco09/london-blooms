@@ -7,19 +7,20 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Playfair+Display:wght@700&display=swap"
+    rel="stylesheet"
+  />
 
   <link
     rel="stylesheet"
     href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
     crossorigin=""
   />
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script
     src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
     crossorigin=""
   ></script>
 
@@ -31,217 +32,332 @@
       --muted:#6f665f;
       --line:#e7ddd2;
       --accent:#d86c8f;
-      --accent-soft:#f6d7e1;
-      --gold:#c9a55a;
-      --shadow:0 10px 30px rgba(0,0,0,0.08);
+      --accent-2:#f2b4c7;
+      --shadow:0 12px 30px rgba(0,0,0,0.08);
+      --shadow-soft:0 8px 20px rgba(216,108,143,0.10);
       --radius:18px;
     }
 
-    *{box-sizing:border-box}
+    * { box-sizing: border-box; }
 
-    body{
-      margin:0;
-      font-family:'DM Sans', sans-serif;
-      background:var(--bg);
-      color:var(--ink);
+    html, body {
+      margin: 0;
+      height: 100%;
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--ink);
     }
 
-    .page{
-      display:grid;
-      grid-template-columns:390px 1fr;
-      min-height:100vh;
+    body {
+      overflow: hidden;
     }
 
-    .sidebar{
-      background:var(--panel);
-      border-right:1px solid var(--line);
-      padding:24px 18px;
-      overflow:auto;
+    .page {
+      display: grid;
+      grid-template-columns: 400px 1fr;
+      height: 100vh;
+      min-height: 100vh;
     }
 
-    .title{
-      font-family:'Playfair Display', serif;
-      font-size:2rem;
-      margin:0 0 6px;
+    .sidebar {
+      background: linear-gradient(180deg, #fffdf9 0%, #fffaf5 100%);
+      border-right: 1px solid var(--line);
+      padding: 24px 18px 28px;
+      overflow-y: auto;
     }
 
-    .subtitle{
-      color:var(--muted);
-      font-size:0.95rem;
-      margin:0 0 18px;
-      line-height:1.5;
+    .title {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.1rem;
+      line-height: 1.1;
+      margin: 0 0 8px;
+      letter-spacing: -0.02em;
     }
 
-    .controls{
-      display:grid;
-      gap:12px;
-      margin-bottom:18px;
+    .subtitle {
+      color: var(--muted);
+      font-size: 0.95rem;
+      margin: 0 0 18px;
+      line-height: 1.55;
     }
 
-    .control-card{
-      border:1px solid var(--line);
-      border-radius:16px;
-      padding:12px;
-      background:#fff;
+    .hero-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 11px;
+      border: 1px solid #f1d8e2;
+      border-radius: 999px;
+      background: #fff7fb;
+      color: #8c3956;
+      font-size: 0.8rem;
+      font-weight: 700;
+      margin-bottom: 14px;
     }
 
-    .control-label{
-      font-size:0.85rem;
-      font-weight:700;
-      margin-bottom:8px;
-      color:var(--muted);
+    .controls {
+      display: grid;
+      gap: 12px;
+      margin-bottom: 18px;
     }
 
-    input, select{
-      width:100%;
-      padding:10px 12px;
-      border:1px solid var(--line);
-      border-radius:12px;
-      font:inherit;
-      background:#fff;
-      color:var(--ink);
-      outline:none;
+    .control-card {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 12px;
+      background: #fff;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
     }
 
-    .stats{
-      display:grid;
-      grid-template-columns:repeat(3, 1fr);
-      gap:10px;
-      margin-bottom:18px;
+    .control-label {
+      font-size: 0.85rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: var(--muted);
     }
 
-    .stat{
-      background:#fff;
-      border:1px solid var(--line);
-      border-radius:16px;
-      padding:12px;
-      text-align:center;
+    input, select {
+      width: 100%;
+      padding: 11px 12px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      font: inherit;
+      background: #fff;
+      color: var(--ink);
+      outline: none;
+      transition: box-shadow .18s ease, border-color .18s ease, transform .18s ease;
     }
 
-    .stat .num{
-      font-size:1.2rem;
-      font-weight:700;
+    input:focus, select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 4px rgba(216,108,143,0.12);
     }
 
-    .stat .lab{
-      font-size:0.8rem;
-      color:var(--muted);
-      margin-top:4px;
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 16px;
     }
 
-    .results{
-      display:grid;
-      gap:12px;
+    .stat {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 13px 10px;
+      text-align: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
     }
 
-    .tree-card{
-      background:#fff;
-      border:1px solid var(--line);
-      border-radius:16px;
-      padding:14px;
-      box-shadow:var(--shadow);
-      cursor:pointer;
-      transition:transform .15s ease, border-color .15s ease;
+    .stat .num {
+      font-size: 1.18rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
     }
 
-    .tree-card:hover{
-      transform:translateY(-2px);
-      border-color:var(--accent);
+    .stat .lab {
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-top: 4px;
     }
 
-    .tree-name{
-      font-weight:700;
-      font-size:1rem;
-      margin-bottom:6px;
+    .status {
+      margin-bottom: 14px;
+      padding: 11px 12px;
+      border-radius: 14px;
+      background: #fff;
+      border: 1px solid var(--line);
+      font-size: 0.87rem;
+      color: var(--muted);
+      line-height: 1.45;
+      white-space: pre-wrap;
     }
 
-    .tree-meta{
-      font-size:0.9rem;
-      color:var(--muted);
-      line-height:1.5;
+    .results {
+      display: grid;
+      gap: 12px;
+      padding-bottom: 30px;
     }
 
-    .badge-row{
-      display:flex;
-      flex-wrap:wrap;
-      gap:8px;
-      margin-top:10px;
+    .tree-card {
+      position: relative;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 14px;
+      box-shadow: var(--shadow);
+      cursor: pointer;
+      transition: transform .15s ease, border-color .15s ease, box-shadow .15s ease;
+      overflow: hidden;
     }
 
-    .badge{
-      display:inline-flex;
-      align-items:center;
-      padding:6px 10px;
-      border-radius:999px;
-      font-size:0.78rem;
-      font-weight:700;
-      border:1px solid var(--line);
-      background:#fffafc;
-      color:#7c3150;
+    .tree-card::before {
+      content: "";
+      position: absolute;
+      inset: 0 0 auto 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      opacity: 0;
+      transition: opacity .15s ease;
     }
 
-    .map-wrap{
-      position:relative;
+    .tree-card:hover {
+      transform: translateY(-2px);
+      border-color: var(--accent);
+      box-shadow: var(--shadow-soft);
     }
 
-    #map{
-      width:100%;
-      height:100vh;
+    .tree-card:hover::before,
+    .tree-card-active::before {
+      opacity: 1;
     }
 
-    .floating-note{
-      position:absolute;
-      top:18px;
-      right:18px;
-      z-index:1000;
-      background:rgba(255,255,255,0.95);
-      border:1px solid var(--line);
-      border-radius:14px;
-      padding:10px 12px;
-      box-shadow:var(--shadow);
-      font-size:0.88rem;
-      color:var(--muted);
-      max-width:320px;
-      line-height:1.45;
+    .tree-card-active {
+      border-color: var(--accent);
+      box-shadow: var(--shadow-soft);
     }
 
-    .leaflet-popup-content{
-      font-family:'DM Sans', sans-serif;
-      line-height:1.5;
+    .tree-card-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 6px;
     }
 
-    .popup-title{
-      font-weight:700;
-      font-size:1rem;
-      margin-bottom:6px;
-      color:var(--ink);
+    .tree-name {
+      font-weight: 700;
+      font-size: 1rem;
+      line-height: 1.3;
+      margin-bottom: 2px;
     }
 
-    .empty{
-      border:1px dashed var(--line);
-      border-radius:16px;
-      padding:18px;
-      color:var(--muted);
-      background:#fff;
+    .tree-meta {
+      font-size: 0.9rem;
+      color: var(--muted);
+      line-height: 1.55;
     }
 
-    .tiny-note{
-      margin-top:10px;
-      color:var(--muted);
-      font-size:0.8rem;
-      line-height:1.4;
-      margin-bottom:14px;
+    .tree-meta strong {
+      color: #4f4741;
     }
 
-    @media (max-width: 900px){
-      .page{
-        grid-template-columns:1fr;
+    .badge-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin-top: 10px;
+      justify-content: flex-end;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 0.76rem;
+      font-weight: 700;
+      border: 1px solid var(--line);
+      background: #fffafc;
+      color: #7c3150;
+      white-space: nowrap;
+    }
+
+    .month-march {
+      background: #fff6f8;
+      color: #8c3956;
+    }
+
+    .month-april {
+      background: #fff2f7;
+      color: #a43166;
+    }
+
+    .month-may {
+      background: #fff8ec;
+      color: #9a6a18;
+    }
+
+    .map-wrap {
+      position: relative;
+      min-height: 100vh;
+      background: #f3ede8;
+    }
+
+    #map {
+      width: 100%;
+      height: 100vh;
+      min-height: 100vh;
+    }
+
+    .floating-note {
+      position: absolute;
+      top: 18px;
+      right: 18px;
+      z-index: 1000;
+      max-width: 340px;
+      background: rgba(255,255,255,0.94);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 11px 13px;
+      box-shadow: var(--shadow);
+      font-size: 0.86rem;
+      color: var(--muted);
+      line-height: 1.45;
+      backdrop-filter: blur(8px);
+    }
+
+    .empty {
+      border: 1px dashed var(--line);
+      border-radius: 16px;
+      padding: 18px;
+      color: var(--muted);
+      background: #fff;
+      line-height: 1.6;
+    }
+
+    .leaflet-popup-content-wrapper {
+      border-radius: 16px;
+    }
+
+    .leaflet-popup-content {
+      margin: 14px 16px;
+      font-family: 'DM Sans', sans-serif;
+      line-height: 1.55;
+    }
+
+    .popup-title {
+      font-weight: 700;
+      font-size: 1rem;
+      margin-bottom: 6px;
+      color: var(--ink);
+    }
+
+    @media (max-width: 980px){
+      body {
+        overflow: auto;
       }
-      .sidebar{
-        max-height:45vh;
+
+      .page {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto 58vh;
+        height: auto;
       }
-      #map{
-        height:55vh;
+
+      .sidebar {
+        max-height: 48vh;
+      }
+
+      .map-wrap, #map {
+        height: 58vh;
+        min-height: 58vh;
+      }
+
+      .floating-note {
+        left: 14px;
+        right: 14px;
+        top: 14px;
+        max-width: none;
       }
     }
   </style>
@@ -249,9 +365,10 @@
 <body>
   <div class="page">
     <aside class="sidebar">
+      <div class="hero-pill">🌸 Spring blossom explorer</div>
       <h1 class="title">London Blooms</h1>
       <p class="subtitle">
-        Explore spring-flowering trees across London using Supabase and exact coordinates.
+        Explore spring-flowering trees across London using exact coordinates from Supabase.
       </p>
 
       <div class="controls">
@@ -286,13 +403,13 @@
         </div>
       </div>
 
-      <div class="tiny-note" id="statusNote">Loading from Supabase...</div>
+      <div class="status" id="statusBox">Starting…</div>
       <div class="results" id="results"></div>
     </aside>
 
     <main class="map-wrap">
       <div class="floating-note">
-        This version queries Supabase first instead of pulling the whole raw dataset into the browser.
+        This map queries the <strong>spring_trees</strong> view first, rather than trying to pull the full raw dataset into the browser.
       </div>
       <div id="map"></div>
     </main>
@@ -302,30 +419,29 @@
     const SUPABASE_URL = "https://esfjzhgzfbcrrewjvoan.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVzZmp6aGd6ZmJjcnJld2p2b2FuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQzNjg3NjIsImV4cCI6MjA4OTk0NDc2Mn0.kJOMlq3vHwYWwogSIyLccveHecA5D7WX2RwLzMqe8bY";
     const TABLE_NAME = "spring_trees";
-    const MAX_RESULTS = 1200;
-    const MAX_CARDS = 150;
+    const MAX_RESULTS = 1000;
+    const MAX_CARDS = 120;
 
-    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    const map = L.map('map').setView([51.5074, -0.1278], 10);
+    const monthFilterEl = document.getElementById("monthFilter");
+    const searchInputEl = document.getElementById("searchInput");
+    const resultsEl = document.getElementById("results");
+    const statusBoxEl = document.getElementById("statusBox");
+    const countTreesEl = document.getElementById("countTrees");
+    const countBoroughsEl = document.getElementById("countBoroughs");
+    const countTypesEl = document.getElementById("countTypes");
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19,
-      attribution: '&copy; OpenStreetMap contributors'
-    }).addTo(map);
-
+    let map;
+    let markersLayer;
     let currentTrees = [];
-    let markersLayer = L.layerGroup().addTo(map);
-    let hasFittedInitially = false;
-    let debounceTimer;
+    let debounceTimer = null;
+    let selectedTreeId = null;
 
-    const monthFilterEl = document.getElementById('monthFilter');
-    const searchInputEl = document.getElementById('searchInput');
-    const resultsEl = document.getElementById('results');
-    const statusNoteEl = document.getElementById('statusNote');
-    const countTreesEl = document.getElementById('countTrees');
-    const countBoroughsEl = document.getElementById('countBoroughs');
-    const countTypesEl = document.getElementById('countTypes');
+    function setStatus(message) {
+      statusBoxEl.textContent = message;
+      console.log("[London Blooms]", message);
+    }
 
     function escapeHtml(str) {
       return String(str ?? "")
@@ -344,113 +460,98 @@
     }
 
     function normaliseTree(row, index) {
+      const lat = Number(row.lat);
+      const lon = Number(row.lon);
+
       return {
         id: row.id ?? row.uniqueid ?? `row-${index}`,
         uniqueid: row.uniqueid ?? "",
-        common_name: row.common_name ?? "",
+        common_name: row.common_name ?? "Unknown tree",
         scientific_name: row.taxon_species ?? "",
         borough: row.borough ?? "",
         location: row.location ?? "",
-        latitude: Number(row.lat),
-        longitude: Number(row.lon),
+        latitude: Number.isFinite(lat) ? lat : null,
+        longitude: Number.isFinite(lon) ? lon : null,
         bloom_period: row.bloom_period ?? "",
         bloomMonths: parseMonths(row.bloom_period)
       };
     }
 
-    async function fetchTrees() {
-      const selectedMonth = monthFilterEl.value;
-      const q = searchInputEl.value.trim();
-
-      statusNoteEl.textContent = "Loading from Supabase...";
-      resultsEl.innerHTML = `<div class="empty">Loading spring trees...</div>`;
-
-      let query = supabaseClient
-        .from(TABLE_NAME)
-        .select('id, uniqueid, borough, lat, lon, common_name, taxon_species, location, bloom_period')
-        .not('lat', 'is', null)
-        .not('lon', 'is', null)
-        .limit(MAX_RESULTS);
-
-      if (selectedMonth !== "all") {
-        if (selectedMonth === "March") {
-          query = query.in('bloom_period', ['March', 'March-April']);
-        } else if (selectedMonth === "April") {
-          query = query.in('bloom_period', ['March-April', 'April', 'April-May']);
-        } else if (selectedMonth === "May") {
-          query = query.in('bloom_period', ['May', 'April-May']);
-        }
-      }
-
-      if (q) {
-        const safe = q.replace(/,/g, ' ');
-        query = query.or(
-          `borough.ilike.%${safe}%,common_name.ilike.%${safe}%,taxon_species.ilike.%${safe}%,location.ilike.%${safe}%`
-        );
-      }
-
-      query = query.order('common_name', { ascending: true });
-
-      const { data, error } = await query;
-
-      if (error) {
-        console.error(error);
-        statusNoteEl.textContent = "Failed to load data.";
-        resultsEl.innerHTML = `<div class="empty">Error loading data: ${escapeHtml(error.message)}</div>`;
-        currentTrees = [];
-        updateStats([]);
-        renderMarkers([]);
-        return;
-      }
-
-      currentTrees = (data || []).map(normaliseTree);
-
-      statusNoteEl.textContent =
-        currentTrees.length >= MAX_RESULTS
-          ? `Showing the first ${MAX_RESULTS.toLocaleString()} matching trees. Narrow the search for a tighter view.`
-          : `${currentTrees.length.toLocaleString()} matching trees loaded.`;
-
-      updateStats(currentTrees);
-      renderCards(currentTrees);
-      renderMarkers(currentTrees);
+    function getMonthBadgeClass(month) {
+      if (month === "March") return "month-march";
+      if (month === "April") return "month-april";
+      if (month === "May") return "month-may";
+      return "";
     }
 
     function updateStats(trees) {
       countTreesEl.textContent = trees.length.toLocaleString();
-
-      const boroughs = new Set(trees.map(t => t.borough).filter(Boolean));
-      countBoroughsEl.textContent = boroughs.size.toLocaleString();
-
-      const names = new Set(trees.map(t => t.common_name).filter(Boolean));
-      countTypesEl.textContent = names.size.toLocaleString();
+      countBoroughsEl.textContent = new Set(trees.map(t => t.borough).filter(Boolean)).size.toLocaleString();
+      countTypesEl.textContent = new Set(trees.map(t => t.common_name).filter(Boolean)).size.toLocaleString();
     }
 
     function renderCards(trees) {
       if (!trees.length) {
-        resultsEl.innerHTML = `<div class="empty">No spring trees matched your filters.</div>`;
+        resultsEl.innerHTML = `
+          <div class="empty">
+            No spring trees matched your filters.
+            <br><br>
+            Try:
+            <br>• switching month to <strong>All spring trees</strong>
+            <br>• searching for <strong>Cherry</strong> or <strong>Magnolia</strong>
+            <br>• checking that <strong>spring_trees</strong> contains rows
+          </div>
+        `;
         return;
       }
 
-      resultsEl.innerHTML = trees.slice(0, MAX_CARDS).map(tree => `
-        <div class="tree-card" data-id="${escapeHtml(tree.id)}">
-          <div class="tree-name">${escapeHtml(tree.common_name)}</div>
-          <div class="tree-meta">
-            ${tree.scientific_name ? `<div><strong>Scientific:</strong> ${escapeHtml(tree.scientific_name)}</div>` : ""}
-            ${tree.borough ? `<div><strong>Borough:</strong> ${escapeHtml(tree.borough)}</div>` : ""}
-            ${tree.location ? `<div><strong>Location:</strong> ${escapeHtml(tree.location)}</div>` : ""}
-            ${tree.bloom_period ? `<div><strong>Bloom:</strong> ${escapeHtml(tree.bloom_period)}</div>` : ""}
-          </div>
-          <div class="badge-row">
-            ${tree.bloomMonths.map(m => `<span class="badge">${escapeHtml(m)}</span>`).join("")}
-          </div>
-        </div>
-      `).join("");
+      resultsEl.innerHTML = trees.slice(0, MAX_CARDS).map(tree => {
+        const isActive = String(tree.id) === String(selectedTreeId);
 
-      document.querySelectorAll('.tree-card').forEach(card => {
-        card.addEventListener('click', () => {
+        return `
+          <div class="tree-card ${isActive ? "tree-card-active" : ""}" data-id="${escapeHtml(tree.id)}">
+            <div class="tree-card-top">
+              <div class="tree-name">${escapeHtml(tree.common_name)}</div>
+              ${tree.bloomMonths.length ? `
+                <div class="badge-row">
+                  ${tree.bloomMonths.map(month => `
+                    <span class="badge ${getMonthBadgeClass(month)}">${escapeHtml(month)}</span>
+                  `).join("")}
+                </div>
+              ` : ""}
+            </div>
+
+            <div class="tree-meta">
+              ${tree.scientific_name ? `<div><strong>Scientific:</strong> ${escapeHtml(tree.scientific_name)}</div>` : ""}
+              ${tree.borough ? `<div><strong>Borough:</strong> ${escapeHtml(tree.borough)}</div>` : ""}
+              ${tree.location ? `<div><strong>Location:</strong> ${escapeHtml(tree.location)}</div>` : ""}
+              ${tree.bloom_period ? `<div><strong>Bloom window:</strong> ${escapeHtml(tree.bloom_period)}</div>` : ""}
+            </div>
+          </div>
+        `;
+      }).join("");
+
+      document.querySelectorAll(".tree-card").forEach(card => {
+        card.addEventListener("click", () => {
           const tree = trees.find(t => String(t.id) === String(card.dataset.id));
-          if (!tree) return;
-          map.setView([tree.latitude, tree.longitude], 17);
+          if (!tree || !Number.isFinite(tree.latitude) || !Number.isFinite(tree.longitude)) return;
+
+          selectedTreeId = tree.id;
+          renderCards(currentTrees);
+
+          map.flyTo([tree.latitude, tree.longitude], 17, {
+            duration: 0.8
+          });
+
+          const marker = markersLayer._layers
+            ? Object.values(markersLayer._layers).find(layer =>
+                layer?.options?.treeId && String(layer.options.treeId) === String(tree.id)
+              )
+            : null;
+
+          if (marker) {
+            setTimeout(() => marker.openPopup(), 280);
+          }
         });
       });
     }
@@ -458,42 +559,142 @@
     function renderMarkers(trees) {
       markersLayer.clearLayers();
 
-      if (!trees.length) return;
+      const validTrees = trees.filter(
+        t => Number.isFinite(t.latitude) && Number.isFinite(t.longitude)
+      );
+
+      if (!validTrees.length) {
+        return;
+      }
 
       const bounds = [];
 
-      trees.forEach(tree => {
-        if (!Number.isFinite(tree.latitude) || !Number.isFinite(tree.longitude)) return;
-
-        const popup = `
-          <div class="popup-title">${escapeHtml(tree.common_name)}</div>
-          ${tree.scientific_name ? `<div><strong>Scientific:</strong> ${escapeHtml(tree.scientific_name)}</div>` : ""}
-          ${tree.borough ? `<div><strong>Borough:</strong> ${escapeHtml(tree.borough)}</div>` : ""}
-          ${tree.location ? `<div><strong>Location:</strong> ${escapeHtml(tree.location)}</div>` : ""}
-          ${tree.bloom_period ? `<div><strong>Bloom:</strong> ${escapeHtml(tree.bloom_period)}</div>` : ""}
-          <div><strong>Coordinates:</strong> ${tree.latitude.toFixed(5)}, ${tree.longitude.toFixed(5)}</div>
+      validTrees.forEach(tree => {
+        const popupHtml = `
+          <div class="popup-shell">
+            <div class="popup-title">${escapeHtml(tree.common_name)}</div>
+            ${tree.scientific_name ? `<div><strong>Scientific:</strong> ${escapeHtml(tree.scientific_name)}</div>` : ""}
+            ${tree.borough ? `<div><strong>Borough:</strong> ${escapeHtml(tree.borough)}</div>` : ""}
+            ${tree.location ? `<div><strong>Location:</strong> ${escapeHtml(tree.location)}</div>` : ""}
+            ${tree.bloom_period ? `<div><strong>Bloom:</strong> ${escapeHtml(tree.bloom_period)}</div>` : ""}
+            <div><strong>Coordinates:</strong> ${tree.latitude.toFixed(5)}, ${tree.longitude.toFixed(5)}</div>
+          </div>
         `;
 
-        const marker = L.marker([tree.latitude, tree.longitude]).bindPopup(popup);
+        const marker = L.circleMarker([tree.latitude, tree.longitude], {
+          radius: 6,
+          weight: 1.5,
+          color: "#b84f73",
+          fillColor: "#d86c8f",
+          fillOpacity: 0.88,
+          treeId: tree.id
+        }).bindPopup(popupHtml);
+
+        marker.on("click", () => {
+          selectedTreeId = tree.id;
+          renderCards(currentTrees);
+        });
+
         markersLayer.addLayer(marker);
         bounds.push([tree.latitude, tree.longitude]);
       });
 
-      if (bounds.length && !hasFittedInitially) {
-        map.fitBounds(bounds, { padding: [30, 30] });
-        hasFittedInitially = true;
+      if (bounds.length) {
+        map.fitBounds(bounds, { padding: [28, 28] });
       }
+
+      setTimeout(() => map.invalidateSize(), 120);
+    }
+
+    async function fetchTrees() {
+      const selectedMonth = monthFilterEl.value || "all";
+      const rawQuery = searchInputEl.value.trim() || "";
+      const safeQuery = rawQuery.replace(/,/g, " ");
+
+      setStatus("Loading spring trees from Supabase…");
+
+      let query = supabaseClient
+        .from(TABLE_NAME)
+        .select("id, uniqueid, borough, lat, lon, common_name, taxon_species, location, bloom_period")
+        .not("lat", "is", null)
+        .not("lon", "is", null)
+        .limit(MAX_RESULTS);
+
+      if (selectedMonth !== "all") {
+        if (selectedMonth === "March") {
+          query = query.in("bloom_period", ["March", "March-April"]);
+        } else if (selectedMonth === "April") {
+          query = query.in("bloom_period", ["March-April", "April", "April-May"]);
+        } else if (selectedMonth === "May") {
+          query = query.in("bloom_period", ["May", "April-May"]);
+        }
+      }
+
+      if (safeQuery) {
+        query = query.or(
+          `borough.ilike.%${safeQuery}%,common_name.ilike.%${safeQuery}%,taxon_species.ilike.%${safeQuery}%,location.ilike.%${safeQuery}%`
+        );
+      }
+
+      query = query.order("common_name", { ascending: true });
+
+      const { data, error } = await query;
+
+      if (error) {
+        console.error(error);
+        currentTrees = [];
+        updateStats([]);
+        renderCards([]);
+        renderMarkers([]);
+        setStatus(`Supabase error: ${error.message}`);
+        return;
+      }
+
+      currentTrees = (data || []).map(normaliseTree);
+
+      if (currentTrees.length >= MAX_RESULTS) {
+        setStatus(`Showing the first ${MAX_RESULTS.toLocaleString()} matches. Narrow your filters for a tighter view.`);
+      } else {
+        setStatus(`Loaded ${currentTrees.length.toLocaleString()} matching trees.`);
+      }
+
+      updateStats(currentTrees);
+      renderCards(currentTrees);
+      renderMarkers(currentTrees);
     }
 
     function scheduleFetch() {
       clearTimeout(debounceTimer);
-      debounceTimer = setTimeout(fetchTrees, 250);
+      debounceTimer = setTimeout(fetchTrees, 280);
     }
 
-    monthFilterEl.addEventListener('change', fetchTrees);
-    searchInputEl.addEventListener('input', scheduleFetch);
+    function initMap() {
+      map = L.map("map", {
+        zoomControl: true,
+        preferCanvas: true
+      }).setView([51.5074, -0.1278], 10);
 
-    fetchTrees();
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 19,
+        attribution: "&copy; OpenStreetMap contributors"
+      }).addTo(map);
+
+      markersLayer = L.layerGroup().addTo(map);
+
+      setTimeout(() => map.invalidateSize(), 250);
+    }
+
+    window.addEventListener("load", async () => {
+      try {
+        initMap();
+        monthFilterEl.addEventListener("change", fetchTrees);
+        searchInputEl.addEventListener("input", scheduleFetch);
+        await fetchTrees();
+      } catch (err) {
+        console.error(err);
+        setStatus(`Unexpected error: ${err.message}`);
+      }
+    });
   </script>
 </body>
 </html>

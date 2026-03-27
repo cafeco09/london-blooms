@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>London Blooms 🌸</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -32,7 +32,7 @@
       --cream: #ffffff;
       --border: #f0dde3;
       --shadow: rgba(180,100,120,0.10);
-      --sidebar-w: 400px;
+      --sidebar-w: 380px;
       --header-h: 58px;
       --font-display: 'Cormorant Garamond', Georgia, serif;
       --font-body: 'DM Sans', system-ui, sans-serif;
@@ -54,6 +54,7 @@
       flex-direction: column;
     }
 
+    /* ── HEADER ─────────────────────────────────────── */
     #header {
       height: var(--header-h);
       flex-shrink: 0;
@@ -62,9 +63,10 @@
       justify-content: space-between;
       padding: 0 16px 0 18px;
       border-bottom: 1px solid var(--border);
-      background: rgba(255, 250, 252, 0.95);
+      background: rgba(255, 250, 252, 0.97);
       backdrop-filter: blur(10px);
-      z-index: 500;
+      z-index: 600;
+      gap: 8px;
     }
 
     #headerTitle {
@@ -72,19 +74,22 @@
       align-items: center;
       gap: 8px;
       font-family: var(--font-display);
-      font-size: 1.6rem;
+      font-size: clamp(1.2rem, 4vw, 1.6rem);
       font-weight: 600;
       color: var(--rose);
+      white-space: nowrap;
+      flex-shrink: 0;
     }
 
     #headerRight {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
+      flex-shrink: 0;
     }
 
     #bloomBadge {
-      font-size: 0.7rem;
+      font-size: 0.68rem;
       font-weight: 700;
       letter-spacing: 0.08em;
       text-transform: uppercase;
@@ -92,19 +97,21 @@
       color: #fff;
       padding: 5px 10px;
       border-radius: 999px;
+      white-space: nowrap;
     }
 
     #supportBtn {
       display: inline-flex;
       align-items: center;
-      gap: 7px;
-      padding: 9px 13px;
+      gap: 5px;
+      padding: 8px 12px;
       border-radius: 999px;
       background: #ffdd00;
       color: #2b2200;
       text-decoration: none;
-      font-size: 0.78rem;
+      font-size: 0.75rem;
       font-weight: 700;
+      white-space: nowrap;
       box-shadow: 0 4px 14px rgba(0,0,0,0.10);
       transition: transform 0.15s ease, box-shadow 0.15s ease;
     }
@@ -114,12 +121,15 @@
       box-shadow: 0 6px 18px rgba(0,0,0,0.14);
     }
 
+    /* ── MAIN LAYOUT ─────────────────────────────────── */
     #main {
       flex: 1;
       min-height: 0;
       display: flex;
+      overflow: hidden;
     }
 
+    /* ── SIDEBAR ─────────────────────────────────────── */
     #sidebar {
       width: var(--sidebar-w);
       flex-shrink: 0;
@@ -129,12 +139,45 @@
       background: linear-gradient(180deg, #fffafb 0%, #fff 100%);
       min-height: 0;
       overflow: hidden;
+      transition: transform 0.3s ease, width 0.3s ease;
+      z-index: 500;
     }
 
+    /* ── SIDEBAR TOGGLE (mobile) ─────────────────────── */
+    #sidebarToggle {
+      display: none;
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 700;
+      background: var(--rose);
+      color: white;
+      border: none;
+      border-radius: 999px;
+      padding: 12px 20px;
+      font-family: var(--font-body);
+      font-size: 0.8rem;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 6px 20px rgba(201,92,118,0.35);
+      gap: 6px;
+      align-items: center;
+      white-space: nowrap;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    #sidebarToggle:hover {
+      transform: translateX(-50%) translateY(-2px);
+      box-shadow: 0 8px 24px rgba(201,92,118,0.4);
+    }
+
+    /* ── BANNER ──────────────────────────────────────── */
     #banner {
-      padding: 14px 16px;
+      padding: 12px 14px;
       border-bottom: 1px solid var(--border);
       background: linear-gradient(135deg, var(--petal) 0%, #fce8ef 100%);
+      flex-shrink: 0;
     }
 
     #bannerTop {
@@ -146,22 +189,24 @@
     #bloomEmoji {
       font-size: 1.6rem;
       line-height: 1;
+      flex-shrink: 0;
     }
 
     #bloomStageName {
       font-family: var(--font-display);
-      font-size: 1.12rem;
+      font-size: 1.1rem;
       font-weight: 600;
       color: var(--rose);
       line-height: 1.1;
     }
 
     #bloomTemp {
-      font-size: 0.75rem;
+      font-size: 0.72rem;
       color: #8d7a7f;
       margin-top: 2px;
     }
 
+    /* ── STATS BAR ───────────────────────────────────── */
     #statsBar {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -171,7 +216,7 @@
     }
 
     .statCell {
-      padding: 10px 8px;
+      padding: 9px 6px;
       text-align: center;
       border-right: 1px solid var(--border);
     }
@@ -180,32 +225,34 @@
 
     .statNum {
       font-family: var(--font-display);
-      font-size: 1.35rem;
+      font-size: 1.3rem;
       font-weight: 700;
       color: var(--rose);
       line-height: 1;
     }
 
     .statLbl {
-      font-size: 0.65rem;
+      font-size: 0.62rem;
       text-transform: uppercase;
       letter-spacing: 0.08em;
       color: #a38f93;
       margin-top: 3px;
     }
 
+    /* ── FILTERS ─────────────────────────────────────── */
     #filters {
       flex: 1;
       overflow-y: auto;
-      padding: 14px;
+      overflow-x: hidden;
+      padding: 12px 14px;
       background: #fff;
     }
 
-    #filters::-webkit-scrollbar { width: 6px; }
+    #filters::-webkit-scrollbar { width: 5px; }
     #filters::-webkit-scrollbar-thumb { background: #ead7dd; border-radius: 999px; }
 
     .filterLabel {
-      font-size: 0.66rem;
+      font-size: 0.64rem;
       font-weight: 700;
       letter-spacing: 0.09em;
       text-transform: uppercase;
@@ -216,15 +263,15 @@
     .chipGroup {
       display: flex;
       flex-wrap: wrap;
-      gap: 6px;
-      margin-bottom: 14px;
+      gap: 5px;
+      margin-bottom: 12px;
     }
 
     .chip {
       font-family: var(--font-body);
-      font-size: 0.74rem;
+      font-size: 0.72rem;
       font-weight: 500;
-      padding: 5px 11px;
+      padding: 5px 10px;
       border-radius: 999px;
       border: 1.5px solid var(--border);
       background: #fff;
@@ -232,6 +279,7 @@
       cursor: pointer;
       line-height: 1.3;
       transition: 0.15s ease;
+      -webkit-tap-highlight-color: transparent;
     }
 
     .chip:hover {
@@ -262,22 +310,23 @@
     .flower-chip {
       display: flex;
       align-items: center;
-      gap: 5px;
+      gap: 4px;
     }
 
     .inputWrap {
-      margin-bottom: 12px;
+      margin-bottom: 10px;
     }
 
     #locationInput {
       width: 100%;
       font-family: var(--font-body);
       font-size: 0.84rem;
-      padding: 11px 12px;
+      padding: 10px 12px;
       border: 1.5px solid var(--border);
       border-radius: 12px;
       background: #fff;
       outline: none;
+      -webkit-appearance: none;
     }
 
     #locationInput:focus {
@@ -285,14 +334,14 @@
     }
 
     .radiusRow {
-      margin-bottom: 14px;
+      margin-bottom: 12px;
     }
 
     .radiusTop {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 8px;
+      margin-bottom: 6px;
     }
 
     .radiusValue {
@@ -304,13 +353,14 @@
     #radiusRange {
       width: 100%;
       accent-color: var(--rose);
+      cursor: pointer;
     }
 
     .miniHint {
-      font-size: 0.74rem;
+      font-size: 0.72rem;
       color: #9a868a;
       margin-top: 4px;
-      line-height: 1.45;
+      line-height: 1.4;
     }
 
     #resetBtn {
@@ -323,22 +373,23 @@
       font-weight: 600;
       cursor: pointer;
       white-space: nowrap;
+      -webkit-tap-highlight-color: transparent;
     }
 
     #statusBar {
-      font-size: 0.76rem;
+      font-size: 0.74rem;
       color: #9a868a;
       padding-top: 8px;
     }
 
     #nearbyResults {
-      margin-top: 14px;
+      margin-top: 12px;
       border-top: 1px solid var(--border);
-      padding-top: 14px;
+      padding-top: 12px;
     }
 
     #nearbyResultsTitle {
-      font-size: 0.72rem;
+      font-size: 0.7rem;
       font-weight: 700;
       letter-spacing: 0.08em;
       text-transform: uppercase;
@@ -347,7 +398,7 @@
     }
 
     .searchedAround {
-      font-size: 0.76rem;
+      font-size: 0.74rem;
       color: #8f7b80;
       line-height: 1.5;
       margin-bottom: 10px;
@@ -362,6 +413,7 @@
       margin-bottom: 8px;
       cursor: pointer;
       transition: 0.15s ease;
+      -webkit-tap-highlight-color: transparent;
     }
 
     .nearbyCard:hover {
@@ -375,19 +427,19 @@
       font-weight: 700;
       color: var(--bark);
       line-height: 1.1;
-      margin-bottom: 4px;
+      margin-bottom: 3px;
     }
 
     .nearbyMeta {
-      font-size: 0.74rem;
+      font-size: 0.72rem;
       color: #8f7b80;
-      line-height: 1.45;
+      line-height: 1.4;
     }
 
     .nearbyMiles {
       display: inline-block;
-      margin-top: 6px;
-      font-size: 0.7rem;
+      margin-top: 5px;
+      font-size: 0.68rem;
       font-weight: 700;
       color: var(--rose);
       background: var(--petal);
@@ -396,10 +448,12 @@
       padding: 3px 8px;
     }
 
+    /* ── MAP ─────────────────────────────────────────── */
     #mapWrap {
       flex: 1;
       min-width: 0;
       position: relative;
+      overflow: hidden;
     }
 
     #map {
@@ -413,31 +467,32 @@
       -webkit-tap-highlight-color: transparent;
     }
 
-    .nearbyCard,
-    .chip,
-    button,
-    a,
-    input {
-      touch-action: manipulation;
-    }
-
+    /* ── INSIGHTS PANEL ──────────────────────────────── */
     #insightsPanel {
       position: absolute;
       top: 14px;
       right: 14px;
       z-index: 400;
-      width: 290px;
-      background: rgba(255,255,255,0.94);
-      backdrop-filter: blur(10px);
+      width: min(290px, calc(100% - 28px));
+      background: rgba(255,255,255,0.95);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
       border: 1px solid var(--border);
       border-radius: 16px;
       box-shadow: 0 10px 30px rgba(42,31,26,0.12);
       padding: 14px;
+      transition: opacity 0.2s ease, transform 0.2s ease;
+    }
+
+    #insightsPanel.hidden {
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(-6px);
     }
 
     #insightsTitle {
       font-family: var(--font-display);
-      font-size: 1.18rem;
+      font-size: 1.15rem;
       font-weight: 700;
       color: var(--bark);
       line-height: 1.1;
@@ -445,7 +500,7 @@
     }
 
     .insightSub {
-      font-size: 0.77rem;
+      font-size: 0.75rem;
       color: #907d82;
       line-height: 1.5;
       margin-bottom: 10px;
@@ -456,12 +511,10 @@
       justify-content: space-between;
       gap: 10px;
       margin-bottom: 8px;
-      font-size: 0.78rem;
+      font-size: 0.76rem;
     }
 
-    .insightLabel {
-      color: #8f7b80;
-    }
+    .insightLabel { color: #8f7b80; }
 
     .insightValue {
       color: var(--bark);
@@ -473,7 +526,7 @@
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      font-size: 0.75rem;
+      font-size: 0.73rem;
       font-weight: 700;
       color: var(--rose);
       background: var(--petal);
@@ -486,12 +539,12 @@
 
     .waitingBox {
       margin-top: 10px;
-      padding: 11px 12px;
+      padding: 10px 11px;
       background: #fff7f9;
       border: 1px dashed var(--blush);
       border-radius: 12px;
       color: var(--deep-rose);
-      font-size: 0.78rem;
+      font-size: 0.76rem;
       line-height: 1.5;
     }
 
@@ -501,18 +554,18 @@
       color: var(--bark);
     }
 
+    /* ── LEAFLET POPUP OVERRIDES ─────────────────────── */
     .leaflet-popup-content-wrapper {
       border-radius: 14px !important;
       border: 1px solid var(--border) !important;
       box-shadow: 0 10px 32px rgba(42,31,26,0.18) !important;
     }
 
-    .leaflet-popup-tip {
-      background: #fff !important;
-    }
+    .leaflet-popup-tip { background: #fff !important; }
 
     .popupWrap {
-      min-width: 230px;
+      min-width: 210px;
+      max-width: 280px;
       font-family: var(--font-body);
       color: var(--soil);
       line-height: 1.5;
@@ -520,7 +573,7 @@
 
     .popupName {
       font-family: var(--font-display);
-      font-size: 1.15rem;
+      font-size: 1.12rem;
       font-weight: 700;
       color: var(--bark);
       margin-bottom: 4px;
@@ -528,19 +581,17 @@
     }
 
     .popupMeta {
-      font-size: 0.77rem;
+      font-size: 0.75rem;
       margin-bottom: 8px;
     }
 
-    .popupMeta strong {
-      color: var(--bark);
-    }
+    .popupMeta strong { color: var(--bark); }
 
     .popupScore {
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      font-size: 0.74rem;
+      font-size: 0.72rem;
       font-weight: 700;
       color: var(--rose);
       background: var(--petal);
@@ -563,12 +614,13 @@
       color: var(--soil);
       border-radius: 999px;
       padding: 5px 10px;
-      font-size: 0.75rem;
+      font-size: 0.73rem;
       font-weight: 600;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
-      gap: 5px;
+      gap: 4px;
+      -webkit-tap-highlight-color: transparent;
     }
 
     .popupVoteBtn.active.up {
@@ -583,19 +635,16 @@
       color: var(--deep-rose);
     }
 
-    .popupLinks {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
+    .popupLinks { display: flex; gap: 8px; flex-wrap: wrap; }
 
     .popupLink {
-      font-size: 0.74rem;
+      font-size: 0.72rem;
       font-weight: 700;
       color: var(--rose);
       text-decoration: none;
     }
 
+    /* ── MARKER CLUSTER COLOURS ──────────────────────── */
     .marker-cluster-small,
     .marker-cluster-medium,
     .marker-cluster-large {
@@ -612,43 +661,81 @@
       border: 2px solid white;
     }
 
-    @media (max-width: 980px) {
-      #insightsPanel {
-        width: 250px;
-      }
+    /* ── RESPONSIVE: TABLET (≤900px) ────────────────── */
+    @media (max-width: 900px) {
+      :root { --sidebar-w: 310px; }
+
+      #bloomBadge { display: none; }
     }
 
-    @media (max-width: 760px) {
+    /* ── RESPONSIVE: MOBILE (≤640px) ────────────────── */
+    @media (max-width: 640px) {
+      :root {
+        --header-h: 52px;
+        --sidebar-w: 100%;
+      }
+
       #main {
         flex-direction: column;
       }
 
       #sidebar {
         width: 100%;
-        height: 50vh;
+        /* Hidden off-screen by default on mobile */
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 55vh;
         border-right: none;
-        border-bottom: 1px solid var(--border);
+        border-top: 1px solid var(--border);
+        border-radius: 20px 20px 0 0;
+        z-index: 650;
+        transform: translateY(100%);
+        transition: transform 0.35s cubic-bezier(0.32,0.72,0,1);
+        box-shadow: 0 -8px 32px rgba(42,31,26,0.12);
+      }
+
+      #sidebar.open {
+        transform: translateY(0);
+      }
+
+      /* Drag handle */
+      #sidebar::before {
+        content: '';
+        display: block;
+        width: 36px;
+        height: 4px;
+        border-radius: 2px;
+        background: #ddd;
+        margin: 10px auto 0;
+        flex-shrink: 0;
       }
 
       #mapWrap {
-        height: 50vh;
+        position: fixed;
+        inset: var(--header-h) 0 0 0;
+        height: calc(100% - var(--header-h));
       }
 
-      #bloomBadge {
-        display: none;
+      #sidebarToggle {
+        display: inline-flex;
       }
+
+      #bloomBadge { display: none; }
 
       #supportBtn {
-        padding: 8px 10px;
-        font-size: 0.72rem;
+        padding: 7px 10px;
+        font-size: 0.7rem;
       }
 
       #insightsPanel {
         top: auto;
+        bottom: 80px; /* above the FAB */
         right: 10px;
-        bottom: 10px;
-        width: calc(100% - 20px);
-        max-height: 34vh;
+        left: 10px;
+        width: auto;
+        max-height: 35vh;
         overflow-y: auto;
       }
 
@@ -658,10 +745,49 @@
 
       .leaflet-popup-content {
         margin: 12px 14px !important;
-        max-height: 50vh;
+        max-height: 45vh;
         overflow-y: auto;
       }
+
+      .leaflet-popup-content-wrapper {
+        max-width: calc(100vw - 40px) !important;
+      }
     }
+
+    /* ── RESPONSIVE: SMALL MOBILE (≤380px) ──────────── */
+    @media (max-width: 380px) {
+      #headerTitle { font-size: 1.1rem; }
+
+      #supportBtn {
+        font-size: 0.65rem;
+        padding: 6px 8px;
+      }
+
+      #supportBtn span { display: none; }
+    }
+
+    /* ── SAFE AREA (iPhone notch/home bar) ───────────── */
+    @supports (padding-bottom: env(safe-area-inset-bottom)) {
+      #sidebar.open {
+        padding-bottom: env(safe-area-inset-bottom);
+      }
+
+      #sidebarToggle {
+        bottom: calc(20px + env(safe-area-inset-bottom));
+      }
+    }
+
+    /* ── OVERLAY (when sidebar is open on mobile) ────── */
+    #sidebarOverlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 640;
+      background: rgba(58,42,46,0.3);
+      backdrop-filter: blur(2px);
+    }
+
+    #sidebarOverlay.visible { display: block; }
   </style>
 </head>
 <body>
@@ -675,10 +801,13 @@
   <div id="headerRight">
     <span id="bloomBadge">Loading…</span>
     <a id="supportBtn" href="https://buymeacoffee.com/anshdt" target="_blank" rel="noopener noreferrer">
-      ☕ Buy me a coffee
+      ☕ <span>Buy me a coffee</span>
     </a>
   </div>
 </header>
+
+<!-- Mobile overlay -->
+<div id="sidebarOverlay"></div>
 
 <div id="main">
   <aside id="sidebar">
@@ -721,7 +850,7 @@
 
       <div class="filterLabel">Location</div>
       <div class="inputWrap">
-        <input id="locationInput" type="text" placeholder="Search place, borough, park…" />
+        <input id="locationInput" type="text" placeholder="Search place, borough, park…" autocomplete="off" />
         <div class="miniHint">Pick from suggestions, or press Enter to search directly.</div>
       </div>
 
@@ -764,6 +893,9 @@
     </div>
   </div>
 </div>
+
+<!-- Mobile FAB -->
+<button id="sidebarToggle" type="button" aria-label="Toggle filters">🌸 Filters</button>
 
 <script>
   const SUPABASE_URL = window.APP_CONFIG?.SUPABASE_URL;
@@ -847,22 +979,51 @@
   const bloomBadgeEl = document.getElementById("bloomBadge");
   const insightsBodyEl = document.getElementById("insightsBody");
   const insightsPanelEl = document.getElementById("insightsPanel");
+  const sidebarEl = document.getElementById("sidebar");
+  const sidebarToggleEl = document.getElementById("sidebarToggle");
+  const sidebarOverlayEl = document.getElementById("sidebarOverlay");
 
+  /* ── MOBILE SIDEBAR TOGGLE ─────────────────────────── */
+  function isMobile() { return window.innerWidth <= 640; }
+
+  function openSidebar() {
+    sidebarEl.classList.add("open");
+    sidebarOverlayEl.classList.add("visible");
+    sidebarToggleEl.textContent = "✕ Close";
+  }
+
+  function closeSidebar() {
+    sidebarEl.classList.remove("open");
+    sidebarOverlayEl.classList.remove("visible");
+    sidebarToggleEl.textContent = "🌸 Filters";
+  }
+
+  function toggleSidebar() {
+    if (sidebarEl.classList.contains("open")) closeSidebar();
+    else openSidebar();
+  }
+
+  sidebarToggleEl.addEventListener("click", toggleSidebar);
+  sidebarOverlayEl.addEventListener("click", closeSidebar);
+
+  /* Touch-swipe down to close sidebar on mobile */
+  let touchStartY = 0;
+  sidebarEl.addEventListener("touchstart", e => { touchStartY = e.touches[0].clientY; }, { passive: true });
+  sidebarEl.addEventListener("touchend", e => {
+    const dy = e.changedTouches[0].clientY - touchStartY;
+    if (dy > 60) closeSidebar();
+  }, { passive: true });
+
+  /* ── UTILITIES ─────────────────────────────────────── */
   function esc(s) {
     return String(s ?? "")
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&#039;");
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;").replace(/'/g, "&#039;");
   }
 
   function getVoterKey() {
     let k = localStorage.getItem("lb_voter_key");
-    if (!k) {
-      k = crypto.randomUUID();
-      localStorage.setItem("lb_voter_key", k);
-    }
+    if (!k) { k = crypto.randomUUID(); localStorage.setItem("lb_voter_key", k); }
     return k;
   }
 
@@ -910,26 +1071,12 @@
     const c = SPECIES_COLORS[speciesKey(tree.common_name)] || SPECIES_COLORS.default;
     const size = isSelected ? 24 : 20;
     const emoji = flowerEmoji(tree.common_name);
-
     return L.divIcon({
       className: "",
       iconSize: [size, size],
       iconAnchor: [size / 2, size / 2],
       popupAnchor: [0, -size / 2],
-      html: `
-        <div style="
-          width:${size}px;
-          height:${size}px;
-          border-radius:50%;
-          background:${c.fill};
-          border:${isSelected ? 3 : 2}px solid ${isSelected ? "#ffffff" : c.stroke};
-          display:flex;
-          align-items:center;
-          justify-content:center;
-          font-size:${isSelected ? 12 : 11}px;
-          box-shadow:0 2px 8px rgba(0,0,0,0.14);
-        ">${emoji}</div>
-      `
+      html: `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${c.fill};border:${isSelected ? 3 : 2}px solid ${isSelected ? "#ffffff" : c.stroke};display:flex;align-items:center;justify-content:center;font-size:${isSelected ? 12 : 11}px;box-shadow:0 2px 8px rgba(0,0,0,0.14);">${emoji}</div>`
     });
   }
 
@@ -937,9 +1084,7 @@
     return state.votesBySpot.get(String(id)) || { upvotes: 0, downvotes: 0, score: 0, total_votes: 0 };
   }
 
-  function getMyVote(id) {
-    return state.myVotesBySpot.get(String(id)) || 0;
-  }
+  function getMyVote(id) { return state.myVotesBySpot.get(String(id)) || 0; }
 
   function totalVotesFor(id) {
     const v = getVoteTotals(id);
@@ -949,24 +1094,15 @@
   function milesBetween(lat1, lon1, lat2, lon2) {
     const R = 3958.8;
     const toRad = d => d * Math.PI / 180;
-
     const dLat = toRad(lat2 - lat1);
     const dLon = toRad(lon2 - lon1);
-
-    const a =
-      Math.sin(dLat / 2) ** 2 +
-      Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
-
+    const a = Math.sin(dLat/2)**2 + Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLon/2)**2;
     return 2 * R * Math.asin(Math.sqrt(a));
   }
 
   function buildFlowerGrid() {
     flowerGridEl.innerHTML = FLOWERS.map(f => `
-      <button
-        class="chip flower ${state.filters.name.toLowerCase() === f.name.toLowerCase() ? "active" : ""}"
-        data-name="${esc(f.name)}"
-        type="button"
-      >
+      <button class="chip flower ${state.filters.name.toLowerCase() === f.name.toLowerCase() ? "active" : ""}" data-name="${esc(f.name)}" type="button">
         <span class="flower-chip">${f.icon} ${esc(f.name)}</span>
       </button>
     `).join("");
@@ -987,7 +1123,6 @@
     document.querySelectorAll('#modeChips .chip').forEach(btn => {
       btn.classList.toggle('active', btn.dataset.mode === mode);
     });
-
     if (mode === "markers") {
       if (!map.hasLayer(markerClusterLayer)) map.addLayer(markerClusterLayer);
       if (map.hasLayer(heatLayer)) map.removeLayer(heatLayer);
@@ -999,25 +1134,20 @@
 
   function loadGoogleMaps() {
     return new Promise((resolve, reject) => {
-      if (window.google?.maps?.places) {
-        resolve();
-        return;
-      }
-
+      if (window.google?.maps?.places) { resolve(); return; }
       const existing = document.querySelector('script[data-google-loader="true"]');
       if (existing) {
         existing.addEventListener("load", () => resolve(), { once: true });
-        existing.addEventListener("error", () => reject(new Error("Google Maps failed to load")), { once: true });
+        existing.addEventListener("error", () => reject(new Error("Google Maps failed")), { once: true });
         return;
       }
-
       const script = document.createElement("script");
       script.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(GOOGLE_MAPS_API_KEY)}&libraries=places`;
       script.async = true;
       script.defer = true;
       script.dataset.googleLoader = "true";
       script.onload = () => resolve();
-      script.onerror = () => reject(new Error("Google Maps failed to load"));
+      script.onerror = () => reject(new Error("Google Maps failed"));
       document.head.appendChild(script);
     });
   }
@@ -1025,29 +1155,18 @@
   async function geocodeFallback(query) {
     if (!window.google?.maps?.Geocoder) return null;
     const geocoder = new google.maps.Geocoder();
-
-    return new Promise((resolve) => {
-      geocoder.geocode(
-        { address: query, componentRestrictions: { country: "GB" } },
-        (results, status) => {
-          if (status === "OK" && results && results[0]?.geometry?.location) {
-            resolve({
-              label: results[0].formatted_address || query,
-              lat: results[0].geometry.location.lat(),
-              lon: results[0].geometry.location.lng()
-            });
-          } else {
-            resolve(null);
-          }
-        }
-      );
+    return new Promise(resolve => {
+      geocoder.geocode({ address: query, componentRestrictions: { country: "GB" } }, (results, status) => {
+        if (status === "OK" && results?.[0]?.geometry?.location) {
+          resolve({ label: results[0].formatted_address || query, lat: results[0].geometry.location.lat(), lon: results[0].geometry.location.lng() });
+        } else { resolve(null); }
+      });
     });
   }
 
   async function setSearchCenter(placeObj) {
     state.searchCenter = placeObj;
     applyFilters();
-
     const validVisible = state.visibleTrees.filter(t => Number.isFinite(t.lat) && Number.isFinite(t.lon));
     if (validVisible.length) {
       const bounds = L.latLngBounds(validVisible.map(t => [t.lat, t.lon]));
@@ -1055,15 +1174,12 @@
     } else if (placeObj) {
       map.flyTo([placeObj.lat, placeObj.lon], 13, { duration: 0.7 });
     }
+    if (isMobile()) closeSidebar();
   }
 
   async function initGoogleAutocompleteClassic() {
     await loadGoogleMaps();
-
-    if (!window.google?.maps?.places?.Autocomplete) {
-      console.warn("Google Places Autocomplete not available");
-      return;
-    }
+    if (!window.google?.maps?.places?.Autocomplete) { console.warn("Autocomplete N/A"); return; }
 
     googleAutocomplete = new google.maps.places.Autocomplete(locationInput, {
       componentRestrictions: { country: "gb" },
@@ -1073,7 +1189,6 @@
     googleAutocomplete.addListener("place_changed", async () => {
       const place = googleAutocomplete.getPlace();
       if (!place.geometry?.location) return;
-
       await setSearchCenter({
         label: place.name || place.formatted_address || locationInput.value.trim(),
         lat: place.geometry.location.lat(),
@@ -1081,17 +1196,13 @@
       });
     });
 
-    locationInput.addEventListener("keydown", async (e) => {
+    locationInput.addEventListener("keydown", async e => {
       if (e.key !== "Enter") return;
       e.preventDefault();
-
       const query = locationInput.value.trim();
       if (!query) return;
-
       const fallback = await geocodeFallback(query);
-      if (fallback) {
-        await setSearchCenter(fallback);
-      }
+      if (fallback) await setSearchCenter(fallback);
     });
   }
 
@@ -1100,105 +1211,54 @@
       const r = await fetch(WEATHER_URL);
       if (!r.ok) throw new Error(`HTTP ${r.status}`);
       const d = await r.json();
-
       const means = d.daily?.temperature_2m_mean ?? [];
-      const avg = means.length ? means.reduce((a, b) => a + b, 0) / means.length : null;
+      const avg = means.length ? means.reduce((a,b)=>a+b,0)/means.length : null;
       const current = d.current?.temperature_2m ?? null;
-
-      let label = "Spring signal";
-      let emoji = "🌿";
-
+      let label = "Spring signal", emoji = "🌿";
       if (avg !== null) {
-        if (avg < 8) {
-          label = "Cool spring";
-          emoji = "🌱";
-        } else if (avg < 12) {
-          label = "Mild spring";
-          emoji = "🌱";
-        } else if (avg < 17) {
-          label = "Blossom weather";
-          emoji = "🌸";
-        } else {
-          label = "Warm spring";
-          emoji = "🍃";
-        }
+        if (avg < 8) { label = "Cool spring"; emoji = "🌱"; }
+        else if (avg < 12) { label = "Mild spring"; emoji = "🌱"; }
+        else if (avg < 17) { label = "Blossom weather"; emoji = "🌸"; }
+        else { label = "Warm spring"; emoji = "🍃"; }
       }
-
       bloomEmojiEl.textContent = emoji;
       bloomStageNameEl.textContent = label;
-      bloomTempEl.textContent = avg !== null
-        ? `7-day avg ${avg.toFixed(1)} °C${current !== null ? ` · Now ${current.toFixed(0)} °C` : ""}`
-        : "Temperature unavailable";
+      bloomTempEl.textContent = avg !== null ? `7-day avg ${avg.toFixed(1)} °C${current !== null ? ` · Now ${current.toFixed(0)} °C` : ""}` : "Temperature unavailable";
       bloomBadgeEl.textContent = label;
     } catch (error) {
       bloomEmojiEl.textContent = "🌿";
       bloomStageNameEl.textContent = "Unavailable";
       bloomTempEl.textContent = "Weather unavailable";
       bloomBadgeEl.textContent = "?";
-      console.warn("Weather fetch failed:", error);
     }
   }
 
   async function fetchTrees() {
     statusEl.textContent = "Loading blossoms…";
     const combined = [];
-
     for (const species of TARGET_SPECIES) {
-      const { data, error } = await db
-        .from(TABLE_NAME)
+      const { data, error } = await db.from(TABLE_NAME)
         .select("id, borough, lat, lon, common_name, location, bloom_period")
         .eq("common_name", species)
-        .not("lat", "is", null)
-        .not("lon", "is", null)
+        .not("lat", "is", null).not("lon", "is", null)
         .limit(PER_SPECIES_LIMIT);
-
-      if (error) {
-        statusEl.textContent = `Couldn't load trees: ${error.message || "unknown error"}`;
-        console.error(`fetchTrees error for ${species}:`, error);
-        return;
-      }
-
+      if (error) { statusEl.textContent = `Couldn't load trees: ${error.message || "unknown error"}`; console.error(error); return; }
       combined.push(...(data || []));
     }
-
     state.allTrees = combined.map(normaliseRow);
     applyFilters();
   }
 
   async function fetchVoteTotals() {
     const { data, error } = await db.from("spot_vote_totals").select("*");
-    if (error) {
-      console.warn("fetchVoteTotals:", error);
-      return;
-    }
-
-    state.votesBySpot = new Map(
-      (data || []).map(r => [
-        String(r.spot_id),
-        {
-          upvotes: Number(r.upvotes || 0),
-          downvotes: Number(r.downvotes || 0),
-          score: Number(r.score || 0),
-          total_votes: Number(r.total_votes || 0)
-        }
-      ])
-    );
+    if (error) { console.warn("fetchVoteTotals:", error); return; }
+    state.votesBySpot = new Map((data || []).map(r => [String(r.spot_id), { upvotes: Number(r.upvotes||0), downvotes: Number(r.downvotes||0), score: Number(r.score||0), total_votes: Number(r.total_votes||0) }]));
   }
 
   async function fetchMyVotes() {
-    const { data, error } = await db
-      .from("spot_votes")
-      .select("spot_id, vote")
-      .eq("voter_key", getVoterKey());
-
-    if (error) {
-      console.warn("fetchMyVotes:", error);
-      return;
-    }
-
-    state.myVotesBySpot = new Map(
-      (data || []).map(r => [String(r.spot_id), Number(r.vote)])
-    );
+    const { data, error } = await db.from("spot_votes").select("spot_id, vote").eq("voter_key", getVoterKey());
+    if (error) { console.warn("fetchMyVotes:", error); return; }
+    state.myVotesBySpot = new Map((data || []).map(r => [String(r.spot_id), Number(r.vote)]));
   }
 
   async function castVote(spotId, vote) {
@@ -1206,25 +1266,17 @@
     const prevMine = getMyVote(spotId);
     const newMine = vote === prevMine ? 0 : vote;
     const delta = newMine - prevMine;
-    const optimisticTotal = Math.max(prev.total_votes || 0, (prev.upvotes || 0) + (prev.downvotes || 0));
-
+    const optimisticTotal = Math.max(prev.total_votes || 0, (prev.upvotes||0) + (prev.downvotes||0));
     state.myVotesBySpot.set(String(spotId), newMine);
     state.votesBySpot.set(String(spotId), {
-      upvotes: Math.max(0, prev.upvotes + (newMine === 1 ? 1 : 0) - (prevMine === 1 ? 1 : 0)),
-      downvotes: Math.max(0, prev.downvotes + (newMine === -1 ? 1 : 0) - (prevMine === -1 ? 1 : 0)),
+      upvotes: Math.max(0, prev.upvotes + (newMine===1?1:0) - (prevMine===1?1:0)),
+      downvotes: Math.max(0, prev.downvotes + (newMine===-1?1:0) - (prevMine===-1?1:0)),
       score: prev.score + delta,
       total_votes: optimisticTotal
     });
-
     refreshPopupIfSelected(spotId);
     renderInsightsForSelected();
-
-    const { error } = await db.rpc("cast_vote", {
-      p_spot_id: String(spotId),
-      p_voter_key: getVoterKey(),
-      p_vote: vote
-    });
-
+    const { error } = await db.rpc("cast_vote", { p_spot_id: String(spotId), p_voter_key: getVoterKey(), p_vote: vote });
     if (error) {
       state.myVotesBySpot.set(String(spotId), prevMine);
       state.votesBySpot.set(String(spotId), prev);
@@ -1233,7 +1285,6 @@
       alert(`Couldn't save vote: ${error.message || "unknown error"}`);
       return;
     }
-
     await fetchVoteTotals();
     await fetchMyVotes();
     refreshPopupIfSelected(spotId);
@@ -1248,72 +1299,33 @@
   }
 
   function renderNearbyResults() {
-    if (!state.searchCenter) {
-      nearbyResultsEl.style.display = "none";
-      nearbyResultsListEl.innerHTML = "";
-      return;
-    }
-
+    if (!state.searchCenter) { nearbyResultsEl.style.display = "none"; nearbyResultsListEl.innerHTML = ""; return; }
     const nearest = state.visibleTrees
-      .map(t => ({
-        ...t,
-        distanceMiles: milesBetween(state.searchCenter.lat, state.searchCenter.lon, t.lat, t.lon)
-      }))
-      .sort((a, b) => a.distanceMiles - b.distanceMiles)
-      .slice(0, 8);
-
-    const searchedLabel = state.searchCenter.label
-      ? esc(state.searchCenter.label)
-      : `${state.searchCenter.lat.toFixed(5)}, ${state.searchCenter.lon.toFixed(5)}`;
-
+      .map(t => ({ ...t, distanceMiles: milesBetween(state.searchCenter.lat, state.searchCenter.lon, t.lat, t.lon) }))
+      .sort((a,b) => a.distanceMiles - b.distanceMiles).slice(0, 8);
+    const searchedLabel = state.searchCenter.label ? esc(state.searchCenter.label) : `${state.searchCenter.lat.toFixed(5)}, ${state.searchCenter.lon.toFixed(5)}`;
     if (!nearest.length) {
-      nearbyResultsListEl.innerHTML = `
-        <div class="searchedAround"><strong>Searched around:</strong><br>${searchedLabel}</div>
-        <div style="font-size:0.78rem;color:#8f7b80;">No blossom spots found within ${state.searchRadiusMiles} miles.</div>
-      `;
+      nearbyResultsListEl.innerHTML = `<div class="searchedAround"><strong>Searched around:</strong><br>${searchedLabel}</div><div style="font-size:0.78rem;color:#8f7b80;">No blossom spots found within ${state.searchRadiusMiles} miles.</div>`;
       nearbyResultsEl.style.display = "block";
       return;
     }
-
-    nearbyResultsListEl.innerHTML = `
-      <div class="searchedAround"><strong>Searched around:</strong><br>${searchedLabel}</div>
-      ${nearest.map(t => `
-        <div class="nearbyCard" data-id="${esc(t.id)}">
-          <div class="nearbyName">${esc(t.common_name)}</div>
-          <div class="nearbyMeta">
-            ${t.location ? `${esc(t.location)}<br>` : ""}
-            ${t.borough ? `${esc(t.borough)}<br>` : ""}
-            <strong>Coords:</strong> ${Number(t.lat).toFixed(5)}, ${Number(t.lon).toFixed(5)}
-          </div>
-          <div class="nearbyMiles">${t.distanceMiles.toFixed(1)} miles away</div>
-        </div>
-      `).join("")}
-    `;
-
+    nearbyResultsListEl.innerHTML = `<div class="searchedAround"><strong>Searched around:</strong><br>${searchedLabel}</div>${nearest.map(t => `<div class="nearbyCard" data-id="${esc(t.id)}"><div class="nearbyName">${esc(t.common_name)}</div><div class="nearbyMeta">${t.location?`${esc(t.location)}<br>`:""}${t.borough?`${esc(t.borough)}<br>`:""}<strong>Coords:</strong> ${Number(t.lat).toFixed(5)}, ${Number(t.lon).toFixed(5)}</div><div class="nearbyMiles">${t.distanceMiles.toFixed(1)} miles away</div></div>`).join("")}`;
     nearbyResultsEl.style.display = "block";
-
     nearbyResultsListEl.querySelectorAll(".nearbyCard").forEach(card => {
-      card.addEventListener("click", () => selectTree(card.dataset.id, true));
+      card.addEventListener("click", () => { selectTree(card.dataset.id, true); if (isMobile()) closeSidebar(); });
     });
   }
 
   function applyFilters() {
     const base = baseFilteredTrees();
-
     if (state.searchCenter) {
       state.visibleTrees = base.filter(t => {
         if (!Number.isFinite(t.lat) || !Number.isFinite(t.lon)) return false;
-        return milesBetween(
-          state.searchCenter.lat,
-          state.searchCenter.lon,
-          t.lat,
-          t.lon
-        ) <= state.searchRadiusMiles;
+        return milesBetween(state.searchCenter.lat, state.searchCenter.lon, t.lat, t.lon) <= state.searchRadiusMiles;
       });
     } else {
       state.visibleTrees = base;
     }
-
     renderStats();
     renderStatus();
     renderMarkers();
@@ -1323,94 +1335,49 @@
 
   function renderStats() {
     cTreesEl.textContent = state.visibleTrees.length.toLocaleString();
-    cPlacesEl.textContent = new Set(
-      state.visibleTrees.map(t => `${t.location}|${t.borough}`).filter(Boolean)
-    ).size;
+    cPlacesEl.textContent = new Set(state.visibleTrees.map(t => `${t.location}|${t.borough}`).filter(Boolean)).size;
     cTypesEl.textContent = new Set(state.visibleTrees.map(t => t.common_name).filter(Boolean)).size;
   }
 
   function renderStatus() {
-    if (!state.allTrees.length) {
-      statusEl.textContent = "No blossom data loaded yet.";
-      return;
-    }
-
+    if (!state.allTrees.length) { statusEl.textContent = "No blossom data loaded yet."; return; }
     if (state.searchCenter) {
-      if (!state.visibleTrees.length) {
-        statusEl.textContent = `No blossom spots found within ${state.searchRadiusMiles} miles.`;
-      } else {
-        statusEl.textContent = `${state.visibleTrees.length.toLocaleString()} blossom spots within ${state.searchRadiusMiles} miles`;
-      }
+      statusEl.textContent = state.visibleTrees.length
+        ? `${state.visibleTrees.length.toLocaleString()} blossom spots within ${state.searchRadiusMiles} miles`
+        : `No blossom spots found within ${state.searchRadiusMiles} miles.`;
       return;
     }
-
     statusEl.textContent = `${state.visibleTrees.length.toLocaleString()} blossom spots on the map`;
   }
 
   function popupHtml(t) {
     const votes = getVoteTotals(t.id);
     const mine = getMyVote(t.id);
-
-    return `
-      <div class="popupWrap" data-popup-id="${esc(t.id)}">
-        <div class="popupName">${esc(t.common_name)}</div>
-
-        <div class="popupMeta">
-          ${t.borough ? `<div><strong>Borough:</strong> ${esc(t.borough)}</div>` : ""}
-          ${t.location ? `<div><strong>Place:</strong> ${esc(t.location)}</div>` : ""}
-          ${t.bloom_period ? `<div><strong>Bloom:</strong> ${esc(t.bloom_period)}</div>` : ""}
-        </div>
-
-        <div class="popupScore">Community score ${votes.score >= 0 ? "+" : ""}${votes.score}</div>
-
-        <div class="popupVotes">
-          <button class="popupVoteBtn ${mine === 1 ? "active up" : ""}" data-spot="${esc(t.id)}" data-vote="1" type="button">👍 <span>${votes.upvotes}</span></button>
-          <button class="popupVoteBtn ${mine === -1 ? "active down" : ""}" data-spot="${esc(t.id)}" data-vote="-1" type="button">👎 <span>${votes.downvotes}</span></button>
-        </div>
-
-        <div class="popupLinks">
-          <a class="popupLink" href="${mapsUrl(t.lat, t.lon)}" target="_blank" rel="noopener noreferrer">Open in Maps ↗</a>
-        </div>
-      </div>
-    `;
+    return `<div class="popupWrap" data-popup-id="${esc(t.id)}"><div class="popupName">${esc(t.common_name)}</div><div class="popupMeta">${t.borough?`<div><strong>Borough:</strong> ${esc(t.borough)}</div>`:""} ${t.location?`<div><strong>Place:</strong> ${esc(t.location)}</div>`:""} ${t.bloom_period?`<div><strong>Bloom:</strong> ${esc(t.bloom_period)}</div>`:""}</div><div class="popupScore">Community score ${votes.score>=0?"+":""}${votes.score}</div><div class="popupVotes"><button class="popupVoteBtn ${mine===1?"active up":""}" data-spot="${esc(t.id)}" data-vote="1" type="button">👍 <span>${votes.upvotes}</span></button><button class="popupVoteBtn ${mine===-1?"active down":""}" data-spot="${esc(t.id)}" data-vote="-1" type="button">👎 <span>${votes.downvotes}</span></button></div><div class="popupLinks"><a class="popupLink" href="${mapsUrl(t.lat,t.lon)}" target="_blank" rel="noopener noreferrer">Open in Maps ↗</a></div></div>`;
   }
 
   function renderMarkers() {
     const valid = state.visibleTrees.filter(t => Number.isFinite(t.lat) && Number.isFinite(t.lon));
     const newIds = new Set(valid.map(t => String(t.id)));
-
     for (const id of state.markersById.keys()) {
-      if (!newIds.has(id)) {
-        markerClusterLayer.removeLayer(state.markersById.get(id));
-        state.markersById.delete(id);
-      }
+      if (!newIds.has(id)) { markerClusterLayer.removeLayer(state.markersById.get(id)); state.markersById.delete(id); }
     }
-
     const bounds = [];
-
     valid.forEach(t => {
       const id = String(t.id);
       const isSelected = id === String(state.selectedId);
-
       if (state.markersById.has(id)) {
         const marker = state.markersById.get(id);
         marker.setIcon(createTreeIcon(t, isSelected));
         marker.setPopupContent(popupHtml(t));
       } else {
-        const marker = L.marker([t.lat, t.lon], {
-          icon: createTreeIcon(t, isSelected),
-          keyboard: false
-        }).bindPopup(popupHtml(t));
-
+        const marker = L.marker([t.lat, t.lon], { icon: createTreeIcon(t, isSelected), keyboard: false }).bindPopup(popupHtml(t));
         marker.on("click", () => selectTree(t.id, false));
-
         markerClusterLayer.addLayer(marker);
         state.markersById.set(id, marker);
       }
-
       bounds.push([t.lat, t.lon]);
     });
-
     if (bounds.length && !state.hasInitialFit) {
       map.fitBounds(bounds, { padding: [28, 28] });
       state.hasInitialFit = true;
@@ -1418,62 +1385,30 @@
   }
 
   function renderHeatmap() {
-    const points = state.visibleTrees
-      .filter(t => Number.isFinite(t.lat) && Number.isFinite(t.lon))
-      .map(t => [t.lat, t.lon, 0.6]);
-
+    const points = state.visibleTrees.filter(t => Number.isFinite(t.lat) && Number.isFinite(t.lon)).map(t => [t.lat, t.lon, 0.6]);
     heatLayer.setLatLngs(points);
   }
 
   function renderInsightsForSelected() {
     if (!state.selectedId) {
-      insightsBodyEl.innerHTML = `
-        <div class="insightRow">
-          <span class="insightLabel">Status</span>
-          <span class="insightValue">No place selected</span>
-        </div>
-      `;
+      insightsBodyEl.innerHTML = `<div class="insightRow"><span class="insightLabel">Status</span><span class="insightValue">No place selected</span></div>`;
       return;
     }
-
     const tree = state.allTrees.find(t => String(t.id) === String(state.selectedId));
     if (!tree) return;
-
     const votes = getVoteTotals(tree.id);
     const totalVotes = totalVotesFor(tree.id);
-
     insightsBodyEl.innerHTML = `
       <div class="insightSub" style="margin-bottom:8px;">
         <strong style="display:block;color:var(--bark);font-family:var(--font-display);font-size:1.05rem;">${esc(tree.common_name)}</strong>
         ${tree.location ? `${esc(tree.location)}<br>` : ""}
         ${tree.borough ? `${esc(tree.borough)}` : ""}
       </div>
-
-      <div class="insightPill">Community score ${votes.score >= 0 ? "+" : ""}${votes.score}</div>
-
-      <div class="insightRow">
-        <span class="insightLabel">Upvotes</span>
-        <span class="insightValue">${votes.upvotes}</span>
-      </div>
-
-      <div class="insightRow">
-        <span class="insightLabel">Downvotes</span>
-        <span class="insightValue">${votes.downvotes}</span>
-      </div>
-
-      <div class="insightRow">
-        <span class="insightLabel">Total votes</span>
-        <span class="insightValue">${totalVotes}</span>
-      </div>
-
-      ${
-        totalVotes < 3
-          ? `<div class="waitingBox">
-              <strong>Waiting for votes 🙂</strong>
-              Would you like to vote? This blossom spot still needs community input.
-            </div>`
-          : ""
-      }
+      <div class="insightPill">Community score ${votes.score>=0?"+":""}${votes.score}</div>
+      <div class="insightRow"><span class="insightLabel">Upvotes</span><span class="insightValue">${votes.upvotes}</span></div>
+      <div class="insightRow"><span class="insightLabel">Downvotes</span><span class="insightValue">${votes.downvotes}</span></div>
+      <div class="insightRow"><span class="insightLabel">Total votes</span><span class="insightValue">${totalVotes}</span></div>
+      ${totalVotes < 3 ? `<div class="waitingBox"><strong>Waiting for votes 🙂</strong>Would you like to vote? This blossom spot still needs community input.</div>` : ""}
     `;
   }
 
@@ -1481,33 +1416,22 @@
     const marker = state.markersById.get(String(spotId));
     const tree = state.allTrees.find(t => String(t.id) === String(spotId));
     if (!marker || !tree) return;
-
     marker.setPopupContent(popupHtml(tree));
-
-    if (state.selectedId && String(state.selectedId) === String(spotId) && marker.isPopupOpen()) {
-      marker.openPopup();
-    }
+    if (state.selectedId && String(state.selectedId) === String(spotId) && marker.isPopupOpen()) marker.openPopup();
   }
 
   function selectTree(id, flyTo = true) {
     const tree = state.allTrees.find(t => String(t.id) === String(id));
     if (!tree) return;
-
     const prevId = state.selectedId;
     state.selectedId = tree.id;
-
     if (prevId !== null && state.markersById.has(String(prevId))) {
       const prevTree = state.allTrees.find(t => String(t.id) === String(prevId));
-      if (prevTree) {
-        state.markersById.get(String(prevId)).setIcon(createTreeIcon(prevTree, false));
-      }
+      if (prevTree) state.markersById.get(String(prevId)).setIcon(createTreeIcon(prevTree, false));
     }
-
     const marker = state.markersById.get(String(tree.id));
     if (marker) marker.setIcon(createTreeIcon(tree, true));
-
     renderInsightsForSelected();
-
     if (flyTo && Number.isFinite(tree.lat) && Number.isFinite(tree.lon)) {
       map.flyTo([tree.lat, tree.lon], Math.max(map.getZoom(), 15), { duration: 0.7 });
       map.once("moveend", () => marker?.openPopup());
@@ -1521,26 +1445,19 @@
     state.selectedId = null;
     state.searchCenter = null;
     state.searchRadiusMiles = 5;
-
     radiusRangeEl.value = "5";
     radiusValueEl.textContent = "5";
     locationInput.value = "";
-
     document.querySelectorAll("#monthChips .chip").forEach(btn => btn.classList.remove("active"));
     document.querySelector('#monthChips .chip[data-month="all"]')?.classList.add("active");
-
     buildFlowerGrid();
     applyFilters();
     renderInsightsForSelected();
-
-    if (LONDON_BOUNDS) {
-      map.fitBounds(LONDON_BOUNDS, { padding: [24, 24] });
-    }
+    if (LONDON_BOUNDS) map.fitBounds(LONDON_BOUNDS, { padding: [24, 24] });
   }
 
   function initMap() {
     LONDON_BOUNDS = L.latLngBounds([51.28, -0.52], [51.70, 0.33]);
-
     map = L.map("map", {
       zoomControl: true,
       preferCanvas: true,
@@ -1560,7 +1477,7 @@
       zoomDelta: 0.5
     });
 
-    if (window.innerWidth <= 760) {
+    if (window.innerWidth <= 640) {
       map.dragging.enable();
       map.touchZoom.enable();
       map.doubleClickZoom.disable();
@@ -1582,44 +1499,39 @@
       maxClusterRadius: 50
     });
 
-    heatLayer = L.heatLayer([], {
-      radius: 22,
-      blur: 16,
-      maxZoom: 17
-    });
-
+    heatLayer = L.heatLayer([], { radius: 22, blur: 16, maxZoom: 17 });
     map.addLayer(markerClusterLayer);
 
     map.on("popupopen", () => {
-      if (window.innerWidth <= 760) {
+      if (window.innerWidth <= 640) {
         insightsPanelEl.classList.add("popup-open");
+        closeSidebar();
       }
     });
 
     map.on("popupclose", () => {
       insightsPanelEl.classList.remove("popup-open");
-
       if (state.selectedId !== null) {
         const prev = state.allTrees.find(t => String(t.id) === String(state.selectedId));
-        if (prev) {
-          state.markersById.get(String(prev.id))?.setIcon(createTreeIcon(prev, false));
-        }
+        if (prev) state.markersById.get(String(prev.id))?.setIcon(createTreeIcon(prev, false));
         state.selectedId = null;
         renderInsightsForSelected();
       }
     });
+
+    /* Invalidate map size when sidebar opens/closes (desktop) */
+    const ro = new ResizeObserver(() => map.invalidateSize());
+    ro.observe(document.getElementById("mapWrap"));
   }
 
   function wirePopupVoteDelegation() {
-    document.addEventListener("click", async (e) => {
+    document.addEventListener("click", async e => {
       const btn = e.target.closest(".popupVoteBtn");
       if (!btn) return;
-
       e.preventDefault();
       const spotId = btn.dataset.spot;
       const vote = Number(btn.dataset.vote);
       if (!spotId || !vote) return;
-
       await castVote(spotId, vote);
     });
   }
@@ -1640,9 +1552,7 @@
     });
 
     document.querySelectorAll("#modeChips .chip").forEach(btn => {
-      btn.addEventListener("click", () => {
-        setMapMode(btn.dataset.mode);
-      });
+      btn.addEventListener("click", () => setMapMode(btn.dataset.mode));
     });
 
     radiusRangeEl.addEventListener("input", () => {

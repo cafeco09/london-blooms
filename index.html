@@ -913,22 +913,38 @@ async function fetchTrees() {
     "Rowan"
   ];
 
-  const { data, error } = await db
-    .from(TABLE_NAME)
-    .select("id, borough, lat, lon, common_name, location, bloom_period")
-    .in("common_name", targetSpecies)
-    .not("lat", "is", null)
-    .not("lon", "is", null)
-    .limit(30000);
+  const perSpeciesLimit = 300;
+  let combined = [];
 
-  console.log("fetchTrees result:", { error, count: data?.length, sample: data?.slice(0, 5) });
+  for (const species of targetSpecies) {
+    const { data, error } = await db
+      .from(TABLE_NAME)
+      .select("id, borough, lat, lon, common_name, location, bloom_period")
+      .eq("common_name", species)
+      .not("lat", "is", null)
+      .not("lon", "is", null)
+      .limit(perSpeciesLimit);
 
-  if (error) {
-    statusEl.textContent = `Couldn't load trees: ${error.message || "unknown error"}`;
-    console.error("fetchTrees error:", error);
-    return;
+    console.log(`Species ${species}:`, data?.length || 0);
+
+    if (error) {
+      statusEl.textContent = `Couldn't load trees: ${error.message || "unknown error"}`;
+      console.error(`fetchTrees error for ${species}:`, error);
+      return;
+    }
+
+    combined = combined.concat(data || []);
   }
 
+  state.allTrees = combined.map(normaliseRow);
+
+  console.log("Loaded rows:", state.allTrees.length);
+  console.log("Unique ids:", new Set(state.allTrees.map(t => t.id)).size);
+  console.log("Species found:", [...new Set(state.allTrees.map(t => t.common_name))].sort());
+
+  populateBoroughList();
+  applyFilters();
+}
   state.allTrees = (data || []).map(normaliseRow);
 
   console.log("Loaded rows:", state.allTrees.length);

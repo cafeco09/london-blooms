@@ -7,7 +7,7 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
@@ -21,12 +21,11 @@
       --border-md: #d4c5b8;
       --ink:       #1f1a16;
       --muted:     #7a6e65;
-      --muted-2:   #b0a49b;
+      --muted-2:   #a89b92;
 
       --rose:      #d4607a;
       --rose-lt:   #fbeef2;
       --rose-mid:  rgba(212,96,122,0.15);
-      --rose-glow: rgba(212,96,122,0.25);
 
       --bud-col:   #5a9e6f;
       --bud-bg:    #eef7f1;
@@ -45,9 +44,11 @@
       --shadow-md: 0 4px 20px rgba(0,0,0,0.10);
     }
 
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    *, *::before, *::after { box-sizing: border-box; }
 
     html, body {
+      margin: 0;
+      padding: 0;
       height: 100%;
       font-family: 'DM Sans', sans-serif;
       background: var(--bg);
@@ -55,19 +56,21 @@
       overflow: hidden;
     }
 
+    button, input { font: inherit; }
+
     .page {
       display: grid;
-      grid-template-columns: 400px 1fr;
+      grid-template-columns: 420px 1fr;
       height: 100vh;
     }
 
-    /* ── SIDEBAR ─────────────────────── */
     .sidebar {
       background: var(--panel);
       border-right: 1px solid var(--border);
       display: flex;
       flex-direction: column;
       overflow: hidden;
+      min-width: 0;
     }
 
     .sidebar-top {
@@ -84,23 +87,31 @@
     }
 
     .logo-blob {
-      width: 38px; height: 38px;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       background: var(--rose-lt);
       border: 1.5px solid #f0c4cf;
-      border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
       font-size: 20px;
+      flex-shrink: 0;
     }
 
     .logo-title {
       font-family: 'Playfair Display', serif;
-      font-size: 1.65rem;
+      font-size: 1.7rem;
       font-weight: 700;
       color: var(--ink);
+      line-height: 1;
     }
-    .logo-title span { color: var(--rose); font-style: italic; }
 
-    /* ── BLOOM STAGE BANNER ── */
+    .logo-title span {
+      color: var(--rose);
+      font-style: italic;
+    }
+
     .bloom-banner {
       display: flex;
       align-items: center;
@@ -110,33 +121,47 @@
       border: 1.5px solid var(--border);
       background: var(--panel-2);
     }
-    .bloom-banner.bud    { border-color: #b8dfc5; background: var(--bud-bg);  }
+
+    .bloom-banner.bud    { border-color: #b8dfc5; background: var(--bud-bg); }
     .bloom-banner.peak   { border-color: #f0b8c6; background: var(--peak-bg); }
     .bloom-banner.fading { border-color: #e8ccaa; background: var(--fade-bg); }
 
-    .bloom-emoji { font-size: 26px; line-height: 1; flex-shrink: 0; }
-    .bloom-info  { flex: 1; min-width: 0; }
+    .bloom-emoji {
+      font-size: 26px;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+
+    .bloom-info {
+      flex: 1;
+      min-width: 0;
+    }
 
     .bloom-label {
       font-size: 0.68rem;
-      font-weight: 600;
+      font-weight: 700;
       letter-spacing: 0.09em;
       text-transform: uppercase;
       color: var(--muted-2);
-      margin-bottom: 1px;
+      margin-bottom: 2px;
     }
 
     .bloom-stage {
       font-family: 'Playfair Display', serif;
-      font-size: 1.1rem;
+      font-size: 1.08rem;
       font-weight: 700;
     }
-    .bloom-stage.bud    { color: var(--bud-col);  }
+
+    .bloom-stage.bud    { color: var(--bud-col); }
     .bloom-stage.peak   { color: var(--peak-col); }
     .bloom-stage.fading { color: var(--fade-col); }
-    .bloom-stage.none   { color: var(--muted);    }
+    .bloom-stage.none   { color: var(--muted); }
 
-    .bloom-temp { font-size: 0.78rem; color: var(--muted); margin-top: 1px; }
+    .bloom-temp {
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-top: 2px;
+    }
 
     .bloom-badge {
       flex-shrink: 0;
@@ -144,20 +169,21 @@
       font-weight: 700;
       padding: 4px 10px;
       border-radius: var(--r-pill);
+      white-space: nowrap;
     }
-    .bloom-badge.bud    { background: #d4f0de; color: var(--bud-col);  }
+
+    .bloom-badge.bud    { background: #d4f0de; color: var(--bud-col); }
     .bloom-badge.peak   { background: #fad4df; color: var(--peak-col); }
     .bloom-badge.fading { background: #fce8cc; color: var(--fade-col); }
     .bloom-badge.none   { background: var(--border); color: var(--muted); }
 
-    /* ── FILTERS ── */
     .filters {
-      flex-shrink: 0;
       padding: 14px 20px;
       border-bottom: 1px solid var(--border);
       display: flex;
       flex-direction: column;
-      gap: 13px;
+      gap: 14px;
+      flex-shrink: 0;
     }
 
     .filter-heading {
@@ -169,7 +195,6 @@
       margin-bottom: 8px;
     }
 
-    /* ── FLOWER NAME GRID ── */
     .flower-grid {
       display: flex;
       flex-wrap: wrap;
@@ -185,32 +210,35 @@
       border: 1.5px solid var(--border);
       background: var(--panel-2);
       color: var(--ink);
-      font-family: 'DM Sans', sans-serif;
       font-size: 0.82rem;
       font-weight: 500;
       cursor: pointer;
       transition: all .14s ease;
     }
 
-    .flower-btn:hover {
+    .flower-btn:hover,
+    .flower-btn:focus-visible {
       border-color: var(--rose);
       background: var(--rose-lt);
       color: var(--rose);
+      outline: none;
     }
 
     .flower-btn.active {
       background: var(--rose-lt);
       border-color: var(--rose);
       color: var(--rose);
-      font-weight: 600;
+      font-weight: 700;
     }
 
-    /* ── TEXT SEARCH ── */
-    .search-field { position: relative; }
+    .search-field {
+      position: relative;
+    }
 
     .search-field svg {
       position: absolute;
-      left: 11px; top: 50%;
+      left: 11px;
+      top: 50%;
       transform: translateY(-50%);
       color: var(--muted-2);
       pointer-events: none;
@@ -218,25 +246,30 @@
 
     .search-field input {
       width: 100%;
-      padding: 9px 12px 9px 34px;
+      padding: 10px 12px 10px 34px;
       border: 1.5px solid var(--border);
       border-radius: var(--r-sm);
-      font: inherit;
-      font-size: 0.88rem;
       background: var(--panel-2);
       color: var(--ink);
+      font-size: 0.88rem;
       outline: none;
       transition: border-color .15s, box-shadow .15s;
     }
 
-    .search-field input::placeholder { color: var(--muted-2); }
+    .search-field input::placeholder {
+      color: var(--muted-2);
+    }
+
     .search-field input:focus {
       border-color: var(--rose);
       box-shadow: 0 0 0 3px var(--rose-mid);
     }
 
-    /* ── MONTH CHIPS ── */
-    .month-chips { display: flex; gap: 7px; flex-wrap: wrap; }
+    .month-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+    }
 
     .month-chip {
       padding: 6px 14px;
@@ -244,23 +277,52 @@
       border: 1.5px solid var(--border);
       background: var(--panel-2);
       color: var(--muted);
-      font: inherit;
       font-size: 0.82rem;
       font-weight: 500;
       cursor: pointer;
       transition: all .14s;
     }
 
-    .month-chip:hover { border-color: var(--border-md); color: var(--ink); }
+    .month-chip:hover,
+    .month-chip:focus-visible {
+      border-color: var(--border-md);
+      color: var(--ink);
+      outline: none;
+    }
 
     .month-chip.active {
       background: var(--rose-lt);
       border-color: var(--rose);
       color: var(--rose);
-      font-weight: 600;
+      font-weight: 700;
     }
 
-    /* ── STATS ── */
+    .filter-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .clear-btn {
+      width: 100%;
+      padding: 10px 14px;
+      border-radius: var(--r-sm);
+      border: 1.5px solid var(--border);
+      background: var(--panel);
+      color: var(--muted);
+      font-size: 0.84rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all .14s ease;
+    }
+
+    .clear-btn:hover,
+    .clear-btn:focus-visible {
+      border-color: var(--rose);
+      color: var(--rose);
+      background: var(--rose-lt);
+      outline: none;
+    }
+
     .stats-bar {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -292,37 +354,66 @@
       margin-top: 2px;
     }
 
+    .active-filters {
+      padding: 8px 20px 0;
+      display: none;
+      flex-wrap: wrap;
+      gap: 6px;
+      background: var(--bg);
+      flex-shrink: 0;
+    }
+
+    .filter-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 10px;
+      border-radius: var(--r-pill);
+      background: var(--panel);
+      border: 1px solid var(--border);
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+
+    .filter-pill strong {
+      color: var(--ink);
+      font-weight: 700;
+    }
+
     .status-bar {
-      padding: 7px 20px;
-      font-size: 0.78rem;
+      padding: 8px 20px;
+      font-size: 0.79rem;
       color: var(--muted-2);
       flex-shrink: 0;
       border-bottom: 1px solid var(--border);
       background: var(--panel);
     }
 
-    /* ── RESULTS ── */
     .results {
       flex: 1;
       overflow-y: auto;
-      padding: 12px 20px 28px;
+      padding: 12px 20px 18px;
       background: var(--bg);
       display: flex;
       flex-direction: column;
       gap: 8px;
     }
 
-    .results::-webkit-scrollbar { width: 4px; }
-    .results::-webkit-scrollbar-track { background: transparent; }
-    .results::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+    .results::-webkit-scrollbar { width: 5px; }
+    .results::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 99px;
+    }
 
     .tree-card {
+      width: 100%;
+      text-align: left;
       background: var(--panel);
       border: 1.5px solid var(--border);
       border-radius: var(--r);
       padding: 12px 14px;
       cursor: pointer;
-      transition: border-color .14s, transform .12s, box-shadow .14s;
+      transition: border-color .14s, transform .12s, box-shadow .14s, background .14s;
       position: relative;
       overflow: hidden;
     }
@@ -330,21 +421,28 @@
     .tree-card::before {
       content: '';
       position: absolute;
-      left: 0; top: 0; bottom: 0;
+      left: 0;
+      top: 0;
+      bottom: 0;
       width: 3px;
       background: var(--rose);
       opacity: 0;
       transition: opacity .14s;
     }
 
-    .tree-card:hover {
+    .tree-card:hover,
+    .tree-card:focus-visible {
       border-color: var(--rose);
       transform: translateX(2px);
       box-shadow: var(--shadow);
+      outline: none;
     }
 
     .tree-card:hover::before,
-    .tree-card.active::before { opacity: 1; }
+    .tree-card.active::before,
+    .tree-card:focus-visible::before {
+      opacity: 1;
+    }
 
     .tree-card.active {
       border-color: #f0b8c6;
@@ -355,7 +453,7 @@
       display: flex;
       align-items: flex-start;
       justify-content: space-between;
-      gap: 8px;
+      gap: 10px;
       margin-bottom: 6px;
     }
 
@@ -364,30 +462,87 @@
       font-size: 1rem;
       font-weight: 700;
       color: var(--ink);
+      line-height: 1.2;
     }
 
-    .month-badges { display: flex; gap: 5px; flex-wrap: wrap; justify-content: flex-end; }
+    .month-badges {
+      display: flex;
+      gap: 5px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      flex-shrink: 0;
+    }
 
     .mbadge {
       font-size: 0.68rem;
-      font-weight: 600;
+      font-weight: 700;
       padding: 3px 8px;
       border-radius: var(--r-pill);
+      white-space: nowrap;
     }
 
-    .mbadge.march  { background: #e0f0f8; color: var(--sky);  border: 1px solid #b8ddf0; }
-    .mbadge.april  { background: var(--rose-lt); color: var(--rose); border: 1px solid #f0c4cf; }
-    .mbadge.may    { background: #eef7ee; color: var(--sage); border: 1px solid #b8dcb8; }
+    .mbadge.march { background: #e0f0f8; color: var(--sky); border: 1px solid #b8ddf0; }
+    .mbadge.april { background: var(--rose-lt); color: var(--rose); border: 1px solid #f0c4cf; }
+    .mbadge.may   { background: #eef7ee; color: var(--sage); border: 1px solid #b8dcb8; }
 
     .card-meta {
       font-size: 0.79rem;
       color: var(--muted);
       display: flex;
       flex-wrap: wrap;
-      gap: 3px 14px;
+      gap: 4px 14px;
+      line-height: 1.5;
     }
 
-    .card-meta strong { color: var(--ink); font-weight: 500; }
+    .card-meta strong {
+      color: var(--ink);
+      font-weight: 600;
+    }
+
+    .card-actions {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+
+    .view-btn {
+      border: 1.5px solid var(--border);
+      background: var(--panel-2);
+      color: var(--ink);
+      border-radius: var(--r-pill);
+      padding: 6px 12px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all .14s ease;
+    }
+
+    .view-btn:hover,
+    .view-btn:focus-visible {
+      border-color: var(--rose);
+      color: var(--rose);
+      outline: none;
+      background: var(--rose-lt);
+    }
+
+    .card-link,
+    .popup-link {
+      display: inline-block;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--rose);
+      text-decoration: none;
+    }
+
+    .card-link:hover,
+    .card-link:focus-visible,
+    .popup-link:hover,
+    .popup-link:focus-visible {
+      text-decoration: underline;
+      outline: none;
+    }
 
     .empty {
       background: var(--panel);
@@ -399,9 +554,85 @@
       line-height: 1.7;
     }
 
-    /* ── MAP ── */
-    .map-wrap { position: relative; }
-    #map { width: 100%; height: 100vh; }
+    .support-box {
+      margin: 0 20px 20px;
+      padding: 14px;
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      background: var(--panel);
+      box-shadow: var(--shadow);
+      flex-shrink: 0;
+    }
+
+    .support-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--ink);
+      margin-bottom: 4px;
+    }
+
+    .support-copy {
+      font-size: 0.82rem;
+      color: var(--muted);
+      line-height: 1.5;
+      margin-bottom: 10px;
+    }
+
+    .support-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 9px 14px;
+      border-radius: 999px;
+      border: 1.5px solid #f0c4cf;
+      background: var(--rose-lt);
+      color: var(--rose);
+      text-decoration: none;
+      font-size: 0.84rem;
+      font-weight: 700;
+      transition: all .15s ease;
+    }
+
+    .support-btn:hover,
+    .support-btn:focus-visible {
+      background: #f8e4ea;
+      border-color: var(--rose);
+      transform: translateY(-1px);
+      outline: none;
+    }
+
+    .map-wrap {
+      position: relative;
+      min-width: 0;
+    }
+
+    #map {
+      width: 100%;
+      height: 100vh;
+    }
+
+    .map-info {
+      position: absolute;
+      bottom: 18px;
+      left: 18px;
+      z-index: 1000;
+      background: rgba(255,255,255,0.94);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 11px 15px;
+      font-size: 0.8rem;
+      color: var(--muted);
+      line-height: 1.5;
+      backdrop-filter: blur(8px);
+      box-shadow: var(--shadow-md);
+      max-width: 320px;
+    }
+
+    .map-info strong {
+      color: var(--ink);
+    }
 
     .leaflet-popup-content-wrapper {
       border-radius: 12px;
@@ -414,6 +645,7 @@
       font-size: 0.84rem;
       color: var(--muted);
       line-height: 1.6;
+      min-width: 180px;
     }
 
     .popup-name {
@@ -422,6 +654,7 @@
       font-weight: 700;
       color: var(--ink);
       margin-bottom: 5px;
+      line-height: 1.2;
     }
 
     .popup-chip {
@@ -434,96 +667,112 @@
       padding: 3px 9px;
       border-radius: var(--r-pill);
     }
-    .popup-chip.bud    { background: #d4f0de; color: var(--bud-col);  }
+
+    .popup-chip.bud    { background: #d4f0de; color: var(--bud-col); }
     .popup-chip.peak   { background: #fad4df; color: var(--peak-col); }
     .popup-chip.fading { background: #fce8cc; color: var(--fade-col); }
 
-    .map-info {
-      position: absolute;
-      bottom: 18px; left: 18px;
-      z-index: 1000;
-      background: rgba(255,255,255,0.93);
-      border: 1px solid var(--border);
-      border-radius: var(--r);
-      padding: 11px 15px;
-      font-size: 0.8rem;
-      color: var(--muted);
-      line-height: 1.5;
-      backdrop-filter: blur(8px);
-      box-shadow: var(--shadow-md);
+    .emoji-marker {
+      background: transparent;
+      border: none;
     }
-    .map-info strong { color: var(--ink); }
 
-    @media (max-width: 900px) {
+    .emoji-pin {
+      width: 30px;
+      height: 30px;
+      display: grid;
+      place-items: center;
+      font-size: 22px;
+      line-height: 1;
+      filter: drop-shadow(0 2px 6px rgba(0,0,0,0.18));
+      transform: translateZ(0);
+      transition: transform .15s ease, filter .15s ease;
+      user-select: none;
+    }
+
+    .emoji-pin.selected {
+      transform: scale(1.18);
+      filter: drop-shadow(0 3px 10px rgba(0,0,0,0.26));
+    }
+
+    @media (max-width: 980px) {
       html, body { overflow: auto; }
-      .page { grid-template-columns: 1fr; grid-template-rows: auto 52vh; height: auto; }
-      .sidebar { max-height: 65vh; }
-      #map { height: 52vh; }
+      .page {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto 52vh;
+        height: auto;
+      }
+      .sidebar {
+        max-height: none;
+      }
+      #map {
+        height: 52vh;
+      }
+      .support-box {
+        margin-top: 8px;
+      }
     }
   </style>
 </head>
 <body>
 <div class="page">
-
   <aside class="sidebar">
-
     <div class="sidebar-top">
       <div class="logo-row">
-        <div class="logo-blob">🌸</div>
+        <div class="logo-blob" aria-hidden="true">🌸</div>
         <div class="logo-title">London <span>Blooms</span></div>
       </div>
+
       <div class="bloom-banner" id="bloomBanner">
         <div class="bloom-emoji" id="bloomEmoji">⏳</div>
         <div class="bloom-info">
-          <div class="bloom-label">Right now · London</div>
+          <div class="bloom-label">Seasonal signal · London</div>
           <div class="bloom-stage none" id="bloomStageName">Checking weather…</div>
-          <div class="bloom-temp" id="bloomTemp">Fetching temperature</div>
+          <div class="bloom-temp" id="bloomTemp">Fetching recent temperature</div>
         </div>
         <div class="bloom-badge none" id="bloomBadge">…</div>
       </div>
     </div>
 
     <div class="filters">
-
-      <!-- FLOWER FILTER — most prominent -->
       <div>
-        <div class="filter-heading">🌺 Filter by flower name</div>
+        <div class="filter-heading">Filter by flower name</div>
         <div class="flower-grid" id="flowerGrid"></div>
       </div>
 
-      <!-- Free-text fallback -->
       <div>
         <div class="filter-heading">Or search any name</div>
         <div class="search-field">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
           </svg>
-          <input id="nameInput" type="text" placeholder="e.g. Rowan, Hawthorn…" autocomplete="off" />
+          <input id="nameInput" type="text" placeholder="e.g. Rowan, Hawthorn…" autocomplete="off" aria-label="Search by tree name" />
         </div>
       </div>
 
-      <!-- Month -->
       <div>
         <div class="filter-heading">Bloom month</div>
         <div class="month-chips">
-          <button class="month-chip active" data-month="all">All spring</button>
-          <button class="month-chip" data-month="March">March</button>
-          <button class="month-chip" data-month="April">April</button>
-          <button class="month-chip" data-month="May">May</button>
+          <button class="month-chip active" data-month="all" type="button">All spring</button>
+          <button class="month-chip" data-month="March" type="button">March</button>
+          <button class="month-chip" data-month="April" type="button">April</button>
+          <button class="month-chip" data-month="May" type="button">May</button>
         </div>
       </div>
 
-      <!-- Borough -->
       <div>
         <div class="filter-heading">Borough</div>
         <div class="search-field">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
           </svg>
-          <input id="boroughInput" type="text" placeholder="e.g. Camden, Hackney…" autocomplete="off" />
+          <input id="boroughInput" type="text" placeholder="e.g. Camden, Hackney…" autocomplete="off" aria-label="Search by borough" />
         </div>
       </div>
 
+      <div class="filter-actions">
+        <button id="clearFiltersBtn" class="clear-btn" type="button">Reset filters</button>
+      </div>
     </div>
 
     <div class="stats-bar">
@@ -532,328 +781,557 @@
       <div class="stat"><div class="num" id="cTypes">0</div><div class="lab">varieties</div></div>
     </div>
 
-    <div class="status-bar" id="statusBar">Loading…</div>
+    <div class="active-filters" id="activeFilters"></div>
+    <div class="status-bar" id="statusBar" aria-live="polite">Loading…</div>
     <div class="results" id="results"></div>
+
+    <div class="support-box">
+      <div class="support-title">Enjoying London Blooms?</div>
+      <div class="support-copy">If this helped you find a lovely spring walk, you can support the project.</div>
+      <a
+        class="support-btn"
+        href="https://buymeacoffee.com/anshdt"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        ☕ Buy me a coffee
+      </a>
+    </div>
   </aside>
 
   <main class="map-wrap">
     <div id="map"></div>
-    <div class="map-info" id="mapInfo"><strong>London Blooms</strong> · Click a marker or card</div>
+    <div class="map-info" id="mapInfo">
+      <strong>London Blooms</strong><br>
+      <span style="color:#a89b92;font-size:0.76rem">Curated spring trees across London · Click a marker or card</span>
+    </div>
   </main>
-
 </div>
 
 <script>
-const SUPABASE_URL      = "https://esfjzhgzfbcrrewjvoan.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVzZmp6aGd6ZmJjcnJld2p2b2FuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQzNjg3NjIsImV4cCI6MjA4OTk0NDc2Mn0.kJOMlq3vHwYWwogSIyLccveHecA5D7WX2RwLzMqe8bY";
-const TABLE_NAME        = "spring_trees";
-const MAX_RESULTS       = 1000;
-const MAX_CARDS         = 120;
-const LAT = 51.5074, LON = -0.1278;
+  const SUPABASE_URL = "https://esfjzhgzfbcrrewjvoan.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVzZmp6aGd6ZmJjcnJld2p2b2FuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQzNjg3NjIsImV4cCI6MjA4OTk0NDc2Mn0.kJOMlq3vHwYWwogSIyLccveHecA5D7WX2RwLzMqe8bY";
+  const TABLE_NAME = "spring_trees";
+  const MAX_RESULTS = 1000;
+  const MAX_CARDS = 120;
 
-const WEATHER_URL = `https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&daily=temperature_2m_mean&current=temperature_2m&timezone=Europe%2FLondon&forecast_days=1&past_days=7`;
+  const LONDON_BOUNDS = L.latLngBounds(
+    [51.28, -0.52],
+    [51.70, 0.33]
+  );
 
-const FLOWERS = [
-  { icon:"🌸", name:"Cherry"       },
-  { icon:"🌸", name:"Cherry Plum"  },
-  { icon:"🌺", name:"Magnolia"     },
-  { icon:"🌼", name:"Crab Apple"   },
-  { icon:"🌿", name:"Hawthorn"     },
-  { icon:"🍐", name:"Pear"         },
-  { icon:"🍎", name:"Apple"        },
-  { icon:"🟣", name:"Plum"         },
-  { icon:"🌸", name:"Almond"       },
-  { icon:"🌼", name:"Blackthorn"   },
-  { icon:"🌳", name:"Rowan"        },
-];
+  const WEATHER_URL = `https://api.open-meteo.com/v1/forecast?latitude=51.5074&longitude=-0.1278&daily=temperature_2m_mean&current=temperature_2m&timezone=Europe%2FLondon&forecast_days=1&past_days=7`;
 
-const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  const FLOWERS = [
+    { icon:"🌸", name:"Cherry" },
+    { icon:"🌸", name:"Cherry Plum" },
+    { icon:"🌺", name:"Magnolia" },
+    { icon:"🌼", name:"Crab Apple" },
+    { icon:"🌿", name:"Hawthorn" },
+    { icon:"🍐", name:"Pear" },
+    { icon:"🍎", name:"Apple" },
+    { icon:"🟣", name:"Plum" },
+    { icon:"🌸", name:"Almond" },
+    { icon:"🌼", name:"Blackthorn" },
+    { icon:"🌳", name:"Rowan" }
+  ];
 
-let map, markers;
-let trees       = [];
-let selectedId  = null;
-let activeMonth = "all";
-let activeName  = "";
-let bloom       = { cls:"none", label:"Unknown", detail:"", emoji:"🌿" };
-let debounce    = null;
-
-const nameInput    = document.getElementById("nameInput");
-const boroughInput = document.getElementById("boroughInput");
-const resultsEl    = document.getElementById("results");
-const statusEl     = document.getElementById("statusBar");
-const cTreesEl     = document.getElementById("cTrees");
-const cBorEl       = document.getElementById("cBoroughs");
-const cTypEl       = document.getElementById("cTypes");
-const bannerEl     = document.getElementById("bloomBanner");
-const emojiEl      = document.getElementById("bloomEmoji");
-const stageNameEl  = document.getElementById("bloomStageName");
-const stageTempEl  = document.getElementById("bloomTemp");
-const badgeEl      = document.getElementById("bloomBadge");
-const mapInfoEl    = document.getElementById("mapInfo");
-const flowerGridEl = document.getElementById("flowerGrid");
-
-async function fetchWeather() {
-  try {
-    const r    = await fetch(WEATHER_URL);
-    const d    = await r.json();
-    const means = d.daily?.temperature_2m_mean ?? [];
-    const avg  = means.length ? means.reduce((a,b)=>a+b,0)/means.length : null;
-    const cur  = d.current?.temperature_2m ?? null;
-
-    let cls, label, emoji;
-    if      (avg === null) { cls="none";   label="Data unavailable"; emoji="🌿"; }
-    else if (avg < 8)      { cls="bud";    label="Early Bud";         emoji="🌱"; }
-    else if (avg < 12)     { cls="bud";    label="Bud Burst";         emoji="🌱"; }
-    else if (avg < 17)     { cls="peak";   label="Peak Blossom";      emoji="🌸"; }
-    else                   { cls="fading"; label="Fading";            emoji="🍃"; }
-
-    const detail = avg !== null
-      ? `7-day avg ${avg.toFixed(1)} °C${cur!==null?`  ·  Now ${cur.toFixed(0)} °C`:""}`
-      : "Temperature unavailable";
-
-    bloom = { cls, label, emoji, detail };
-  } catch {
-    bloom = { cls:"none", label:"Unavailable", emoji:"🌿", detail:"Weather API error" };
-  }
-  renderBanner();
-}
-
-function renderBanner() {
-  const { cls, label, emoji, detail } = bloom;
-  bannerEl.className      = `bloom-banner ${cls}`;
-  emojiEl.textContent     = emoji;
-  stageNameEl.textContent = label;
-  stageNameEl.className   = `bloom-stage ${cls}`;
-  stageTempEl.textContent = detail;
-  badgeEl.textContent     = label;
-  badgeEl.className       = `bloom-badge ${cls}`;
-
-  const chip = cls !== "none"
-    ? `<span style="display:inline-flex;align-items:center;gap:4px;font-size:0.72rem;font-weight:700;padding:3px 9px;border-radius:999px;margin-left:6px;background:${cls==="bud"?"#d4f0de":cls==="peak"?"#fad4df":"#fce8cc"};color:${cls==="bud"?"#5a9e6f":cls==="peak"?"#c4365a":"#9a7040"}">${emoji} ${label}</span>`
-    : "";
-  mapInfoEl.innerHTML = `<strong>London Blooms</strong>${chip}<br><span style="color:#b0a49b;font-size:0.76rem">Click a marker or card to explore</span>`;
-}
-
-function buildFlowerGrid() {
-  flowerGridEl.innerHTML = FLOWERS.map(f => `
-    <button class="flower-btn ${activeName.toLowerCase()===f.name.toLowerCase()?"active":""}" data-name="${f.name}">
-      ${f.icon} ${f.name}
-    </button>
-  `).join("");
-
-  flowerGridEl.querySelectorAll(".flower-btn").forEach(btn => {
-    btn.addEventListener("click", () => {
-      const name = btn.dataset.name;
-      if (activeName.toLowerCase() === name.toLowerCase()) {
-        activeName = ""; nameInput.value = "";
-      } else {
-        activeName = name; nameInput.value = name;
-      }
-      buildFlowerGrid();
-      scheduleFetch();
-    });
-  });
-}
-
-function esc(s) {
-  return String(s??"")
-    .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
-    .replace(/"/g,"&quot;").replace(/'/g,"&#039;");
-}
-
-function parseMonths(p) {
-  if (!p) return [];
-  if (p==="March-April") return ["March","April"];
-  if (p==="April-May")   return ["April","May"];
-  return [p];
-}
-
-function norm(row, i) {
-  return {
-    id:           row.id ?? `r${i}`,
-    common_name:  row.common_name ?? "Unknown",
-    borough:      row.borough ?? "",
-    location:     row.location ?? "",
-    lat:          isFinite(+row.lat) ? +row.lat : null,
-    lon:          isFinite(+row.lon) ? +row.lon : null,
-    bloom_period: row.bloom_period ?? "",
-    months:       parseMonths(row.bloom_period),
+  const FLOWER_EMOJI_MAP = {
+    "cherry": "🌸",
+    "cherry plum": "🌸",
+    "magnolia": "🌺",
+    "crab apple": "🌼",
+    "hawthorn": "🌿",
+    "pear": "🍐",
+    "apple": "🍎",
+    "plum": "🟣",
+    "almond": "🌸",
+    "blackthorn": "🌼",
+    "rowan": "🌳"
   };
-}
 
-function updateStats(list) {
-  cTreesEl.textContent = list.length.toLocaleString();
-  cBorEl.textContent   = new Set(list.map(t=>t.borough).filter(Boolean)).size;
-  cTypEl.textContent   = new Set(list.map(t=>t.common_name).filter(Boolean)).size;
-}
+  const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-function mbClass(m) { return m==="March"?"march":m==="April"?"april":"may"; }
+  const state = {
+    allTrees: [],
+    visibleTrees: [],
+    selectedId: null,
+    bloom: { cls: "none", label: "Unknown", detail: "", emoji: "🌿" },
+    filters: {
+      month: "all",
+      name: "",
+      borough: ""
+    },
+    hasInitialFit: false,
+    markersById: new Map(),
+    debounce: null
+  };
 
-function renderCards(list) {
-  if (!list.length) {
-    resultsEl.innerHTML = `<div class="empty">
-      No trees matched your filters.<br><br>
-      Try a different flower button, or switch month to <em>All spring</em>.
-    </div>`;
-    return;
+  let map, markers;
+
+  const nameInput = document.getElementById("nameInput");
+  const boroughInput = document.getElementById("boroughInput");
+  const resultsEl = document.getElementById("results");
+  const statusEl = document.getElementById("statusBar");
+  const cTreesEl = document.getElementById("cTrees");
+  const cBorEl = document.getElementById("cBoroughs");
+  const cTypEl = document.getElementById("cTypes");
+  const bannerEl = document.getElementById("bloomBanner");
+  const emojiEl = document.getElementById("bloomEmoji");
+  const stageNameEl = document.getElementById("bloomStageName");
+  const stageTempEl = document.getElementById("bloomTemp");
+  const badgeEl = document.getElementById("bloomBadge");
+  const mapInfoEl = document.getElementById("mapInfo");
+  const flowerGridEl = document.getElementById("flowerGrid");
+  const activeFiltersEl = document.getElementById("activeFilters");
+
+  function esc(s) {
+    return String(s ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
   }
 
-  resultsEl.innerHTML = list.slice(0, MAX_CARDS).map(t => {
-    const isActive = String(t.id) === String(selectedId);
-    const badges = t.months.map(m =>
-      `<span class="mbadge ${mbClass(m)}">${m}</span>`).join("");
-    return `<div class="tree-card ${isActive?"active":""}" data-id="${esc(t.id)}">
-      <div class="card-top">
-        <div class="tree-name">${esc(t.common_name)}</div>
-        <div class="month-badges">${badges}</div>
-      </div>
-      <div class="card-meta">
-        ${t.borough  ? `<span><strong>Borough</strong> ${esc(t.borough)}</span>` : ""}
-        ${t.location ? `<span><strong>Place</strong> ${esc(t.location)}</span>` : ""}
-        ${t.bloom_period ? `<span><strong>Blooms</strong> ${esc(t.bloom_period)}</span>` : ""}
-      </div>
-    </div>`;
-  }).join("");
+  function parseMonths(p) {
+    if (!p) return [];
+    if (p === "March-April") return ["March", "April"];
+    if (p === "April-May") return ["April", "May"];
+    return [p];
+  }
 
-  resultsEl.querySelectorAll(".tree-card").forEach(card => {
-    card.addEventListener("click", () => {
-      const t = list.find(x => String(x.id)===String(card.dataset.id));
-      if (!t || !isFinite(t.lat) || !isFinite(t.lon)) return;
-      selectedId = t.id;
-      renderCards(trees);
-      map.flyTo([t.lat, t.lon], 17, { duration: 0.8 });
-      const lyr = Object.values(markers._layers??{})
-        .find(l => l?.options?.tid && String(l.options.tid)===String(t.id));
-      if (lyr) setTimeout(()=>lyr.openPopup(), 320);
+  function normaliseRow(row, i) {
+    return {
+      id: row.id ?? `r${i}`,
+      common_name: row.common_name ?? "Unknown",
+      borough: row.borough ?? "",
+      location: row.location ?? "",
+      lat: Number.isFinite(+row.lat) ? +row.lat : null,
+      lon: Number.isFinite(+row.lon) ? +row.lon : null,
+      bloom_period: row.bloom_period ?? "",
+      months: parseMonths(row.bloom_period)
+    };
+  }
+
+  function mapsUrl(lat, lon) {
+    return `https://www.google.com/maps?q=${encodeURIComponent(lat)},${encodeURIComponent(lon)}`;
+  }
+
+  function mbClass(m) {
+    return m === "March" ? "march" : m === "April" ? "april" : "may";
+  }
+
+  function flowerEmoji(name) {
+    const n = String(name || "").trim().toLowerCase();
+    if (FLOWER_EMOJI_MAP[n]) return FLOWER_EMOJI_MAP[n];
+
+    const found = Object.keys(FLOWER_EMOJI_MAP).find(k => n.includes(k));
+    if (found) return FLOWER_EMOJI_MAP[found];
+
+    return "🌸";
+  }
+
+  function makeEmojiIcon(tree, selected = false) {
+    const emoji = flowerEmoji(tree.common_name);
+    return L.divIcon({
+      className: "emoji-marker",
+      html: `<div class="emoji-pin ${selected ? "selected" : ""}" title="${esc(tree.common_name)}" aria-hidden="true">${emoji}</div>`,
+      iconSize: [30, 30],
+      iconAnchor: [15, 15],
+      popupAnchor: [0, -14]
     });
-  });
-}
+  }
 
-const MCOLS = {
-  bud:    { s:"#4a9060", f:"#8eca9e" },
-  peak:   { s:"#a8304e", f:"#d4607a" },
-  fading: { s:"#8a6030", f:"#c4a060" },
-  none:   { s:"#8a7060", f:"#b4a090" },
-};
+  async function fetchWeather() {
+    try {
+      const r = await fetch(WEATHER_URL);
+      const d = await r.json();
+      const means = d.daily?.temperature_2m_mean ?? [];
+      const avg = means.length ? means.reduce((a, b) => a + b, 0) / means.length : null;
+      const cur = d.current?.temperature_2m ?? null;
 
-function renderMarkers(list) {
-  markers.clearLayers();
-  const valid = list.filter(t => isFinite(t.lat) && isFinite(t.lon));
-  if (!valid.length) return;
+      let cls, label, emoji;
+      if (avg === null) {
+        cls = "none"; label = "Data unavailable"; emoji = "🌿";
+      } else if (avg < 8) {
+        cls = "bud"; label = "Early Bud"; emoji = "🌱";
+      } else if (avg < 12) {
+        cls = "bud"; label = "Bud Burst"; emoji = "🌱";
+      } else if (avg < 17) {
+        cls = "peak"; label = "Peak Blossom"; emoji = "🌸";
+      } else {
+        cls = "fading"; label = "Fading"; emoji = "🍃";
+      }
 
-  const col = MCOLS[bloom.cls] ?? MCOLS.none;
-  const bounds = [];
+      const detail = avg !== null
+        ? `Based on recent temperature · 7-day avg ${avg.toFixed(1)} °C${cur !== null ? ` · Now ${cur.toFixed(0)} °C` : ""}`
+        : "Temperature unavailable";
 
-  valid.forEach(t => {
-    const chipHtml = bloom.cls !== "none"
-      ? `<div style="display:inline-flex;align-items:center;gap:4px;margin-top:8px;font-size:0.72rem;font-weight:700;padding:3px 9px;border-radius:999px;background:${bloom.cls==="bud"?"#d4f0de":bloom.cls==="peak"?"#fad4df":"#fce8cc"};color:${bloom.cls==="bud"?"#5a9e6f":bloom.cls==="peak"?"#c4365a":"#9a7040"}">${bloom.emoji} ${bloom.label}</div>`
+      state.bloom = { cls, label, emoji, detail };
+    } catch {
+      state.bloom = { cls: "none", label: "Unavailable", emoji: "🌿", detail: "Weather unavailable right now" };
+    }
+
+    renderBanner();
+  }
+
+  function renderBanner() {
+    const { cls, label, emoji, detail } = state.bloom;
+    bannerEl.className = `bloom-banner ${cls}`;
+    emojiEl.textContent = emoji;
+    stageNameEl.textContent = label;
+    stageNameEl.className = `bloom-stage ${cls}`;
+    stageTempEl.textContent = detail;
+    badgeEl.textContent = label;
+    badgeEl.className = `bloom-badge ${cls}`;
+
+    const chip = cls !== "none"
+      ? `<span style="display:inline-flex;align-items:center;gap:4px;font-size:0.72rem;font-weight:700;padding:3px 9px;border-radius:999px;margin-left:6px;background:${cls==="bud"?"#d4f0de":cls==="peak"?"#fad4df":"#fce8cc"};color:${cls==="bud"?"#5a9e6f":cls==="peak"?"#c4365a":"#9a7040"}">${emoji} ${label}</span>`
       : "";
 
-    const popup = `
-      <div class="popup-name">${esc(t.common_name)}</div>
-      ${t.borough  ? `<div><strong>Borough</strong> ${esc(t.borough)}</div>` : ""}
-      ${t.location ? `<div><strong>Place</strong> ${esc(t.location)}</div>` : ""}
-      ${t.bloom_period ? `<div><strong>Bloom</strong> ${esc(t.bloom_period)}</div>` : ""}
-      ${chipHtml}
+    mapInfoEl.innerHTML = `
+      <strong>London Blooms</strong>${chip}<br>
+      <span style="color:#a89b92;font-size:0.76rem">Curated spring trees across London · Click a marker or card</span>
     `;
-
-    const m = L.circleMarker([t.lat, t.lon], {
-      radius:6, weight:1.5,
-      color:col.s, fillColor:col.f, fillOpacity:0.9,
-      tid: t.id,
-    }).bindPopup(popup);
-
-    m.on("click", () => { selectedId = t.id; renderCards(trees); });
-    markers.addLayer(m);
-    bounds.push([t.lat, t.lon]);
-  });
-
-  if (bounds.length) map.fitBounds(bounds, { padding:[28,28] });
-  setTimeout(()=>map.invalidateSize(), 100);
-}
-
-async function fetchTrees() {
-  statusEl.textContent = "Loading…";
-
-  const nameQ    = (nameInput.value.trim()).replace(/,/g," ");
-  const boroughQ = (boroughInput.value.trim()).replace(/,/g," ");
-
-  let q = db.from(TABLE_NAME)
-    .select("id, borough, lat, lon, common_name, location, bloom_period")
-    .not("lat","is",null).not("lon","is",null)
-    .limit(MAX_RESULTS);
-
-  if (activeMonth !== "all") {
-    const map_ = {
-      March: ["March","March-April"],
-      April: ["March-April","April","April-May"],
-      May:   ["April-May","May"],
-    };
-    q = q.in("bloom_period", map_[activeMonth]);
   }
 
-  if (nameQ)    q = q.ilike("common_name", `%${nameQ}%`);
-  if (boroughQ) q = q.ilike("borough",     `%${boroughQ}%`);
+  function buildFlowerGrid() {
+    flowerGridEl.innerHTML = FLOWERS.map(f => `
+      <button
+        class="flower-btn ${state.filters.name.toLowerCase() === f.name.toLowerCase() ? "active" : ""}"
+        data-name="${esc(f.name)}"
+        type="button"
+      >
+        <span aria-hidden="true">${f.icon}</span> ${esc(f.name)}
+      </button>
+    `).join("");
 
-  q = q.order("common_name", { ascending:true });
-
-  const { data, error } = await q;
-
-  if (error) {
-    trees = [];
-    updateStats([]); renderCards([]); renderMarkers([]);
-    statusEl.textContent = `Error: ${error.message}`;
-    return;
-  }
-
-  trees = (data||[]).map(norm);
-  statusEl.textContent = trees.length >= MAX_RESULTS
-    ? `Showing first ${MAX_RESULTS.toLocaleString()} — narrow filters for more`
-    : `${trees.length.toLocaleString()} trees found`;
-
-  updateStats(trees);
-  renderCards(trees);
-  renderMarkers(trees);
-}
-
-function scheduleFetch() {
-  clearTimeout(debounce);
-  debounce = setTimeout(fetchTrees, 260);
-}
-
-function initMap() {
-  map = L.map("map", { zoomControl:true, preferCanvas:true }).setView([LAT,LON],10);
-  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{
-    maxZoom:19, attribution:"&copy; OpenStreetMap contributors"
-  }).addTo(map);
-  markers = L.layerGroup().addTo(map);
-  setTimeout(()=>map.invalidateSize(),250);
-}
-
-window.addEventListener("load", async () => {
-  initMap();
-  buildFlowerGrid();
-
-  document.querySelectorAll(".month-chip").forEach(btn => {
-    btn.addEventListener("click", () => {
-      document.querySelectorAll(".month-chip").forEach(b=>b.classList.remove("active"));
-      btn.classList.add("active");
-      activeMonth = btn.dataset.month;
-      fetchTrees();
+    flowerGridEl.querySelectorAll(".flower-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const name = btn.dataset.name;
+        if (state.filters.name.toLowerCase() === name.toLowerCase()) {
+          state.filters.name = "";
+          nameInput.value = "";
+        } else {
+          state.filters.name = name;
+          nameInput.value = name;
+        }
+        buildFlowerGrid();
+        scheduleApplyFilters();
+      });
     });
-  });
+  }
 
-  nameInput.addEventListener("input", () => {
-    activeName = nameInput.value.trim();
+  function updateStats(list) {
+    cTreesEl.textContent = list.length.toLocaleString();
+    cBorEl.textContent = new Set(list.map(t => t.borough).filter(Boolean)).size;
+    cTypEl.textContent = new Set(list.map(t => t.common_name).filter(Boolean)).size;
+  }
+
+  function renderActiveFilters() {
+    const pills = [];
+
+    if (state.filters.name) pills.push(`<span class="filter-pill"><strong>Name</strong> ${esc(state.filters.name)}</span>`);
+    if (state.filters.month !== "all") pills.push(`<span class="filter-pill"><strong>Month</strong> ${esc(state.filters.month)}</span>`);
+    if (state.filters.borough) pills.push(`<span class="filter-pill"><strong>Borough</strong> ${esc(state.filters.borough)}</span>`);
+
+    activeFiltersEl.innerHTML = pills.join("");
+    activeFiltersEl.style.display = pills.length ? "flex" : "none";
+  }
+
+  function monthMatches(tree, month) {
+    if (month === "all") return true;
+    return tree.months.includes(month);
+  }
+
+  function nameMatches(tree, query) {
+    if (!query) return true;
+    return tree.common_name.toLowerCase().includes(query.toLowerCase());
+  }
+
+  function boroughMatches(tree, query) {
+    if (!query) return true;
+    return tree.borough.toLowerCase().includes(query.toLowerCase());
+  }
+
+  function applyFilters() {
+    state.visibleTrees = state.allTrees.filter(t =>
+      monthMatches(t, state.filters.month) &&
+      nameMatches(t, state.filters.name) &&
+      boroughMatches(t, state.filters.borough)
+    );
+
+    const visibleIds = new Set(state.visibleTrees.map(t => String(t.id)));
+    if (state.selectedId && !visibleIds.has(String(state.selectedId))) {
+      state.selectedId = null;
+    }
+
+    render();
+  }
+
+  function renderStatus() {
+    const total = state.visibleTrees.length;
+
+    if (!state.allTrees.length) {
+      statusEl.textContent = "No tree data loaded yet.";
+      return;
+    }
+
+    if (!total) {
+      statusEl.textContent = "No trees matched your filters.";
+      return;
+    }
+
+    if (total >= MAX_RESULTS) {
+      statusEl.textContent = `Showing first ${MAX_RESULTS.toLocaleString()} results — narrow filters for more`;
+      return;
+    }
+
+    if (total > MAX_CARDS) {
+      statusEl.textContent = `${total.toLocaleString()} trees found · showing first ${MAX_CARDS} in the list`;
+      return;
+    }
+
+    statusEl.textContent = `${total.toLocaleString()} trees found`;
+  }
+
+  function renderCards() {
+    const list = state.visibleTrees;
+
+    if (!list.length) {
+      resultsEl.innerHTML = `
+        <div class="empty">
+          No trees matched your filters.<br><br>
+          Try a different flower name, reset your filters, or switch month to <em>All spring</em>.
+        </div>
+      `;
+      return;
+    }
+
+    resultsEl.innerHTML = list.slice(0, MAX_CARDS).map(t => {
+      const isActive = String(t.id) === String(state.selectedId);
+      const badges = t.months.map(m => `<span class="mbadge ${mbClass(m)}">${esc(m)}</span>`).join("");
+      const mapsLink = (Number.isFinite(t.lat) && Number.isFinite(t.lon))
+        ? `<a class="card-link" href="${mapsUrl(t.lat, t.lon)}" target="_blank" rel="noopener noreferrer">Open in Maps ↗</a>`
+        : "";
+
+      return `
+        <button class="tree-card ${isActive ? "active" : ""}" data-id="${esc(t.id)}" type="button">
+          <div class="card-top">
+            <div class="tree-name">${esc(t.common_name)}</div>
+            <div class="month-badges">${badges}</div>
+          </div>
+          <div class="card-meta">
+            ${t.borough ? `<span><strong>Borough</strong> ${esc(t.borough)}</span>` : ""}
+            ${t.location ? `<span><strong>Place</strong> ${esc(t.location)}</span>` : ""}
+            ${t.bloom_period ? `<span><strong>Blooms</strong> ${esc(t.bloom_period)}</span>` : ""}
+          </div>
+          <div class="card-actions">
+            <span class="view-btn" data-role="view">View on map</span>
+            ${mapsLink}
+          </div>
+        </button>
+      `;
+    }).join("");
+
+    resultsEl.querySelectorAll(".tree-card").forEach(card => {
+      const activate = () => {
+        const t = state.visibleTrees.find(x => String(x.id) === String(card.dataset.id));
+        if (!t || !Number.isFinite(t.lat) || !Number.isFinite(t.lon)) return;
+        selectTree(t.id, true);
+      };
+
+      card.addEventListener("click", activate);
+      card.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          activate();
+        }
+      });
+    });
+
+    if (state.selectedId) {
+      const selectedCard = resultsEl.querySelector(`.tree-card[data-id="${CSS.escape(String(state.selectedId))}"]`);
+      if (selectedCard) {
+        selectedCard.scrollIntoView({ block: "nearest", behavior: "smooth" });
+      }
+    }
+  }
+
+  function popupChipHTML() {
+    const { cls, emoji, label } = state.bloom;
+    if (cls === "none") return "";
+    return `<div class="popup-chip ${cls}">${emoji} ${label}</div>`;
+  }
+
+  function renderMarkers() {
+    markers.clearLayers();
+    state.markersById = new Map();
+
+    const valid = state.visibleTrees.filter(t => Number.isFinite(t.lat) && Number.isFinite(t.lon));
+    if (!valid.length) return;
+
+    const bounds = [];
+
+    valid.forEach(t => {
+      const isSelected = String(t.id) === String(state.selectedId);
+
+      const popup = `
+        <div class="popup-name">${esc(t.common_name)}</div>
+        ${t.borough ? `<div><strong>Borough</strong> ${esc(t.borough)}</div>` : ""}
+        ${t.location ? `<div><strong>Place</strong> ${esc(t.location)}</div>` : ""}
+        ${t.bloom_period ? `<div><strong>Bloom</strong> ${esc(t.bloom_period)}</div>` : ""}
+        ${popupChipHTML()}
+        <a class="popup-link" href="${mapsUrl(t.lat, t.lon)}" target="_blank" rel="noopener noreferrer" style="margin-top:10px;">Open in Maps ↗</a>
+      `;
+
+      const marker = L.marker([t.lat, t.lon], {
+        icon: makeEmojiIcon(t, isSelected),
+        keyboard: true,
+        title: t.common_name
+      }).bindPopup(popup);
+
+      marker.on("click", () => {
+        selectTree(t.id, false);
+      });
+
+      markers.addLayer(marker);
+      state.markersById.set(String(t.id), marker);
+      bounds.push([t.lat, t.lon]);
+    });
+
+    if (bounds.length && !state.hasInitialFit) {
+      map.fitBounds(bounds, { padding: [28, 28] });
+      state.hasInitialFit = true;
+    }
+
+    setTimeout(() => map.invalidateSize(), 80);
+  }
+
+  function render() {
+    renderActiveFilters();
+    updateStats(state.visibleTrees);
+    renderStatus();
+    renderCards();
+    renderMarkers();
+  }
+
+  function selectTree(id, flyTo = true) {
+    const tree = state.visibleTrees.find(t => String(t.id) === String(id));
+    if (!tree) return;
+
+    state.selectedId = tree.id;
+    render();
+
+    if (flyTo && Number.isFinite(tree.lat) && Number.isFinite(tree.lon)) {
+      map.flyTo([tree.lat, tree.lon], Math.max(map.getZoom(), 16), { duration: 0.8 });
+    }
+
+    const marker = state.markersById.get(String(tree.id));
+    if (marker) {
+      setTimeout(() => marker.openPopup(), 220);
+    }
+  }
+
+  async function fetchTrees() {
+    statusEl.textContent = "Loading trees…";
+
+    let q = db.from(TABLE_NAME)
+      .select("id, borough, lat, lon, common_name, location, bloom_period")
+      .not("lat", "is", null)
+      .not("lon", "is", null)
+      .limit(MAX_RESULTS)
+      .order("common_name", { ascending: true });
+
+    const { data, error } = await q;
+
+    if (error) {
+      state.allTrees = [];
+      state.visibleTrees = [];
+      render();
+      statusEl.textContent = "Couldn’t load tree data right now.";
+      console.error(error);
+      return;
+    }
+
+    state.allTrees = (data || []).map(normaliseRow);
+    applyFilters();
+  }
+
+  function scheduleApplyFilters() {
+    clearTimeout(state.debounce);
+    state.debounce = setTimeout(() => {
+      applyFilters();
+    }, 220);
+  }
+
+  function resetFilters() {
+    state.filters = {
+      month: "all",
+      name: "",
+      borough: ""
+    };
+    state.selectedId = null;
+    nameInput.value = "";
+    boroughInput.value = "";
+    document.querySelectorAll(".month-chip").forEach(b => b.classList.remove("active"));
+    document.querySelector('.month-chip[data-month="all"]').classList.add("active");
     buildFlowerGrid();
-    scheduleFetch();
+    applyFilters();
+    map.fitBounds(LONDON_BOUNDS, { padding: [24, 24] });
+  }
+
+  function initMap() {
+    map = L.map("map", {
+      zoomControl: true,
+      preferCanvas: true,
+      maxBounds: LONDON_BOUNDS,
+      maxBoundsViscosity: 1.0,
+      minZoom: 10,
+      maxZoom: 18
+    });
+
+    map.fitBounds(LONDON_BOUNDS);
+
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 19,
+      attribution: "&copy; OpenStreetMap contributors"
+    }).addTo(map);
+
+    markers = L.layerGroup().addTo(map);
+    setTimeout(() => map.invalidateSize(), 250);
+  }
+
+  window.addEventListener("load", async () => {
+    initMap();
+    buildFlowerGrid();
+
+    document.querySelectorAll(".month-chip").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".month-chip").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        state.filters.month = btn.dataset.month;
+        applyFilters();
+      });
+    });
+
+    nameInput.addEventListener("input", () => {
+      state.filters.name = nameInput.value.trim();
+      buildFlowerGrid();
+      scheduleApplyFilters();
+    });
+
+    boroughInput.addEventListener("input", () => {
+      state.filters.borough = boroughInput.value.trim();
+      scheduleApplyFilters();
+    });
+
+    document.getElementById("clearFiltersBtn").addEventListener("click", resetFilters);
+
+    await fetchWeather();
+    await fetchTrees();
   });
-
-  boroughInput.addEventListener("input", scheduleFetch);
-
-  await fetchWeather();
-  await fetchTrees();
-});
 </script>
 </body>
 </html>

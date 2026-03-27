@@ -30,7 +30,7 @@
       --cream: #ffffff;
       --border: #f0dde3;
       --shadow: rgba(180,100,120,0.10);
-      --sidebar-w: 360px;
+      --sidebar-w: 380px;
       --header-h: 58px;
       --font-display: 'Cormorant Garamond', Georgia, serif;
       --font-body: 'DM Sans', system-ui, sans-serif;
@@ -257,6 +257,7 @@
     }
 
     .inputs {
+      position: relative;
       display: flex;
       gap: 8px;
       margin-bottom: 10px;
@@ -277,6 +278,48 @@
       border-color: var(--blush);
     }
 
+    #locationSuggestionsBox {
+      position: absolute;
+      top: calc(100% + 6px);
+      left: 0;
+      right: 0;
+      z-index: 200;
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      box-shadow: 0 10px 24px rgba(42,31,26,0.10);
+      overflow: hidden;
+      display: none;
+      max-height: 280px;
+      overflow-y: auto;
+    }
+
+    .suggestionItem {
+      padding: 10px 12px;
+      border-bottom: 1px solid #f6e9ee;
+      cursor: pointer;
+    }
+
+    .suggestionItem:last-child {
+      border-bottom: none;
+    }
+
+    .suggestionItem:hover {
+      background: #fff7f9;
+    }
+
+    .suggestionMain {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--bark);
+    }
+
+    .suggestionSub {
+      font-size: 0.72rem;
+      color: #9a868a;
+      margin-top: 2px;
+    }
+
     #resetBtn {
       padding: 9px 12px;
       border: 1.5px solid var(--border);
@@ -295,6 +338,63 @@
       padding-top: 8px;
     }
 
+    #nearbyResults {
+      margin-top: 14px;
+      border-top: 1px solid var(--border);
+      padding-top: 14px;
+    }
+
+    #nearbyResultsTitle {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #af999e;
+      margin-bottom: 8px;
+    }
+
+    .nearbyCard {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px 11px;
+      margin-bottom: 8px;
+      cursor: pointer;
+      transition: 0.15s ease;
+    }
+
+    .nearbyCard:hover {
+      border-color: var(--blush);
+      transform: translateY(-1px);
+    }
+
+    .nearbyName {
+      font-family: var(--font-display);
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--bark);
+      line-height: 1.1;
+      margin-bottom: 4px;
+    }
+
+    .nearbyMeta {
+      font-size: 0.74rem;
+      color: #8f7b80;
+      line-height: 1.45;
+    }
+
+    .nearbyMiles {
+      display: inline-block;
+      margin-top: 6px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--rose);
+      background: var(--petal);
+      border: 1px solid var(--blush);
+      border-radius: 999px;
+      padding: 3px 8px;
+    }
+
     #mapWrap {
       flex: 1;
       min-width: 0;
@@ -304,6 +404,86 @@
     #map {
       width: 100%;
       height: 100%;
+    }
+
+    #insightsPanel {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      z-index: 400;
+      width: 290px;
+      background: rgba(255,255,255,0.94);
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(42,31,26,0.12);
+      padding: 14px;
+    }
+
+    #insightsTitle {
+      font-family: var(--font-display);
+      font-size: 1.18rem;
+      font-weight: 700;
+      color: var(--bark);
+      line-height: 1.1;
+      margin-bottom: 8px;
+    }
+
+    .insightSub {
+      font-size: 0.77rem;
+      color: #907d82;
+      line-height: 1.5;
+      margin-bottom: 10px;
+    }
+
+    .insightRow {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 8px;
+      font-size: 0.78rem;
+    }
+
+    .insightLabel {
+      color: #8f7b80;
+    }
+
+    .insightValue {
+      color: var(--bark);
+      font-weight: 700;
+      text-align: right;
+    }
+
+    .insightPill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--rose);
+      background: var(--petal);
+      border: 1px solid var(--blush);
+      padding: 5px 9px;
+      border-radius: 999px;
+      margin-top: 4px;
+      margin-bottom: 8px;
+    }
+
+    .waitingBox {
+      margin-top: 10px;
+      padding: 11px 12px;
+      background: #fff7f9;
+      border: 1px dashed var(--blush);
+      border-radius: 12px;
+      color: var(--deep-rose);
+      font-size: 0.78rem;
+      line-height: 1.5;
+    }
+
+    .waitingBox strong {
+      display: block;
+      margin-bottom: 4px;
+      color: var(--bark);
     }
 
     .leaflet-popup-content-wrapper {
@@ -417,6 +597,12 @@
       border: 2px solid white;
     }
 
+    @media (max-width: 980px) {
+      #insightsPanel {
+        width: 250px;
+      }
+    }
+
     @media (max-width: 760px) {
       #main {
         flex-direction: column;
@@ -424,13 +610,13 @@
 
       #sidebar {
         width: 100%;
-        height: 44vh;
+        height: 48vh;
         border-right: none;
         border-bottom: 1px solid var(--border);
       }
 
       #mapWrap {
-        height: 56vh;
+        height: 52vh;
       }
 
       #bloomBadge {
@@ -440,6 +626,13 @@
       #supportBtn {
         padding: 8px 10px;
         font-size: 0.72rem;
+      }
+
+      #insightsPanel {
+        top: auto;
+        right: 10px;
+        bottom: 10px;
+        width: calc(100% - 20px);
       }
     }
   </style>
@@ -506,18 +699,33 @@
           type="text"
           placeholder="Search borough, park, street or place…"
           autocomplete="off"
-          list="locationSuggestions"
         />
-        <datalist id="locationSuggestions"></datalist>
+        <div id="locationSuggestionsBox"></div>
       </div>
 
       <button id="resetBtn" type="button">Reset filters</button>
       <div id="statusBar">Loading…</div>
+
+      <div id="nearbyResults" style="display:none;">
+        <div id="nearbyResultsTitle">Nearby blossom matches</div>
+        <div id="nearbyResultsList"></div>
+      </div>
     </div>
   </aside>
 
   <div id="mapWrap">
     <div id="map"></div>
+
+    <div id="insightsPanel">
+      <div id="insightsTitle">Community insights</div>
+      <div class="insightSub">Click a blossom marker to see local voting signals.</div>
+      <div id="insightsBody">
+        <div class="insightRow">
+          <span class="insightLabel">Status</span>
+          <span class="insightValue">No place selected</span>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -579,14 +787,17 @@
     filterDebounce: null,
     geocodeDebounce: null,
     searchCenter: null,
-    searchMode: "none"
+    searchMode: "none",
+    suggestionPool: []
   };
 
   let map, markerClusterLayer, LONDON_BOUNDS;
 
   const flowerGridEl = document.getElementById("flowerGrid");
   const locationInput = document.getElementById("locationInput");
-  const locationSuggestionsEl = document.getElementById("locationSuggestions");
+  const locationSuggestionsBox = document.getElementById("locationSuggestionsBox");
+  const nearbyResultsEl = document.getElementById("nearbyResults");
+  const nearbyResultsListEl = document.getElementById("nearbyResultsList");
   const statusEl = document.getElementById("statusBar");
   const cTreesEl = document.getElementById("cTrees");
   const cPlacesEl = document.getElementById("cPlaces");
@@ -595,6 +806,7 @@
   const bloomStageNameEl = document.getElementById("bloomStageName");
   const bloomTempEl = document.getElementById("bloomTemp");
   const bloomBadgeEl = document.getElementById("bloomBadge");
+  const insightsBodyEl = document.getElementById("insightsBody");
 
   function esc(s) {
     return String(s ?? "")
@@ -654,17 +866,6 @@
     return "🌸";
   }
 
-  function markerStyle(tree, isSelected = false) {
-    const c = SPECIES_COLORS[speciesKey(tree.common_name)] || SPECIES_COLORS.default;
-    return {
-      radius: isSelected ? 10 : 7,
-      weight: isSelected ? 3 : 1.8,
-      color: isSelected ? "#fff" : c.stroke,
-      fillColor: c.fill,
-      fillOpacity: isSelected ? 1 : 0.92
-    };
-  }
-
   function createTreeIcon(tree, isSelected = false) {
     const c = SPECIES_COLORS[speciesKey(tree.common_name)] || SPECIES_COLORS.default;
     const size = isSelected ? 24 : 20;
@@ -698,6 +899,11 @@
 
   function getMyVote(id) {
     return state.myVotesBySpot.get(String(id)) || 0;
+  }
+
+  function totalVotesFor(id) {
+    const v = getVoteTotals(id);
+    return (v.upvotes || 0) + (v.downvotes || 0);
   }
 
   function milesBetween(lat1, lon1, lat2, lon2) {
@@ -736,16 +942,63 @@
     });
   }
 
-  function buildLocationSuggestions() {
-    const values = new Set();
+  function buildSuggestionPool() {
+    const seen = new Set();
+    const pool = [];
 
     state.allTrees.forEach(t => {
-      if (t.location && t.location.trim()) values.add(t.location.trim());
-      if (t.borough && t.borough.trim()) values.add(t.borough.trim());
+      const loc = (t.location || "").trim();
+      const bor = (t.borough || "").trim();
+
+      if (loc && !seen.has(`loc:${loc.toLowerCase()}`)) {
+        seen.add(`loc:${loc.toLowerCase()}`);
+        pool.push({ label: loc, sub: bor ? `Place · ${bor}` : "Place", type: "location" });
+      }
+
+      if (bor && !seen.has(`bor:${bor.toLowerCase()}`)) {
+        seen.add(`bor:${bor.toLowerCase()}`);
+        pool.push({ label: bor, sub: "Borough", type: "borough" });
+      }
     });
 
-    const sorted = [...values].sort((a, b) => a.localeCompare(b)).slice(0, 500);
-    locationSuggestionsEl.innerHTML = sorted.map(v => `<option value="${esc(v)}"></option>`).join("");
+    state.suggestionPool = pool.sort((a, b) => a.label.localeCompare(b.label));
+  }
+
+  function renderSuggestions(query) {
+    const q = String(query || "").trim().toLowerCase();
+    if (!q) {
+      locationSuggestionsBox.style.display = "none";
+      locationSuggestionsBox.innerHTML = "";
+      return;
+    }
+
+    const matches = state.suggestionPool
+      .filter(item => item.label.toLowerCase().includes(q))
+      .slice(0, 8);
+
+    if (!matches.length) {
+      locationSuggestionsBox.style.display = "none";
+      locationSuggestionsBox.innerHTML = "";
+      return;
+    }
+
+    locationSuggestionsBox.innerHTML = matches.map(item => `
+      <div class="suggestionItem" data-value="${esc(item.label)}">
+        <div class="suggestionMain">${esc(item.label)}</div>
+        <div class="suggestionSub">${esc(item.sub)}</div>
+      </div>
+    `).join("");
+
+    locationSuggestionsBox.style.display = "block";
+
+    locationSuggestionsBox.querySelectorAll(".suggestionItem").forEach(el => {
+      el.addEventListener("click", () => {
+        locationInput.value = el.dataset.value;
+        state.filters.location = el.dataset.value;
+        locationSuggestionsBox.style.display = "none";
+        handleLocationSearch();
+      });
+    });
   }
 
   async function fetchWeather() {
@@ -758,21 +1011,21 @@
       const avg = means.length ? means.reduce((a, b) => a + b, 0) / means.length : null;
       const current = d.current?.temperature_2m ?? null;
 
-      let label = "Seasonal Signal";
+      let label = "Spring signal";
       let emoji = "🌿";
 
       if (avg !== null) {
         if (avg < 8) {
-          label = "Early Bud";
+          label = "Cool spring";
           emoji = "🌱";
         } else if (avg < 12) {
-          label = "Bud Burst";
+          label = "Mild spring";
           emoji = "🌱";
         } else if (avg < 17) {
-          label = "Peak Blossom";
+          label = "Blossom weather";
           emoji = "🌸";
         } else {
-          label = "Fading";
+          label = "Warm spring";
           emoji = "🍃";
         }
       }
@@ -838,7 +1091,7 @@
     }
 
     state.allTrees = combined.map(normaliseRow);
-    buildLocationSuggestions();
+    buildSuggestionPool();
     applyFilters();
   }
 
@@ -891,6 +1144,7 @@
     });
 
     refreshPopupIfSelected(spotId);
+    renderInsightsForSelected();
 
     const { error } = await db.rpc("cast_vote", {
       p_spot_id: String(spotId),
@@ -902,6 +1156,7 @@
       state.myVotesBySpot.set(String(spotId), prevMine);
       state.votesBySpot.set(String(spotId), prev);
       refreshPopupIfSelected(spotId);
+      renderInsightsForSelected();
       alert(`Couldn't save vote: ${error.message || "unknown error"}`);
       return;
     }
@@ -909,6 +1164,7 @@
     await fetchVoteTotals();
     await fetchMyVotes();
     refreshPopupIfSelected(spotId);
+    renderInsightsForSelected();
   }
 
   function baseFilteredTrees() {
@@ -916,6 +1172,39 @@
       (state.filters.month === "all" || t.months.includes(state.filters.month)) &&
       (!state.filters.name || t.common_name.toLowerCase().includes(state.filters.name.toLowerCase()))
     );
+  }
+
+  function renderNearbyResults() {
+    if (state.searchMode !== "radius" || !state.searchCenter || !state.visibleTrees.length) {
+      nearbyResultsEl.style.display = "none";
+      nearbyResultsListEl.innerHTML = "";
+      return;
+    }
+
+    const nearest = state.visibleTrees
+      .map(t => ({
+        ...t,
+        distanceMiles: milesBetween(state.searchCenter.lat, state.searchCenter.lon, t.lat, t.lon)
+      }))
+      .sort((a, b) => a.distanceMiles - b.distanceMiles)
+      .slice(0, 6);
+
+    nearbyResultsListEl.innerHTML = nearest.map(t => `
+      <div class="nearbyCard" data-id="${esc(t.id)}">
+        <div class="nearbyName">${esc(t.common_name)}</div>
+        <div class="nearbyMeta">
+          ${t.location ? `${esc(t.location)}<br>` : ""}
+          ${t.borough ? `${esc(t.borough)}` : ""}
+        </div>
+        <div class="nearbyMiles">${t.distanceMiles.toFixed(1)} miles away</div>
+      </div>
+    `).join("");
+
+    nearbyResultsEl.style.display = "block";
+
+    nearbyResultsListEl.querySelectorAll(".nearbyCard").forEach(card => {
+      card.addEventListener("click", () => selectTree(card.dataset.id, true));
+    });
   }
 
   function applyFilters() {
@@ -950,6 +1239,7 @@
     renderStats();
     renderStatus();
     renderMarkers();
+    renderNearbyResults();
   }
 
   async function handleLocationSearch() {
@@ -1086,6 +1376,58 @@
     }
   }
 
+  function renderInsightsForSelected() {
+    if (!state.selectedId) {
+      insightsBodyEl.innerHTML = `
+        <div class="insightRow">
+          <span class="insightLabel">Status</span>
+          <span class="insightValue">No place selected</span>
+        </div>
+      `;
+      return;
+    }
+
+    const tree = state.allTrees.find(t => String(t.id) === String(state.selectedId));
+    if (!tree) return;
+
+    const votes = getVoteTotals(tree.id);
+    const totalVotes = totalVotesFor(tree.id);
+
+    insightsBodyEl.innerHTML = `
+      <div class="insightSub" style="margin-bottom:8px;">
+        <strong style="display:block;color:var(--bark);font-family:var(--font-display);font-size:1.05rem;">${esc(tree.common_name)}</strong>
+        ${tree.location ? `${esc(tree.location)}<br>` : ""}
+        ${tree.borough ? `${esc(tree.borough)}` : ""}
+      </div>
+
+      <div class="insightPill">Community score ${votes.score >= 0 ? "+" : ""}${votes.score}</div>
+
+      <div class="insightRow">
+        <span class="insightLabel">Upvotes</span>
+        <span class="insightValue">${votes.upvotes}</span>
+      </div>
+
+      <div class="insightRow">
+        <span class="insightLabel">Downvotes</span>
+        <span class="insightValue">${votes.downvotes}</span>
+      </div>
+
+      <div class="insightRow">
+        <span class="insightLabel">Total votes</span>
+        <span class="insightValue">${totalVotes}</span>
+      </div>
+
+      ${
+        totalVotes < 3
+          ? `<div class="waitingBox">
+              <strong>Waiting for votes 🙂</strong>
+              Would you like to vote? This blossom spot still needs community input.
+            </div>`
+          : ""
+      }
+    `;
+  }
+
   function refreshPopupIfSelected(spotId) {
     const marker = state.markersById.get(String(spotId));
     const tree = state.allTrees.find(t => String(t.id) === String(spotId));
@@ -1115,6 +1457,8 @@
     const marker = state.markersById.get(String(tree.id));
     if (marker) marker.setIcon(createTreeIcon(tree, true));
 
+    renderInsightsForSelected();
+
     if (flyTo && Number.isFinite(tree.lat) && Number.isFinite(tree.lon)) {
       map.flyTo([tree.lat, tree.lon], Math.max(map.getZoom(), 15), { duration: 0.7 });
       map.once("moveend", () => marker?.openPopup());
@@ -1130,12 +1474,15 @@
     state.searchMode = "none";
 
     locationInput.value = "";
+    locationSuggestionsBox.style.display = "none";
+    locationSuggestionsBox.innerHTML = "";
 
     document.querySelectorAll("#monthChips .chip").forEach(btn => btn.classList.remove("active"));
     document.querySelector('#monthChips .chip[data-month="all"]')?.classList.add("active");
 
     buildFlowerGrid();
     applyFilters();
+    renderInsightsForSelected();
 
     if (LONDON_BOUNDS) {
       map.fitBounds(LONDON_BOUNDS, { padding: [24, 24] });
@@ -1178,6 +1525,7 @@
           state.markersById.get(String(prev.id))?.setIcon(createTreeIcon(prev, false));
         }
         state.selectedId = null;
+        renderInsightsForSelected();
       }
     });
   }
@@ -1196,10 +1544,17 @@
     });
   }
 
+  window.addEventListener("click", (e) => {
+    if (!e.target.closest(".inputs")) {
+      locationSuggestionsBox.style.display = "none";
+    }
+  });
+
   window.addEventListener("load", async () => {
     initMap();
     wirePopupVoteDelegation();
     buildFlowerGrid();
+    renderInsightsForSelected();
 
     document.querySelectorAll("#monthChips .chip").forEach(btn => {
       btn.addEventListener("click", () => {
@@ -1212,8 +1567,13 @@
 
     locationInput.addEventListener("input", () => {
       state.filters.location = locationInput.value.trim();
+      renderSuggestions(state.filters.location);
       clearTimeout(state.filterDebounce);
       state.filterDebounce = setTimeout(handleLocationSearch, 180);
+    });
+
+    locationInput.addEventListener("focus", () => {
+      renderSuggestions(locationInput.value);
     });
 
     document.getElementById("resetBtn").addEventListener("click", resetFilters);
@@ -1223,6 +1583,7 @@
     await fetchVoteTotals();
     await fetchMyVotes();
     renderMarkers();
+    renderInsightsForSelected();
   });
 </script>
 </body>

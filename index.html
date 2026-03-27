@@ -23,14 +23,11 @@
       --petal: #fff5f7;
       --bark: #3a2a2e;
       --soil: #5a4048;
-      --sage: #6a9e72;
       --cream: #ffffff;
       --border: #f0dde3;
       --shadow: rgba(180,100,120,0.10);
-
       --sidebar-w: 360px;
       --header-h: 58px;
-
       --font-display: 'Cormorant Garamond', Georgia, serif;
       --font-body: 'DM Sans', system-ui, sans-serif;
     }
@@ -242,12 +239,6 @@
       color: white;
     }
 
-    .chip.active.region {
-      background: var(--sage);
-      border-color: var(--sage);
-      color: white;
-    }
-
     .chip.active.flower {
       background: var(--petal);
       border-color: var(--rose);
@@ -270,8 +261,8 @@
     .inputs input {
       width: 100%;
       font-family: var(--font-body);
-      font-size: 0.8rem;
-      padding: 9px 10px;
+      font-size: 0.82rem;
+      padding: 10px 11px;
       border: 1.5px solid var(--border);
       border-radius: 10px;
       background: #fff;
@@ -297,7 +288,7 @@
     #statusBar {
       font-size: 0.76rem;
       color: #9a868a;
-      padding-top: 2px;
+      padding-top: 8px;
     }
 
     #mapWrap {
@@ -347,7 +338,7 @@
     }
 
     .popupWrap {
-      min-width: 220px;
+      min-width: 230px;
       font-family: var(--font-body);
       color: var(--soil);
       line-height: 1.5;
@@ -438,26 +429,22 @@
 
       #sidebar {
         width: 100%;
-        height: 46vh;
+        height: 44vh;
         border-right: none;
         border-bottom: 1px solid var(--border);
       }
 
       #mapWrap {
-        height: 54vh;
+        height: 56vh;
       }
 
-      #headerRight {
-        gap: 6px;
+      #bloomBadge {
+        display: none;
       }
 
       #supportBtn {
         padding: 8px 10px;
         font-size: 0.72rem;
-      }
-
-      #bloomBadge {
-        display: none;
       }
     }
   </style>
@@ -496,8 +483,8 @@
         <div class="statLbl">Visible</div>
       </div>
       <div class="statCell">
-        <div class="statNum" id="cBoroughs">—</div>
-        <div class="statLbl">Boroughs</div>
+        <div class="statNum" id="cPlaces">—</div>
+        <div class="statLbl">Places</div>
       </div>
       <div class="statCell">
         <div class="statNum" id="cTypes">—</div>
@@ -514,16 +501,12 @@
         <button class="chip month" data-month="May" type="button">May</button>
       </div>
 
-      <div class="filterLabel">Area</div>
-      <div id="regionChips" class="chipGroup"></div>
-
       <div class="filterLabel">Flower</div>
       <div id="flowerGrid" class="chipGroup"></div>
 
+      <div class="filterLabel">Location</div>
       <div class="inputs">
-        <input id="nameInput" type="text" placeholder="Search flower…" autocomplete="off" />
-        <input id="boroughInput" type="text" placeholder="Borough…" list="boroughList" autocomplete="off" />
-        <datalist id="boroughList"></datalist>
+        <input id="locationInput" type="text" placeholder="Search borough, park, street or place…" autocomplete="off" />
       </div>
 
       <button id="resetBtn" type="button">Reset filters</button>
@@ -536,7 +519,7 @@
 
     <div id="mapInfo">
       <strong>Explore the map</strong>
-      Click a blossom marker to view details and let the community vote.
+      Type a location on the left, then click a blossom marker to vote.
     </div>
   </div>
 </div>
@@ -546,7 +529,6 @@
   const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVzZmp6aGd6ZmJjcnJld2p2b2FuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQzNjg3NjIsImV4cCI6MjA4OTk0NDc2Mn0.kJOMlq3vHwYWwogSIyLccveHecA5D7WX2RwLzMqe8bY";
   const TABLE_NAME = "spring_trees";
   const WEATHER_URL = "https://api.open-meteo.com/v1/forecast?latitude=51.5074&longitude=-0.1278&daily=temperature_2m_mean&current=temperature_2m&timezone=Europe%2FLondon&forecast_days=1&past_days=7";
-
   const PER_SPECIES_LIMIT = 220;
 
   const FLOWERS = [
@@ -566,8 +548,6 @@
   ];
 
   const TARGET_SPECIES = FLOWERS.map(f => f.name);
-
-  const REGIONS = ["Central", "North", "South", "East", "West", "Other"];
 
   const SPECIES_COLORS = {
     cherry:             { fill:"#f4a7b9", stroke:"#bd5d79" },
@@ -592,7 +572,7 @@
     allTrees: [],
     visibleTrees: [],
     selectedId: null,
-    filters: { month: "all", name: "", borough: "", region: "" },
+    filters: { month: "all", name: "", location: "" },
     markersById: new Map(),
     votesBySpot: new Map(),
     myVotesBySpot: new Map(),
@@ -602,14 +582,11 @@
 
   let map, markerLayer, LONDON_BOUNDS;
 
-  const nameInput = document.getElementById("nameInput");
-  const boroughInput = document.getElementById("boroughInput");
-  const boroughListEl = document.getElementById("boroughList");
   const flowerGridEl = document.getElementById("flowerGrid");
-  const regionChipsEl = document.getElementById("regionChips");
+  const locationInput = document.getElementById("locationInput");
   const statusEl = document.getElementById("statusBar");
   const cTreesEl = document.getElementById("cTrees");
-  const cBoroughsEl = document.getElementById("cBoroughs");
+  const cPlacesEl = document.getElementById("cPlaces");
   const cTypesEl = document.getElementById("cTypes");
   const bloomEmojiEl = document.getElementById("bloomEmoji");
   const bloomStageNameEl = document.getElementById("bloomStageName");
@@ -645,29 +622,11 @@
     return [period];
   }
 
-  function regionFromBorough(borough) {
-    const b = String(borough || "").trim().toLowerCase();
-
-    const MAP = {
-      Central: ["camden","city of london","city","islington","kensington and chelsea","westminster","lambeth","southwark"],
-      North:   ["barnet","enfield","haringey","harrow","brent"],
-      South:   ["bromley","croydon","greenwich","kingston upon thames","merton","richmond upon thames","sutton","wandsworth","lewisham","bexley"],
-      East:    ["barking and dagenham","hackney","havering","newham","redbridge","tower hamlets","waltham forest"],
-      West:    ["ealing","hammersmith and fulham","hillingdon","hounslow"]
-    };
-
-    for (const [region, boroughs] of Object.entries(MAP)) {
-      if (boroughs.includes(b)) return region;
-    }
-    return "Other";
-  }
-
   function normaliseRow(row) {
     return {
       id: String(row.id ?? crypto.randomUUID()),
       common_name: row.common_name ?? "Unknown",
       borough: row.borough ?? "",
-      region: regionFromBorough(row.borough),
       location: row.location ?? "",
       lat: Number.isFinite(+row.lat) ? +row.lat : null,
       lon: Number.isFinite(+row.lon) ? +row.lon : null,
@@ -716,40 +675,10 @@
         const name = btn.dataset.name;
         const off = state.filters.name.toLowerCase() === name.toLowerCase();
         state.filters.name = off ? "" : name;
-        nameInput.value = off ? "" : name;
         buildFlowerGrid();
         applyFilters();
       });
     });
-  }
-
-  function buildRegionChips() {
-    regionChipsEl.innerHTML = REGIONS.map(region => `
-      <button
-        class="chip region ${state.filters.region === region ? "active" : ""}"
-        data-region="${region}"
-        type="button"
-      >
-        ${region}
-      </button>
-    `).join("");
-
-    regionChipsEl.querySelectorAll(".chip").forEach(btn => {
-      btn.addEventListener("click", () => {
-        const region = btn.dataset.region;
-        state.filters.region = state.filters.region === region ? "" : region;
-        buildRegionChips();
-        applyFilters();
-      });
-    });
-  }
-
-  function populateBoroughList() {
-    const boroughs = [...new Set(
-      state.allTrees.map(t => (t.borough || "").trim()).filter(Boolean)
-    )].sort((a, b) => a.localeCompare(b));
-
-    boroughListEl.innerHTML = boroughs.map(b => `<option value="${esc(b)}"></option>`).join("");
   }
 
   async function fetchWeather() {
@@ -819,7 +748,6 @@
     }
 
     state.allTrees = combined.map(normaliseRow);
-    populateBoroughList();
     applyFilters();
   }
 
@@ -893,11 +821,17 @@
   }
 
   function applyFilters() {
+    const q = state.filters.location.toLowerCase().trim();
+
     state.visibleTrees = state.allTrees.filter(t =>
       (state.filters.month === "all" || t.months.includes(state.filters.month)) &&
       (!state.filters.name || t.common_name.toLowerCase().includes(state.filters.name.toLowerCase())) &&
-      (!state.filters.borough || t.borough.toLowerCase().includes(state.filters.borough.toLowerCase())) &&
-      (!state.filters.region || t.region.toLowerCase() === state.filters.region.toLowerCase())
+      (
+        !q ||
+        t.location.toLowerCase().includes(q) ||
+        t.borough.toLowerCase().includes(q) ||
+        t.common_name.toLowerCase().includes(q)
+      )
     );
 
     renderStats();
@@ -907,7 +841,9 @@
 
   function renderStats() {
     cTreesEl.textContent = state.visibleTrees.length.toLocaleString();
-    cBoroughsEl.textContent = new Set(state.visibleTrees.map(t => t.borough).filter(Boolean)).size;
+    cPlacesEl.textContent = new Set(
+      state.visibleTrees.map(t => `${t.location}|${t.borough}`).filter(Boolean)
+    ).size;
     cTypesEl.textContent = new Set(state.visibleTrees.map(t => t.common_name).filter(Boolean)).size;
   }
 
@@ -918,7 +854,7 @@
     }
 
     if (!state.visibleTrees.length) {
-      statusEl.textContent = "No blossom markers match these filters.";
+      statusEl.textContent = "No blossom markers match this search.";
       return;
     }
 
@@ -934,7 +870,6 @@
         <div class="popupName">${esc(t.common_name)}</div>
 
         <div class="popupMeta">
-          ${t.region ? `<div><strong>Area:</strong> ${esc(t.region)}</div>` : ""}
           ${t.borough ? `<div><strong>Borough:</strong> ${esc(t.borough)}</div>` : ""}
           ${t.location ? `<div><strong>Place:</strong> ${esc(t.location)}</div>` : ""}
           ${t.bloom_period ? `<div><strong>Bloom:</strong> ${esc(t.bloom_period)}</div>` : ""}
@@ -1029,9 +964,7 @@
     }
 
     const marker = state.markersById.get(String(tree.id));
-    if (marker) {
-      marker.setStyle(markerStyle(tree, true));
-    }
+    if (marker) marker.setStyle(markerStyle(tree, true));
 
     if (flyTo && Number.isFinite(tree.lat) && Number.isFinite(tree.lon)) {
       map.flyTo([tree.lat, tree.lon], Math.max(map.getZoom(), 15), { duration: 0.7 });
@@ -1042,17 +975,14 @@
   }
 
   function resetFilters() {
-    state.filters = { month: "all", name: "", borough: "", region: "" };
+    state.filters = { month: "all", name: "", location: "" };
     state.selectedId = null;
 
-    nameInput.value = "";
-    boroughInput.value = "";
-
+    locationInput.value = "";
     document.querySelectorAll("#monthChips .chip").forEach(btn => btn.classList.remove("active"));
     document.querySelector('#monthChips .chip[data-month="all"]')?.classList.add("active");
 
     buildFlowerGrid();
-    buildRegionChips();
     applyFilters();
 
     if (LONDON_BOUNDS) {
@@ -1083,9 +1013,9 @@
 
     map.on("popupclose", () => {
       if (state.selectedId !== null) {
-        const tree = state.allTrees.find(t => String(t.id) === String(state.selectedId));
-        if (tree) {
-          state.markersById.get(String(tree.id))?.setStyle(markerStyle(tree, false));
+        const prev = state.allTrees.find(t => String(t.id) === String(state.selectedId));
+        if (prev) {
+          state.markersById.get(String(prev.id))?.setStyle(markerStyle(prev, false));
         }
         state.selectedId = null;
       }
@@ -1096,8 +1026,8 @@
     document.addEventListener("click", async (e) => {
       const btn = e.target.closest(".popupVoteBtn");
       if (!btn) return;
-      e.preventDefault();
 
+      e.preventDefault();
       const spotId = btn.dataset.spot;
       const vote = Number(btn.dataset.vote);
       if (!spotId || !vote) return;
@@ -1110,7 +1040,6 @@
     initMap();
     wirePopupVoteDelegation();
     buildFlowerGrid();
-    buildRegionChips();
 
     document.querySelectorAll("#monthChips .chip").forEach(btn => {
       btn.addEventListener("click", () => {
@@ -1121,15 +1050,8 @@
       });
     });
 
-    nameInput.addEventListener("input", () => {
-      state.filters.name = nameInput.value.trim();
-      buildFlowerGrid();
-      clearTimeout(state.filterDebounce);
-      state.filterDebounce = setTimeout(applyFilters, 180);
-    });
-
-    boroughInput.addEventListener("input", () => {
-      state.filters.borough = boroughInput.value.trim();
+    locationInput.addEventListener("input", () => {
+      state.filters.location = locationInput.value.trim();
       clearTimeout(state.filterDebounce);
       state.filterDebounce = setTimeout(applyFilters, 180);
     });

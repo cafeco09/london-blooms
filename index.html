@@ -57,7 +57,7 @@
       background: var(--petal);
       border-bottom: 1.5px solid var(--border);
       display: flex;
-      align-items: centre;
+      align-items: center;
       justify-content: space-between;
       padding: 0 20px;
       flex-shrink: 0;
@@ -72,7 +72,7 @@
       color: var(--rose);
       letter-spacing: 0.01em;
       display: flex;
-      align-items: centre;
+      align-items: center;
       gap: 8px;
     }
 
@@ -103,7 +103,7 @@
 
     #bloom-top {
       display: flex;
-      align-items: centre;
+      align-items: center;
       gap: 10px;
     }
 
@@ -135,7 +135,7 @@
     .stat-cell {
       flex: 1;
       padding: 10px 0;
-      text-align: centre;
+      text-align: center;
       border-right: 1px solid var(--border);
     }
 
@@ -213,7 +213,7 @@
 
     .flower-btn {
       display: flex;
-      align-items: centre;
+      align-items: center;
       gap: 4px;
       font-weight: 400;
       padding: 4px 10px;
@@ -274,13 +274,13 @@
     #results {
       flex: 1;
       overflow-y: auto;
-      padding: 10px 10px;
-      scroll-behaviour: smooth;
+      padding: 10px;
+      scroll-behavior: smooth;
     }
 
     .empty {
       padding: 32px 16px;
-      text-align: centre;
+      text-align: center;
       color: #b09890;
       font-size: 0.82rem;
       line-height: 1.7;
@@ -298,6 +298,13 @@
       font-family: var(--font-body);
       color: var(--bark);
       display: block;
+      transition: border-color 0.15s, box-shadow 0.15s, transform 0.12s;
+    }
+
+    .tree-card:hover {
+      border-color: var(--blush);
+      box-shadow: 0 4px 14px var(--shadow);
+      transform: translateY(-1px);
     }
 
     .tree-card.active {
@@ -351,11 +358,15 @@
       margin-bottom: 7px;
     }
 
-    .card-meta strong { color: var(--soil); font-weight: 600; margin-right: 3px; }
+    .card-meta strong {
+      color: var(--soil);
+      font-weight: 600;
+      margin-right: 3px;
+    }
 
     .card-actions {
       display: flex;
-      align-items: centre;
+      align-items: center;
       justify-content: space-between;
       gap: 10px;
     }
@@ -503,7 +514,7 @@
 
     .vote-row {
       display: flex;
-      align-items: centre;
+      align-items: center;
       gap: 7px;
       flex-wrap: wrap;
     }
@@ -520,7 +531,7 @@
       color: var(--soil);
       cursor: pointer;
       display: flex;
-      align-items: centre;
+      align-items: center;
       gap: 5px;
     }
 
@@ -539,13 +550,16 @@
 
     @media (max-width: 700px) {
       :root { --sidebar-w: 100vw; }
+
       #main { flex-direction: column; }
+
       #sidebar {
         width: 100%;
         height: 50vh;
         border-right: none;
         border-bottom: 1px solid var(--border);
       }
+
       #map-wrap { height: 50vh; }
       #bottomSheet { max-height: 80vh; }
     }
@@ -647,14 +661,18 @@
   const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVzZmp6aGd6ZmJjcnJld2p2b2FuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQzNjg3NjIsImV4cCI6MjA4OTk0NDc2Mn0.kJOMlq3vHwYWwogSIyLccveHecA5D7WX2RwLzMqe8bY";
   const TABLE_NAME = "spring_trees";
   const WEATHER_URL = "https://api.open-meteo.com/v1/forecast?latitude=51.5074&longitude=-0.1278&daily=temperature_2m_mean&current=temperature_2m&timezone=Europe%2FLondon&forecast_days=1&past_days=7";
+
   const MAX_CARDS = 120;
+  const PER_SPECIES_LIMIT = 300;
 
   const FLOWERS = [
     { icon:"🌸", name:"Cherry" },
     { icon:"🌸", name:"Cherry Plum" },
+    { icon:"🌸", name:"Japanese Cherry" },
     { icon:"🌺", name:"Magnolia" },
     { icon:"🌼", name:"Crab Apple" },
     { icon:"🌿", name:"Hawthorn" },
+    { icon:"🌿", name:"Midland Hawthorn" },
     { icon:"🍐", name:"Pear" },
     { icon:"🍎", name:"Apple" },
     { icon:"🟣", name:"Plum" },
@@ -663,21 +681,25 @@
     { icon:"🌳", name:"Rowan" }
   ];
 
+  const TARGET_SPECIES = FLOWERS.map(f => f.name);
+
   const REGIONS = ["Central", "North", "South", "East", "West", "Other"];
 
   const SPECIES_COLORS = {
-    cherry:        { fill:"#f4a7b9", stroke:"#bd5d79" },
-    "cherry plum": { fill:"#f2a4c0", stroke:"#b85b83" },
-    magnolia:      { fill:"#d6b3ff", stroke:"#8457b8" },
-    "crab apple":  { fill:"#ffd36e", stroke:"#b9851e" },
-    hawthorn:      { fill:"#7abf88", stroke:"#3f7a4c" },
-    pear:          { fill:"#b5d96a", stroke:"#6b8d1e" },
-    apple:         { fill:"#f28b82", stroke:"#b6413c" },
-    plum:          { fill:"#b08ad8", stroke:"#6d49a8" },
-    almond:        { fill:"#f6c7d5", stroke:"#c96f8d" },
-    blackthorn:    { fill:"#d8ecff", stroke:"#6e98c5" },
-    rowan:         { fill:"#ff9d5c", stroke:"#b85a1e" },
-    default:       { fill:"#d4607a", stroke:"#8f3550" }
+    cherry:            { fill:"#f4a7b9", stroke:"#bd5d79" },
+    "japanese cherry": { fill:"#f7a8c5", stroke:"#b8547b" },
+    "cherry plum":     { fill:"#f2a4c0", stroke:"#b85b83" },
+    magnolia:          { fill:"#d6b3ff", stroke:"#8457b8" },
+    "crab apple":      { fill:"#ffd36e", stroke:"#b9851e" },
+    hawthorn:          { fill:"#7abf88", stroke:"#3f7a4c" },
+    "midland hawthorn":{ fill:"#80c48d", stroke:"#467f53" },
+    pear:              { fill:"#b5d96a", stroke:"#6b8d1e" },
+    apple:             { fill:"#f28b82", stroke:"#b6413c" },
+    plum:              { fill:"#b08ad8", stroke:"#6d49a8" },
+    almond:            { fill:"#f6c7d5", stroke:"#c96f8d" },
+    blackthorn:        { fill:"#d8ecff", stroke:"#6e98c5" },
+    rowan:             { fill:"#ff9d5c", stroke:"#b85a1e" },
+    default:           { fill:"#d4607a", stroke:"#8f3550" }
   };
 
   let LONDON_BOUNDS;
@@ -896,64 +918,41 @@
     }
   }
 
-async function fetchTrees() {
-  statusEl.textContent = "Loading trees…";
+  async function fetchTrees() {
+    statusEl.textContent = "Loading trees…";
 
-  const targetSpecies = [
-    "Cherry",
-    "Japanese Cherry",
-    "Cherry Plum",
-    "Magnolia",
-    "Crab Apple",
-    "Hawthorn",
-    "Midland Hawthorn",
-    "Pear",
-    "Apple",
-    "Blackthorn",
-    "Rowan"
-  ];
+    const combined = [];
 
-  const perSpeciesLimit = 300;
-  let combined = [];
+    for (const species of TARGET_SPECIES) {
+      const { data, error } = await db
+        .from(TABLE_NAME)
+        .select("id, borough, lat, lon, common_name, location, bloom_period")
+        .eq("common_name", species)
+        .not("lat", "is", null)
+        .not("lon", "is", null)
+        .limit(PER_SPECIES_LIMIT);
 
-  for (const species of targetSpecies) {
-    const { data, error } = await db
-      .from(TABLE_NAME)
-      .select("id, borough, lat, lon, common_name, location, bloom_period")
-      .eq("common_name", species)
-      .not("lat", "is", null)
-      .not("lon", "is", null)
-      .limit(perSpeciesLimit);
+      console.log(`Species ${species}:`, data?.length || 0);
 
-    console.log(`Species ${species}:`, data?.length || 0);
+      if (error) {
+        statusEl.textContent = `Couldn't load trees: ${error.message || "unknown error"}`;
+        console.error(`fetchTrees error for ${species}:`, error);
+        return;
+      }
 
-    if (error) {
-      statusEl.textContent = `Couldn't load trees: ${error.message || "unknown error"}`;
-      console.error(`fetchTrees error for ${species}:`, error);
-      return;
+      combined.push(...(data || []));
     }
 
-    combined = combined.concat(data || []);
+    state.allTrees = combined.map(normaliseRow);
+
+    console.log("Loaded rows:", state.allTrees.length);
+    console.log("Unique ids:", new Set(state.allTrees.map(t => t.id)).size);
+    console.log("Species found:", [...new Set(state.allTrees.map(t => t.common_name))].sort());
+
+    populateBoroughList();
+    applyFilters();
   }
 
-  state.allTrees = combined.map(normaliseRow);
-
-  console.log("Loaded rows:", state.allTrees.length);
-  console.log("Unique ids:", new Set(state.allTrees.map(t => t.id)).size);
-  console.log("Species found:", [...new Set(state.allTrees.map(t => t.common_name))].sort());
-
-  populateBoroughList();
-  applyFilters();
-}
-  state.allTrees = (data || []).map(normaliseRow);
-
-  console.log("Loaded rows:", state.allTrees.length);
-  console.log("Unique ids:", new Set(state.allTrees.map(t => t.id)).size);
-  console.log("Species found:", [...new Set(state.allTrees.map(t => t.common_name))].sort());
-
-  populateBoroughList();
-  applyFilters();
-}
   async function fetchVoteTotals() {
     const { data, error } = await db.from("spot_vote_totals").select("*");
     if (error) {
@@ -1059,6 +1058,7 @@ async function fetchTrees() {
       statusEl.textContent = "No trees matched your filters.";
       return;
     }
+
     statusEl.textContent = state.visibleTrees.length > MAX_CARDS
       ? `${state.visibleTrees.length.toLocaleString()} trees · showing first ${MAX_CARDS}`
       : `${state.visibleTrees.length.toLocaleString()} trees found`;
@@ -1083,22 +1083,20 @@ async function fetchTrees() {
         const el = document.querySelector(`.tree-card[data-id="${CSS.escape(String(state.selectedId))}"]`);
         if (el) {
           el.classList.add("active");
-          el.scrollIntoView({ behaviour: "smooth", block: "nearest" });
+          el.scrollIntoView({ behavior: "smooth", block: "nearest" });
         }
       }
       return;
     }
 
-    const list = state.visibleTrees;
-
-    if (!list.length) {
-      resultsEl.innerHTML = `<div class="empty">No trees matched your filters.<br><br>Try a different flower, reset filters, or choose another area.</div>`;
+    if (!state.visibleTrees.length) {
+      resultsEl.innerHTML = `<div class="empty">No trees matched your filters.<br><br>Try another flower, area, or borough.</div>`;
       return;
     }
 
     const frag = document.createDocumentFragment();
 
-    list.slice(0, MAX_CARDS).forEach(t => {
+    state.visibleTrees.slice(0, MAX_CARDS).forEach(t => {
       const isActive = String(t.id) === String(state.selectedId);
       const badges = t.months.map(m => `<span class="mbadge ${mbClass(m)}">${esc(m)}</span>`).join("");
 
@@ -1134,7 +1132,7 @@ async function fetchTrees() {
     if (state.selectedId !== null) {
       requestAnimationFrame(() => {
         document.querySelector(`.tree-card[data-id="${CSS.escape(String(state.selectedId))}"]`)?.scrollIntoView({
-          behaviour: "smooth",
+          behavior: "smooth",
           block: "nearest"
         });
       });
@@ -1180,11 +1178,8 @@ async function fetchTrees() {
         state.markersById.get(id).setStyle(markerStyle(t, isSelected));
         state.markersById.get(id).setPopupContent(popupHtml(t));
       } else {
-        const marker = L.circleMarker([t.lat, t.lon], markerStyle(t, isSelected))
-          .bindPopup(popupHtml(t));
-
+        const marker = L.circleMarker([t.lat, t.lon], markerStyle(t, isSelected)).bindPopup(popupHtml(t));
         marker.on("click", () => selectTree(t.id, false));
-
         markerGroup.addLayer(marker);
         state.markersById.set(id, marker);
       }
@@ -1399,6 +1394,7 @@ async function fetchTrees() {
 
     document.getElementById("clearFiltersBtn").addEventListener("click", resetFilters);
     document.getElementById("closeSheetBtn").addEventListener("click", closeSheet);
+
     document.addEventListener("keydown", e => {
       if (e.key === "Escape") closeSheet();
     });

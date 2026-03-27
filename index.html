@@ -896,13 +896,13 @@
     }
   }
 
-  async function fetchTrees() {
+async function fetchTrees() {
   statusEl.textContent = "Loading trees…";
 
   const targetSpecies = [
     "Cherry",
-    "Cherry Plum",
     "Japanese Cherry",
+    "Cherry Plum",
     "Magnolia",
     "Crab Apple",
     "Hawthorn",
@@ -919,8 +919,9 @@
     .in("common_name", targetSpecies)
     .not("lat", "is", null)
     .not("lon", "is", null)
-    .not("bloom_period", "is", null)
     .limit(30000);
+
+  console.log("fetchTrees result:", { error, count: data?.length, sample: data?.slice(0, 5) });
 
   if (error) {
     statusEl.textContent = `Couldn't load trees: ${error.message || "unknown error"}`;
@@ -929,6 +930,11 @@
   }
 
   state.allTrees = (data || []).map(normaliseRow);
+
+  console.log("Loaded rows:", state.allTrees.length);
+  console.log("Unique ids:", new Set(state.allTrees.map(t => t.id)).size);
+  console.log("Species found:", [...new Set(state.allTrees.map(t => t.common_name))].sort());
+
   populateBoroughList();
   applyFilters();
 }

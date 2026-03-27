@@ -13,6 +13,7 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
 
+  <script src="./config.js"></script>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -30,7 +31,7 @@
       --cream: #ffffff;
       --border: #f0dde3;
       --shadow: rgba(180,100,120,0.10);
-      --sidebar-w: 380px;
+      --sidebar-w: 390px;
       --header-h: 58px;
       --font-display: 'Cormorant Garamond', Georgia, serif;
       --font-body: 'DM Sans', system-ui, sans-serif;
@@ -256,68 +257,21 @@
       gap: 5px;
     }
 
-    .inputs {
-      position: relative;
-      display: flex;
-      gap: 8px;
+    #googleAutocompleteMount {
       margin-bottom: 10px;
     }
 
-    .inputs input {
-      width: 100%;
-      font-family: var(--font-body);
-      font-size: 0.82rem;
-      padding: 10px 11px;
+    .autocomplete-shell {
       border: 1.5px solid var(--border);
-      border-radius: 10px;
-      background: #fff;
-      outline: none;
-    }
-
-    .inputs input:focus {
-      border-color: var(--blush);
-    }
-
-    #locationSuggestionsBox {
-      position: absolute;
-      top: calc(100% + 6px);
-      left: 0;
-      right: 0;
-      z-index: 200;
-      background: white;
-      border: 1px solid var(--border);
       border-radius: 12px;
-      box-shadow: 0 10px 24px rgba(42,31,26,0.10);
+      background: #fff;
+      padding: 2px 4px;
       overflow: hidden;
-      display: none;
-      max-height: 280px;
-      overflow-y: auto;
     }
 
-    .suggestionItem {
-      padding: 10px 12px;
-      border-bottom: 1px solid #f6e9ee;
-      cursor: pointer;
-    }
-
-    .suggestionItem:last-child {
-      border-bottom: none;
-    }
-
-    .suggestionItem:hover {
-      background: #fff7f9;
-    }
-
-    .suggestionMain {
-      font-size: 0.82rem;
-      font-weight: 600;
-      color: var(--bark);
-    }
-
-    .suggestionSub {
-      font-size: 0.72rem;
-      color: #9a868a;
-      margin-top: 2px;
+    #googleAutocompleteMount gmp-place-autocomplete {
+      width: 100%;
+      display: block;
     }
 
     #resetBtn {
@@ -634,6 +588,16 @@
         bottom: 10px;
         width: calc(100% - 20px);
       }
+
+      #insightsPanel.popup-open {
+        display: none;
+      }
+
+      .leaflet-popup-content {
+        margin: 12px 14px !important;
+        max-height: 50vh;
+        overflow-y: auto;
+      }
     }
   </style>
 </head>
@@ -693,15 +657,7 @@
       <div id="flowerGrid" class="chipGroup"></div>
 
       <div class="filterLabel">Location</div>
-      <div class="inputs">
-        <input
-          id="locationInput"
-          type="text"
-          placeholder="Search borough, park, street or place…"
-          autocomplete="off"
-        />
-        <div id="locationSuggestionsBox"></div>
-      </div>
+      <div id="googleAutocompleteMount" class="autocomplete-shell"></div>
 
       <button id="resetBtn" type="button">Reset filters</button>
       <div id="statusBar">Loading…</div>
@@ -730,13 +686,18 @@
 </div>
 
 <script>
-  const SUPABASE_URL = "https://esfjzhgzfbcrrewjvoan.supabase.co";
-  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVzZmp6aGd6ZmJjcnJld2p2b2FuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQzNjg3NjIsImV4cCI6MjA4OTk0NDc2Mn0.kJOMlq3vHwYWwogSIyLccveHecA5D7WX2RwLzMqe8bY";
+  const SUPABASE_URL = window.APP_CONFIG?.SUPABASE_URL;
+  const SUPABASE_ANON_KEY = window.APP_CONFIG?.SUPABASE_ANON_KEY;
+  const GOOGLE_MAPS_API_KEY = window.APP_CONFIG?.GOOGLE_MAPS_API_KEY;
+
+  if (!SUPABASE_URL || !SUPABASE_ANON_KEY || !GOOGLE_MAPS_API_KEY) {
+    throw new Error("Missing APP_CONFIG values. Check config.js");
+  }
+
   const TABLE_NAME = "spring_trees";
   const WEATHER_URL = "https://api.open-meteo.com/v1/forecast?latitude=51.5074&longitude=-0.1278&daily=temperature_2m_mean&current=temperature_2m&timezone=Europe%2FLondon&forecast_days=1&past_days=7";
   const PER_SPECIES_LIMIT = 220;
   const SEARCH_RADIUS_MILES = 5;
-  const GEOCODE_DEBOUNCE_MS = 450;
 
   const FLOWERS = [
     { icon:"🌸", name:"Cherry" },
@@ -779,23 +740,20 @@
     allTrees: [],
     visibleTrees: [],
     selectedId: null,
-    filters: { month: "all", name: "", location: "" },
+    filters: { month: "all", name: "" },
     markersById: new Map(),
     votesBySpot: new Map(),
     myVotesBySpot: new Map(),
     hasInitialFit: false,
-    filterDebounce: null,
-    geocodeDebounce: null,
-    searchCenter: null,
-    searchMode: "none",
-    suggestionPool: []
+    searchCenter: null
   };
 
   let map, markerClusterLayer, LONDON_BOUNDS;
+  let selectedSearchPlace = null;
+  let googleAutocompleteEl = null;
+  let googleMapsLoaded = false;
 
   const flowerGridEl = document.getElementById("flowerGrid");
-  const locationInput = document.getElementById("locationInput");
-  const locationSuggestionsBox = document.getElementById("locationSuggestionsBox");
   const nearbyResultsEl = document.getElementById("nearbyResults");
   const nearbyResultsListEl = document.getElementById("nearbyResultsList");
   const statusEl = document.getElementById("statusBar");
@@ -807,6 +765,7 @@
   const bloomTempEl = document.getElementById("bloomTemp");
   const bloomBadgeEl = document.getElementById("bloomBadge");
   const insightsBodyEl = document.getElementById("insightsBody");
+  const insightsPanelEl = document.getElementById("insightsPanel");
 
   function esc(s) {
     return String(s ?? "")
@@ -894,7 +853,7 @@
   }
 
   function getVoteTotals(id) {
-    return state.votesBySpot.get(String(id)) || { upvotes: 0, downvotes: 0, score: 0 };
+    return state.votesBySpot.get(String(id)) || { upvotes: 0, downvotes: 0, score: 0, total_votes: 0 };
   }
 
   function getMyVote(id) {
@@ -903,7 +862,7 @@
 
   function totalVotesFor(id) {
     const v = getVoteTotals(id);
-    return (v.upvotes || 0) + (v.downvotes || 0);
+    return Number(v.total_votes || ((v.upvotes || 0) + (v.downvotes || 0)));
   }
 
   function milesBetween(lat1, lon1, lat2, lon2) {
@@ -937,67 +896,85 @@
         const off = state.filters.name.toLowerCase() === name.toLowerCase();
         state.filters.name = off ? "" : name;
         buildFlowerGrid();
-        handleLocationSearch();
+        applyFilters();
       });
     });
   }
 
-  function buildSuggestionPool() {
-    const seen = new Set();
-    const pool = [];
-
-    state.allTrees.forEach(t => {
-      const loc = (t.location || "").trim();
-      const bor = (t.borough || "").trim();
-
-      if (loc && !seen.has(`loc:${loc.toLowerCase()}`)) {
-        seen.add(`loc:${loc.toLowerCase()}`);
-        pool.push({ label: loc, sub: bor ? `Place · ${bor}` : "Place", type: "location" });
+  function loadGoogleMaps() {
+    return new Promise((resolve, reject) => {
+      if (googleMapsLoaded && window.google?.maps?.places) {
+        resolve();
+        return;
       }
 
-      if (bor && !seen.has(`bor:${bor.toLowerCase()}`)) {
-        seen.add(`bor:${bor.toLowerCase()}`);
-        pool.push({ label: bor, sub: "Borough", type: "borough" });
+      const existing = document.querySelector('script[data-google-maps-loader="true"]');
+      if (existing) {
+        existing.addEventListener("load", () => resolve());
+        existing.addEventListener("error", () => reject(new Error("Google Maps failed to load")));
+        return;
       }
+
+      const script = document.createElement("script");
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(GOOGLE_MAPS_API_KEY)}&loading=async&libraries=places`;
+      script.async = true;
+      script.defer = true;
+      script.dataset.googleMapsLoader = "true";
+      script.onload = () => {
+        googleMapsLoaded = true;
+        resolve();
+      };
+      script.onerror = () => reject(new Error("Google Maps failed to load"));
+      document.head.appendChild(script);
     });
-
-    state.suggestionPool = pool.sort((a, b) => a.label.localeCompare(b.label));
   }
 
-  function renderSuggestions(query) {
-    const q = String(query || "").trim().toLowerCase();
-    if (!q) {
-      locationSuggestionsBox.style.display = "none";
-      locationSuggestionsBox.innerHTML = "";
+  async function initGoogleAutocomplete() {
+    await loadGoogleMaps();
+
+    if (!window.google?.maps?.places?.PlaceAutocompleteElement) {
+      console.warn("Google PlaceAutocompleteElement not available.");
       return;
     }
 
-    const matches = state.suggestionPool
-      .filter(item => item.label.toLowerCase().includes(q))
-      .slice(0, 8);
+    const mount = document.getElementById("googleAutocompleteMount");
+    mount.innerHTML = "";
 
-    if (!matches.length) {
-      locationSuggestionsBox.style.display = "none";
-      locationSuggestionsBox.innerHTML = "";
-      return;
-    }
+    googleAutocompleteEl = new google.maps.places.PlaceAutocompleteElement({
+      includedRegionCodes: ["gb"]
+    });
 
-    locationSuggestionsBox.innerHTML = matches.map(item => `
-      <div class="suggestionItem" data-value="${esc(item.label)}">
-        <div class="suggestionMain">${esc(item.label)}</div>
-        <div class="suggestionSub">${esc(item.sub)}</div>
-      </div>
-    `).join("");
+    mount.appendChild(googleAutocompleteEl);
 
-    locationSuggestionsBox.style.display = "block";
+    googleAutocompleteEl.addEventListener("gmp-select", async ({ placePrediction }) => {
+      if (!placePrediction) return;
 
-    locationSuggestionsBox.querySelectorAll(".suggestionItem").forEach(el => {
-      el.addEventListener("click", () => {
-        locationInput.value = el.dataset.value;
-        state.filters.location = el.dataset.value;
-        locationSuggestionsBox.style.display = "none";
-        handleLocationSearch();
-      });
+      const place = placePrediction.toPlace();
+      await place.fetchFields({ fields: ["displayName", "formattedAddress", "location"] });
+
+      if (!place.location) return;
+
+      selectedSearchPlace = {
+        label: place.displayName || place.formattedAddress || "Selected place",
+        lat: place.location.lat(),
+        lon: place.location.lng()
+      };
+
+      state.searchCenter = selectedSearchPlace;
+      applyFilters();
+
+      if (state.visibleTrees.length) {
+        const bounds = L.latLngBounds(
+          state.visibleTrees
+            .filter(t => Number.isFinite(t.lat) && Number.isFinite(t.lon))
+            .map(t => [t.lat, t.lon])
+        );
+        if (bounds.isValid()) {
+          map.fitBounds(bounds, { padding: [28, 28] });
+        }
+      } else {
+        map.flyTo([selectedSearchPlace.lat, selectedSearchPlace.lon], 13, { duration: 0.7 });
+      }
     });
   }
 
@@ -1045,29 +1022,6 @@
     }
   }
 
-  async function geocodeLocation(query) {
-    const q = String(query || "").trim();
-    if (!q) return null;
-
-    try {
-      const url = `https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&countrycodes=gb&q=${encodeURIComponent(q)}`;
-      const res = await fetch(url, { headers: { "Accept": "application/json" } });
-      if (!res.ok) return null;
-
-      const data = await res.json();
-      if (!Array.isArray(data) || !data.length) return null;
-
-      return {
-        lat: Number(data[0].lat),
-        lon: Number(data[0].lon),
-        label: data[0].display_name || q
-      };
-    } catch (err) {
-      console.warn("Geocode failed:", err);
-      return null;
-    }
-  }
-
   async function fetchTrees() {
     statusEl.textContent = "Loading blossoms…";
     const combined = [];
@@ -1091,7 +1045,6 @@
     }
 
     state.allTrees = combined.map(normaliseRow);
-    buildSuggestionPool();
     applyFilters();
   }
 
@@ -1108,7 +1061,8 @@
         {
           upvotes: Number(r.upvotes || 0),
           downvotes: Number(r.downvotes || 0),
-          score: Number(r.score || 0)
+          score: Number(r.score || 0),
+          total_votes: Number(r.total_votes || 0)
         }
       ])
     );
@@ -1135,12 +1089,14 @@
     const prevMine = getMyVote(spotId);
     const newMine = vote === prevMine ? 0 : vote;
     const delta = newMine - prevMine;
+    const optimisticTotal = Math.max(prev.total_votes || 0, (prev.upvotes || 0) + (prev.downvotes || 0));
 
     state.myVotesBySpot.set(String(spotId), newMine);
     state.votesBySpot.set(String(spotId), {
       upvotes: Math.max(0, prev.upvotes + (newMine === 1 ? 1 : 0) - (prevMine === 1 ? 1 : 0)),
       downvotes: Math.max(0, prev.downvotes + (newMine === -1 ? 1 : 0) - (prevMine === -1 ? 1 : 0)),
-      score: prev.score + delta
+      score: prev.score + delta,
+      total_votes: optimisticTotal
     });
 
     refreshPopupIfSelected(spotId);
@@ -1175,7 +1131,7 @@
   }
 
   function renderNearbyResults() {
-    if (state.searchMode !== "radius" || !state.searchCenter || !state.visibleTrees.length) {
+    if (!state.searchCenter) {
       nearbyResultsEl.style.display = "none";
       nearbyResultsListEl.innerHTML = "";
       return;
@@ -1187,7 +1143,13 @@
         distanceMiles: milesBetween(state.searchCenter.lat, state.searchCenter.lon, t.lat, t.lon)
       }))
       .sort((a, b) => a.distanceMiles - b.distanceMiles)
-      .slice(0, 6);
+      .slice(0, 8);
+
+    if (!nearest.length) {
+      nearbyResultsListEl.innerHTML = `<div style="font-size:0.78rem;color:#8f7b80;">No blossom spots found within ${SEARCH_RADIUS_MILES} miles.</div>`;
+      nearbyResultsEl.style.display = "block";
+      return;
+    }
 
     nearbyResultsListEl.innerHTML = nearest.map(t => `
       <div class="nearbyCard" data-id="${esc(t.id)}">
@@ -1208,65 +1170,26 @@
   }
 
   function applyFilters() {
-    const q = state.filters.location.toLowerCase().trim();
     const base = baseFilteredTrees();
 
-    if (!q) {
-      state.visibleTrees = base;
-      state.searchMode = "none";
+    if (state.searchCenter) {
+      state.visibleTrees = base.filter(t => {
+        if (!Number.isFinite(t.lat) || !Number.isFinite(t.lon)) return false;
+        return milesBetween(
+          state.searchCenter.lat,
+          state.searchCenter.lon,
+          t.lat,
+          t.lon
+        ) <= SEARCH_RADIUS_MILES;
+      });
     } else {
-      const textMatches = base.filter(t =>
-        t.location.toLowerCase().includes(q) ||
-        t.borough.toLowerCase().includes(q) ||
-        t.common_name.toLowerCase().includes(q)
-      );
-
-      if (textMatches.length > 0) {
-        state.visibleTrees = textMatches;
-        state.searchMode = "text";
-      } else if (state.searchCenter) {
-        state.visibleTrees = base.filter(t => {
-          if (!Number.isFinite(t.lat) || !Number.isFinite(t.lon)) return false;
-          return milesBetween(state.searchCenter.lat, state.searchCenter.lon, t.lat, t.lon) <= SEARCH_RADIUS_MILES;
-        });
-        state.searchMode = "radius";
-      } else {
-        state.visibleTrees = [];
-        state.searchMode = "none";
-      }
+      state.visibleTrees = base;
     }
 
     renderStats();
     renderStatus();
     renderMarkers();
     renderNearbyResults();
-  }
-
-  async function handleLocationSearch() {
-    const q = state.filters.location.trim();
-
-    clearTimeout(state.geocodeDebounce);
-    state.searchCenter = null;
-    state.searchMode = "none";
-
-    applyFilters();
-
-    if (!q) return;
-    if (state.visibleTrees.length > 0) return;
-
-    state.geocodeDebounce = setTimeout(async () => {
-      const centre = await geocodeLocation(q);
-      if (!centre) {
-        state.searchCenter = null;
-        state.searchMode = "none";
-        applyFilters();
-        return;
-      }
-
-      state.searchCenter = centre;
-      state.searchMode = "radius";
-      applyFilters();
-    }, GEOCODE_DEBOUNCE_MS);
   }
 
   function renderStats() {
@@ -1283,23 +1206,12 @@
       return;
     }
 
-    if (!state.filters.location.trim()) {
-      statusEl.textContent = `${state.visibleTrees.length.toLocaleString()} blossom spots on the map`;
-      return;
-    }
-
-    if (!state.visibleTrees.length) {
-      statusEl.textContent = "No blossom markers match this search.";
-      return;
-    }
-
-    if (state.searchMode === "text") {
-      statusEl.textContent = `${state.visibleTrees.length.toLocaleString()} text-matched blossom spots`;
-      return;
-    }
-
-    if (state.searchMode === "radius" && state.searchCenter) {
-      statusEl.textContent = `${state.visibleTrees.length.toLocaleString()} blossom spots within ${SEARCH_RADIUS_MILES} miles`;
+    if (state.searchCenter) {
+      if (!state.visibleTrees.length) {
+        statusEl.textContent = `No blossom spots found within ${SEARCH_RADIUS_MILES} miles.`;
+      } else {
+        statusEl.textContent = `${state.visibleTrees.length.toLocaleString()} blossom spots within ${SEARCH_RADIUS_MILES} miles`;
+      }
       return;
     }
 
@@ -1468,14 +1380,10 @@
   }
 
   function resetFilters() {
-    state.filters = { month: "all", name: "", location: "" };
+    state.filters = { month: "all", name: "" };
     state.selectedId = null;
     state.searchCenter = null;
-    state.searchMode = "none";
-
-    locationInput.value = "";
-    locationSuggestionsBox.style.display = "none";
-    locationSuggestionsBox.innerHTML = "";
+    selectedSearchPlace = null;
 
     document.querySelectorAll("#monthChips .chip").forEach(btn => btn.classList.remove("active"));
     document.querySelector('#monthChips .chip[data-month="all"]')?.classList.add("active");
@@ -1486,6 +1394,11 @@
 
     if (LONDON_BOUNDS) {
       map.fitBounds(LONDON_BOUNDS, { padding: [24, 24] });
+    }
+
+    if (googleAutocompleteEl) {
+      const input = googleAutocompleteEl.shadowRoot?.querySelector("input");
+      if (input) input.value = "";
     }
   }
 
@@ -1518,7 +1431,15 @@
 
     map.addLayer(markerClusterLayer);
 
+    map.on("popupopen", () => {
+      if (window.innerWidth <= 760) {
+        insightsPanelEl.classList.add("popup-open");
+      }
+    });
+
     map.on("popupclose", () => {
+      insightsPanelEl.classList.remove("popup-open");
+
       if (state.selectedId !== null) {
         const prev = state.allTrees.find(t => String(t.id) === String(state.selectedId));
         if (prev) {
@@ -1544,12 +1465,6 @@
     });
   }
 
-  window.addEventListener("click", (e) => {
-    if (!e.target.closest(".inputs")) {
-      locationSuggestionsBox.style.display = "none";
-    }
-  });
-
   window.addEventListener("load", async () => {
     initMap();
     wirePopupVoteDelegation();
@@ -1561,23 +1476,13 @@
         document.querySelectorAll("#monthChips .chip").forEach(b => b.classList.remove("active"));
         btn.classList.add("active");
         state.filters.month = btn.dataset.month;
-        handleLocationSearch();
+        applyFilters();
       });
-    });
-
-    locationInput.addEventListener("input", () => {
-      state.filters.location = locationInput.value.trim();
-      renderSuggestions(state.filters.location);
-      clearTimeout(state.filterDebounce);
-      state.filterDebounce = setTimeout(handleLocationSearch, 180);
-    });
-
-    locationInput.addEventListener("focus", () => {
-      renderSuggestions(locationInput.value);
     });
 
     document.getElementById("resetBtn").addEventListener("click", resetFilters);
 
+    await initGoogleAutocomplete();
     await fetchWeather();
     await fetchTrees();
     await fetchVoteTotals();

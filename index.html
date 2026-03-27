@@ -5,20 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>London Blooms 🌸</title>
 
-  <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
 
-  <!-- Leaflet -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-  <!-- Supabase -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
-    /* ── Reset & base ─────────────────────────────────────── */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
@@ -52,14 +48,12 @@
       -webkit-font-smoothing: antialiased;
     }
 
-    /* ── Layout ───────────────────────────────────────────── */
     #app {
       display: flex;
       flex-direction: column;
       height: 100vh;
     }
 
-    /* ── Header ───────────────────────────────────────────── */
     #header {
       height: var(--header-h);
       background: var(--petal);
@@ -86,26 +80,12 @@
 
     #header-title span.petal-icon { font-size: 1.2rem; }
 
-    #bloom-badge {
-      font-family: var(--font-body);
-      font-size: 0.7rem;
-      font-weight: 600;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      background: var(--rose);
-      color: #fff;
-      padding: 3px 9px;
-      border-radius: 20px;
-    }
-
-    /* ── Main body ────────────────────────────────────────── */
     #main {
       display: flex;
       flex: 1;
       min-height: 0;
     }
 
-    /* ── Sidebar ──────────────────────────────────────────── */
     #sidebar {
       width: var(--sidebar-w);
       flex-shrink: 0;
@@ -116,7 +96,6 @@
       overflow: hidden;
     }
 
-    /* ── Bloom banner ─────────────────────────────────────── */
     #bloom-banner {
       background: linear-gradient(135deg, var(--petal) 0%, #fce8ef 100%);
       border-bottom: 1px solid var(--border);
@@ -160,7 +139,6 @@
       margin-top: 2px;
     }
 
-    /* ── Stats bar ────────────────────────────────────────── */
     #stats-bar {
       display: flex;
       border-bottom: 1px solid var(--border);
@@ -192,7 +170,6 @@
       margin-top: 2px;
     }
 
-    /* ── Filters panel ────────────────────────────────────── */
     #filters {
       padding: 14px 16px 10px;
       border-bottom: 1px solid var(--border);
@@ -209,63 +186,8 @@
       margin-bottom: 7px;
     }
 
-    /* Month chips */
-    #month-chips {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 5px;
-      margin-bottom: 12px;
-    }
-
-    .month-chip {
-      font-family: var(--font-body);
-      font-size: 0.72rem;
-      font-weight: 500;
-      padding: 4px 11px;
-      border-radius: 20px;
-      border: 1.5px solid var(--border);
-      background: #fff;
-      color: var(--soil);
-      cursor: pointer;
-      transition: all 0.15s ease;
-      line-height: 1.4;
-    }
-    .month-chip:hover { border-color: var(--blush); color: var(--rose); }
-    .month-chip.active {
-      background: var(--rose);
-      border-color: var(--rose);
-      color: #fff;
-    }
-
-    /* Region chips */
-    #regionChips {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 5px;
-      margin-bottom: 12px;
-    }
-
-    .region-chip {
-      font-family: var(--font-body);
-      font-size: 0.72rem;
-      font-weight: 500;
-      padding: 4px 11px;
-      border-radius: 20px;
-      border: 1.5px solid var(--border);
-      background: #fff;
-      color: var(--soil);
-      cursor: pointer;
-      transition: all 0.15s ease;
-      line-height: 1.4;
-    }
-    .region-chip:hover { border-color: var(--sage); color: var(--sage); }
-    .region-chip.active {
-      background: var(--sage);
-      border-color: var(--sage);
-      color: #fff;
-    }
-
-    /* Flower grid */
+    #month-chips,
+    #regionChips,
     #flowerGrid {
       display: flex;
       flex-wrap: wrap;
@@ -273,11 +195,13 @@
       margin-bottom: 12px;
     }
 
+    .month-chip,
+    .region-chip,
     .flower-btn {
       font-family: var(--font-body);
       font-size: 0.72rem;
-      font-weight: 400;
-      padding: 4px 10px;
+      font-weight: 500;
+      padding: 4px 11px;
       border-radius: 20px;
       border: 1.5px solid var(--border);
       background: #fff;
@@ -285,11 +209,28 @@
       cursor: pointer;
       transition: all 0.15s ease;
       line-height: 1.4;
+    }
+
+    .month-chip.active {
+      background: var(--rose);
+      border-color: var(--rose);
+      color: #fff;
+    }
+
+    .region-chip.active {
+      background: var(--sage);
+      border-color: var(--sage);
+      color: #fff;
+    }
+
+    .flower-btn {
       display: flex;
       align-items: center;
       gap: 4px;
+      font-weight: 400;
+      padding: 4px 10px;
     }
-    .flower-btn:hover { border-color: var(--blush); }
+
     .flower-btn.active {
       background: var(--petal);
       border-color: var(--rose);
@@ -297,7 +238,6 @@
       font-weight: 600;
     }
 
-    /* Text inputs */
     .filter-inputs {
       display: flex;
       gap: 8px;
@@ -320,8 +260,6 @@
       outline: none;
       transition: border-color 0.15s;
     }
-    .filter-input-wrap input:focus { border-color: var(--blush); }
-    .filter-input-wrap input::placeholder { color: #c0aeaa; }
 
     #clearFiltersBtn {
       font-family: var(--font-body);
@@ -337,9 +275,7 @@
       white-space: nowrap;
       flex-shrink: 0;
     }
-    #clearFiltersBtn:hover { border-color: var(--rose); color: var(--rose); }
 
-    /* ── Status bar ───────────────────────────────────────── */
     #statusBar {
       padding: 7px 16px;
       font-size: 0.72rem;
@@ -349,17 +285,12 @@
       flex-shrink: 0;
     }
 
-    /* ── Results list ─────────────────────────────────────── */
     #results {
       flex: 1;
       overflow-y: auto;
       padding: 10px 10px;
-      scroll-behavior: smooth;
+      scroll-behaviour: smooth;
     }
-
-    #results::-webkit-scrollbar { width: 4px; }
-    #results::-webkit-scrollbar-track { background: transparent; }
-    #results::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 
     .empty {
       padding: 32px 16px;
@@ -369,7 +300,6 @@
       line-height: 1.7;
     }
 
-    /* ── Tree card ────────────────────────────────────────── */
     .tree-card {
       width: 100%;
       text-align: left;
@@ -384,11 +314,7 @@
       transition: border-color 0.15s, box-shadow 0.15s, transform 0.1s;
       display: block;
     }
-    .tree-card:hover {
-      border-color: var(--blush);
-      box-shadow: 0 3px 12px var(--shadow);
-      transform: translateY(-1px);
-    }
+
     .tree-card.active {
       border-color: var(--rose);
       background: var(--petal);
@@ -411,7 +337,12 @@
       line-height: 1.2;
     }
 
-    .month-badges { display: flex; gap: 4px; flex-wrap: wrap; flex-shrink: 0; }
+    .month-badges {
+      display: flex;
+      gap: 4px;
+      flex-wrap: wrap;
+      flex-shrink: 0;
+    }
 
     .mbadge {
       font-size: 0.6rem;
@@ -421,9 +352,10 @@
       padding: 2px 7px;
       border-radius: 10px;
     }
-    .mbadge.march   { background: #e8f4e8; color: #3a7a4a; }
-    .mbadge.april   { background: #fde8f0; color: #b03060; }
-    .mbadge.may     { background: #fff3e0; color: #b06000; }
+
+    .mbadge.march { background: #e8f4e8; color: #3a7a4a; }
+    .mbadge.april { background: #fde8f0; color: #b03060; }
+    .mbadge.may   { background: #fff3e0; color: #b06000; }
 
     .card-meta {
       display: flex;
@@ -433,6 +365,7 @@
       color: #8a7a74;
       margin-bottom: 7px;
     }
+
     .card-meta strong { color: var(--soil); font-weight: 600; margin-right: 3px; }
 
     .card-actions {
@@ -454,11 +387,8 @@
       color: #9e8880;
       text-decoration: none;
       font-weight: 500;
-      transition: color 0.15s;
     }
-    .card-link:hover { color: var(--rose); }
 
-    /* ── Map area ─────────────────────────────────────────── */
     #map-wrap {
       flex: 1;
       position: relative;
@@ -470,7 +400,6 @@
       height: 100%;
     }
 
-    /* Leaflet popup tweaks */
     .leaflet-popup-content-wrapper {
       border-radius: 10px !important;
       box-shadow: 0 8px 32px rgba(42,31,26,0.18) !important;
@@ -478,7 +407,6 @@
     }
     .leaflet-popup-tip { background: #fff !important; }
 
-    /* ── Map info overlay ─────────────────────────────────── */
     #mapInfo {
       position: absolute;
       top: 14px;
@@ -495,6 +423,7 @@
       box-shadow: 0 4px 16px var(--shadow);
       pointer-events: none;
     }
+
     #mapInfo strong {
       font-family: var(--font-display);
       font-size: 1rem;
@@ -502,9 +431,7 @@
       color: var(--bark);
       display: block;
     }
-    #mapInfo span { color: #9e8880; }
 
-    /* ── Bottom sheet ─────────────────────────────────────── */
     #bottomSheet {
       position: absolute;
       bottom: 0;
@@ -521,6 +448,7 @@
       transform: translateY(100%);
       transition: transform 0.32s cubic-bezier(0.32, 0.72, 0, 1);
     }
+
     #bottomSheet.open { transform: translateY(0); }
 
     #sheet-header {
@@ -554,18 +482,13 @@
       padding: 2px 6px;
       border-radius: 6px;
       line-height: 1;
-      transition: background 0.15s, color 0.15s;
-      flex-shrink: 0;
     }
-    #closeSheetBtn:hover { background: var(--petal); color: var(--rose); }
 
     #sheetList {
       overflow-y: auto;
       padding: 10px 14px 20px;
       flex: 1;
     }
-    #sheetList::-webkit-scrollbar { width: 4px; }
-    #sheetList::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 
     .sheet-card {
       background: #fff;
@@ -573,9 +496,7 @@
       border-radius: 10px;
       padding: 11px 13px;
       margin-bottom: 8px;
-      transition: border-color 0.15s;
     }
-    .sheet-card:hover { border-color: var(--blush); }
 
     .sheet-name {
       font-family: var(--font-display);
@@ -612,9 +533,8 @@
       display: flex;
       align-items: center;
       gap: 5px;
-      transition: all 0.15s;
     }
-    .vote-btn:hover { border-color: var(--blush); }
+
     .vote-btn.active.up   { background: #e8f4e8; border-color: #7abf88; color: #3a7a4a; }
     .vote-btn.active.down { background: #fde8f0; border-color: var(--rose); color: var(--deep-rose); }
 
@@ -638,9 +558,7 @@
       background: #fff;
       color: var(--soil);
       cursor: pointer;
-      transition: all 0.15s;
     }
-    .view-map-btn:hover { border-color: var(--sage); color: var(--sage); }
 
     .sheet-link {
       font-size: 0.72rem;
@@ -648,50 +566,25 @@
       text-decoration: none;
       font-weight: 500;
       margin-left: auto;
-      transition: color 0.15s;
-    }
-    .sheet-link:hover { color: var(--rose); }
-
-    /* ── Leaflet zoom override ────────────────────────────── */
-    .leaflet-control-zoom a {
-      font-family: var(--font-body) !important;
-      color: var(--bark) !important;
     }
 
-    /* ── Responsive ───────────────────────────────────────── */
     @media (max-width: 700px) {
       :root { --sidebar-w: 100vw; }
-
       #main { flex-direction: column; }
-
       #sidebar {
         width: 100%;
         height: 50vh;
         border-right: none;
         border-bottom: 1px solid var(--border);
       }
-
       #map-wrap { height: 50vh; }
-
       #bottomSheet { max-height: 80vh; }
     }
-
-    /* ── Animations ───────────────────────────────────────── */
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(8px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-
-    #bloom-banner { animation: fadeUp 0.4s ease both; }
-    #stats-bar    { animation: fadeUp 0.4s 0.05s ease both; }
-    #filters      { animation: fadeUp 0.4s 0.1s ease both; }
   </style>
 </head>
 <body>
 
 <div id="app">
-
-  <!-- Header -->
   <header id="header">
     <div id="header-title">
       <span class="petal-icon">🌸</span>
@@ -701,11 +594,7 @@
   </header>
 
   <div id="main">
-
-    <!-- Sidebar -->
     <aside id="sidebar">
-
-      <!-- Bloom weather banner -->
       <div id="bloom-banner">
         <div id="bloom-top">
           <div id="bloomEmoji">🌿</div>
@@ -716,7 +605,6 @@
         </div>
       </div>
 
-      <!-- Stats -->
       <div id="stats-bar">
         <div class="stat-cell">
           <div class="stat-num" id="cTrees">—</div>
@@ -732,15 +620,13 @@
         </div>
       </div>
 
-      <!-- Filters -->
       <div id="filters">
-
         <div class="filter-label">Month</div>
         <div id="month-chips">
-          <button class="month-chip active" data-month="all"  type="button">All</button>
-          <button class="month-chip"        data-month="March" type="button">March</button>
-          <button class="month-chip"        data-month="April" type="button">April</button>
-          <button class="month-chip"        data-month="May"   type="button">May</button>
+          <button class="month-chip active" data-month="all" type="button">All</button>
+          <button class="month-chip" data-month="March" type="button">March</button>
+          <button class="month-chip" data-month="April" type="button">April</button>
+          <button class="month-chip" data-month="May" type="button">May</button>
         </div>
 
         <div class="filter-label">Area</div>
@@ -759,28 +645,20 @@
           </div>
           <button id="clearFiltersBtn" type="button">Reset</button>
         </div>
-
       </div>
 
-      <!-- Status -->
       <div id="statusBar">Loading…</div>
-
-      <!-- Tree cards -->
       <div id="results"></div>
-
     </aside>
 
-    <!-- Map -->
     <div id="map-wrap">
       <div id="map"></div>
 
-      <!-- Map info overlay -->
       <div id="mapInfo">
         <strong>London Blooms</strong>
         <span>Choose an area or click a marker</span>
       </div>
 
-      <!-- Bottom sheet (region detail) -->
       <div id="bottomSheet">
         <div id="sheet-header">
           <div>
@@ -791,19 +669,15 @@
         </div>
         <div id="sheetList"></div>
       </div>
-
-    </div><!-- /map-wrap -->
-
-  </div><!-- /main -->
-
-</div><!-- /app -->
+    </div>
+  </div>
+</div>
 
 <script>
   const SUPABASE_URL = "https://esfjzhgzfbcrrewjvoan.supabase.co";
   const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVzZmp6aGd6ZmJjcnJld2p2b2FuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQzNjg3NjIsImV4cCI6MjA4OTk0NDc2Mn0.kJOMlq3vHwYWwogSIyLccveHecA5D7WX2RwLzMqe8bY";
   const TABLE_NAME = "spring_trees";
   const WEATHER_URL = "https://api.open-meteo.com/v1/forecast?latitude=51.5074&longitude=-0.1278&daily=temperature_2m_mean&current=temperature_2m&timezone=Europe%2FLondon&forecast_days=1&past_days=7";
-  const MAX_RESULTS = 1000;
   const MAX_CARDS = 120;
 
   const FLOWERS = [
@@ -841,44 +715,57 @@
   const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
   const state = {
-    allTrees: [], visibleTrees: [],
-    selectedId: null, activeRegion: "",
+    allTrees: [],
+    visibleTrees: [],
+    selectedId: null,
+    activeRegion: "",
     filters: { month: "all", name: "", borough: "" },
-    votesBySpot: new Map(), myVotesBySpot: new Map(),
+    votesBySpot: new Map(),
+    myVotesBySpot: new Map(),
     markersById: new Map(),
-    hasInitialFit: false, filterDebounce: null,
-    _lastVisibleIds: "", _lastSelectedId: null
+    hasInitialFit: false,
+    filterDebounce: null,
+    _lastVisibleIds: "",
+    _lastSelectedId: null
   };
 
   let map, markerGroup;
 
-  const nameInput      = document.getElementById("nameInput");
-  const boroughInput   = document.getElementById("boroughInput");
-  const boroughListEl  = document.getElementById("boroughList");
-  const resultsEl      = document.getElementById("results");
-  const statusEl       = document.getElementById("statusBar");
-  const cTreesEl       = document.getElementById("cTrees");
-  const cBorEl         = document.getElementById("cBoroughs");
-  const cTypEl         = document.getElementById("cTypes");
-  const flowerGridEl   = document.getElementById("flowerGrid");
-  const regionChipsEl  = document.getElementById("regionChips");
-  const mapInfoEl      = document.getElementById("mapInfo");
-  const sheetEl        = document.getElementById("bottomSheet");
-  const sheetTitleEl   = document.getElementById("sheetTitle");
-  const sheetSubEl     = document.getElementById("sheetSub");
-  const sheetListEl    = document.getElementById("sheetList");
-  const bloomEmojiEl   = document.getElementById("bloomEmoji");
+  const nameInput = document.getElementById("nameInput");
+  const boroughInput = document.getElementById("boroughInput");
+  const boroughListEl = document.getElementById("boroughList");
+  const resultsEl = document.getElementById("results");
+  const statusEl = document.getElementById("statusBar");
+  const cTreesEl = document.getElementById("cTrees");
+  const cBorEl = document.getElementById("cBoroughs");
+  const cTypEl = document.getElementById("cTypes");
+  const flowerGridEl = document.getElementById("flowerGrid");
+  const regionChipsEl = document.getElementById("regionChips");
+  const mapInfoEl = document.getElementById("mapInfo");
+  const sheetEl = document.getElementById("bottomSheet");
+  const sheetTitleEl = document.getElementById("sheetTitle");
+  const sheetSubEl = document.getElementById("sheetSub");
+  const sheetListEl = document.getElementById("sheetList");
+  const bloomEmojiEl = document.getElementById("bloomEmoji");
   const bloomStageNameEl = document.getElementById("bloomStageName");
-  const bloomTempEl    = document.getElementById("bloomTemp");
-  const bloomBadgeEl   = document.getElementById("bloomBadge");
+  const bloomTempEl = document.getElementById("bloomTemp");
+  const bloomBadgeEl = document.getElementById("bloomBadge");
 
   function esc(s) {
-    return String(s ?? "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;");
+    return String(s ?? "")
+      .replace(/&/g,"&amp;")
+      .replace(/</g,"&lt;")
+      .replace(/>/g,"&gt;")
+      .replace(/"/g,"&quot;")
+      .replace(/'/g,"&#039;");
   }
 
   function getVoterKey() {
     let k = localStorage.getItem("lb_voter_key");
-    if (!k) { k = crypto.randomUUID(); localStorage.setItem("lb_voter_key", k); }
+    if (!k) {
+      k = crypto.randomUUID();
+      localStorage.setItem("lb_voter_key", k);
+    }
     return k;
   }
 
@@ -889,12 +776,12 @@
   function parseMonths(p) {
     if (!p) return [];
     if (p === "March-April") return ["March","April"];
-    if (p === "April-May")   return ["April","May"];
+    if (p === "April-May") return ["April","May"];
     return [p];
   }
 
   function regionFromBorough(borough) {
-    const b = String(borough||"").trim().toLowerCase();
+    const b = String(borough || "").trim().toLowerCase();
     const MAP = {
       Central: ["camden","city of london","city","islington","kensington and chelsea","westminster","lambeth","southwark"],
       North:   ["barnet","enfield","haringey","harrow","brent"],
@@ -902,7 +789,9 @@
       East:    ["barking and dagenham","hackney","havering","newham","redbridge","tower hamlets","waltham forest"],
       West:    ["ealing","hammersmith and fulham","hillingdon","hounslow"]
     };
-    for (const [r, bs] of Object.entries(MAP)) if (bs.includes(b)) return r;
+    for (const [r, bs] of Object.entries(MAP)) {
+      if (bs.includes(b)) return r;
+    }
     return "Other";
   }
 
@@ -921,7 +810,7 @@
   }
 
   function speciesKey(name) {
-    const n = String(name||"").trim().toLowerCase();
+    const n = String(name || "").trim().toLowerCase();
     return Object.keys(SPECIES_COLORS).find(k => k !== "default" && n.includes(k)) || "default";
   }
 
@@ -936,15 +825,25 @@
     };
   }
 
-  function getVoteTotals(id) { return state.votesBySpot.get(String(id)) || {upvotes:0,downvotes:0,score:0}; }
-  function getMyVote(id)     { return state.myVotesBySpot.get(String(id)) || 0; }
-  function mbClass(m)        { return m==="March"?"march":m==="April"?"april":"may"; }
+  function getVoteTotals(id) {
+    return state.votesBySpot.get(String(id)) || { upvotes:0, downvotes:0, score:0 };
+  }
+
+  function getMyVote(id) {
+    return state.myVotesBySpot.get(String(id)) || 0;
+  }
+
+  function mbClass(m) {
+    return m === "March" ? "march" : m === "April" ? "april" : "may";
+  }
 
   function buildFlowerGrid() {
     flowerGridEl.innerHTML = FLOWERS.map(f => `
-      <button class="flower-btn ${state.filters.name.toLowerCase()===f.name.toLowerCase()?"active":""}" data-name="${esc(f.name)}" type="button">
+      <button class="flower-btn ${state.filters.name.toLowerCase() === f.name.toLowerCase() ? "active" : ""}" data-name="${esc(f.name)}" type="button">
         ${f.icon} ${esc(f.name)}
-      </button>`).join("");
+      </button>
+    `).join("");
+
     flowerGridEl.querySelectorAll(".flower-btn").forEach(btn => {
       btn.addEventListener("click", () => {
         const n = btn.dataset.name;
@@ -959,12 +858,15 @@
 
   function buildRegionChips() {
     regionChipsEl.innerHTML = REGIONS.map(r => `
-      <button class="region-chip ${state.activeRegion===r?"active":""}" data-region="${r}" type="button">${r}</button>`).join("");
+      <button class="region-chip ${state.activeRegion === r ? "active" : ""}" data-region="${r}" type="button">${r}</button>
+    `).join("");
+
     regionChipsEl.querySelectorAll(".region-chip").forEach(btn => {
       btn.addEventListener("click", () => {
         const r = btn.dataset.region;
         state.activeRegion = state.activeRegion === r ? "" : r;
-        buildRegionChips(); applyFilters();
+        buildRegionChips();
+        applyFilters();
         if (state.activeRegion) openSheetForRegion(state.activeRegion);
         else closeSheet();
       });
@@ -972,8 +874,9 @@
   }
 
   function populateBoroughList() {
-    const bs = [...new Set(state.allTrees.map(t=>(t.borough||"").trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
-    boroughListEl.innerHTML = bs.map(b=>`<option value="${esc(b)}"></option>`).join("");
+    const bs = [...new Set(state.allTrees.map(t => (t.borough || "").trim()).filter(Boolean))]
+      .sort((a,b) => a.localeCompare(b));
+    boroughListEl.innerHTML = bs.map(b => `<option value="${esc(b)}"></option>`).join("");
   }
 
   async function fetchWeather() {
@@ -982,21 +885,35 @@
       if (!r.ok) throw new Error(`HTTP ${r.status}`);
       const d = await r.json();
       const means = d.daily?.temperature_2m_mean ?? [];
-      const avg = means.length ? means.reduce((a,b)=>a+b,0)/means.length : null;
+      const avg = means.length ? means.reduce((a,b) => a + b, 0) / means.length : null;
       const cur = d.current?.temperature_2m ?? null;
-      let label = "Seasonal Signal", emoji = "🌿";
+
+      let label = "Seasonal Signal";
+      let emoji = "🌿";
+
       if (avg !== null) {
-        if      (avg <  8) { label="Early Bud";    emoji="🌱"; }
-        else if (avg < 12) { label="Bud Burst";    emoji="🌱"; }
-        else if (avg < 17) { label="Peak Blossom"; emoji="🌸"; }
-        else               { label="Fading";        emoji="🍃"; }
+        if (avg < 8) {
+          label = "Early Bud";
+          emoji = "🌱";
+        } else if (avg < 12) {
+          label = "Bud Burst";
+          emoji = "🌱";
+        } else if (avg < 17) {
+          label = "Peak Blossom";
+          emoji = "🌸";
+        } else {
+          label = "Fading";
+          emoji = "🍃";
+        }
       }
+
       bloomEmojiEl.textContent = emoji;
       bloomStageNameEl.textContent = label;
       bloomTempEl.textContent = avg !== null
-        ? `7-day avg ${avg.toFixed(1)} °C${cur!==null?` · Now ${cur.toFixed(0)} °C`:""}` : "Temperature unavailable";
+        ? `7-day avg ${avg.toFixed(1)} °C${cur !== null ? ` · Now ${cur.toFixed(0)} °C` : ""}`
+        : "Temperature unavailable";
       bloomBadgeEl.textContent = label;
-    } catch(e) {
+    } catch (e) {
       bloomStageNameEl.textContent = "Unavailable";
       bloomTempEl.textContent = "Weather unavailable";
       bloomBadgeEl.textContent = "?";
@@ -1005,61 +922,121 @@
 
   async function fetchTrees() {
     statusEl.textContent = "Loading trees…";
-    const { data, error } = await db.from(TABLE_NAME)
-      .select("id,borough,lat,lon,common_name,location,bloom_period")
-      .not("lat","is",null).not("lon","is",null)
-      .limit(MAX_RESULTS).order("common_name",{ascending:true});
-    if (error) { statusEl.textContent = `Couldn't load trees: ${error.message||"unknown error"}`; return; }
-    state.allTrees = (data||[]).map(normaliseRow);
+
+    const pageSize = 1000;
+    let from = 0;
+    let allRows = [];
+
+    while (true) {
+      const { data, error } = await db
+        .from(TABLE_NAME)
+        .select("id, borough, lat, lon, common_name, location, bloom_period")
+        .not("lat", "is", null)
+        .not("lon", "is", null)
+        .order("id", { ascending: true })
+        .range(from, from + pageSize - 1);
+
+      if (error) {
+        statusEl.textContent = `Couldn't load trees: ${error.message || "unknown error"}`;
+        console.error("fetchTrees error:", error);
+        return;
+      }
+
+      const rows = data || [];
+      allRows = allRows.concat(rows);
+
+      if (rows.length < pageSize) break;
+      from += pageSize;
+    }
+
+    state.allTrees = allRows.map(normaliseRow);
+
+    console.log("Loaded rows:", state.allTrees.length);
+    console.log("Species found:", [...new Set(state.allTrees.map(t => t.common_name))].sort());
+
     populateBoroughList();
     applyFilters();
   }
 
   async function fetchVoteTotals() {
     const { data, error } = await db.from("spot_vote_totals").select("*");
-    if (error) { console.warn("fetchVoteTotals:", error); return; }
-    state.votesBySpot = new Map((data||[]).map(r=>[String(r.spot_id),{upvotes:Number(r.upvotes||0),downvotes:Number(r.downvotes||0),score:Number(r.score||0)}]));
+    if (error) {
+      console.warn("fetchVoteTotals:", error);
+      return;
+    }
+    state.votesBySpot = new Map(
+      (data || []).map(r => [
+        String(r.spot_id),
+        {
+          upvotes: Number(r.upvotes || 0),
+          downvotes: Number(r.downvotes || 0),
+          score: Number(r.score || 0)
+        }
+      ])
+    );
   }
 
   async function fetchMyVotes() {
-    const { data, error } = await db.from("spot_votes").select("spot_id,vote").eq("voter_key",getVoterKey());
-    if (error) { console.warn("fetchMyVotes:", error); return; }
-    state.myVotesBySpot = new Map((data||[]).map(r=>[String(r.spot_id),Number(r.vote)]));
+    const { data, error } = await db
+      .from("spot_votes")
+      .select("spot_id,vote")
+      .eq("voter_key", getVoterKey());
+
+    if (error) {
+      console.warn("fetchMyVotes:", error);
+      return;
+    }
+
+    state.myVotesBySpot = new Map(
+      (data || []).map(r => [String(r.spot_id), Number(r.vote)])
+    );
   }
 
   async function castVote(spotId, vote) {
-    const prev = getVoteTotals(spotId), prevMine = getMyVote(spotId);
+    const prev = getVoteTotals(spotId);
+    const prevMine = getMyVote(spotId);
     const newMine = vote === prevMine ? 0 : vote;
     const delta = newMine - prevMine;
+
     state.myVotesBySpot.set(String(spotId), newMine);
     state.votesBySpot.set(String(spotId), {
-      upvotes:   Math.max(0, prev.upvotes   + (newMine===1?1:0) - (prevMine===1?1:0)),
-      downvotes: Math.max(0, prev.downvotes + (newMine===-1?1:0) - (prevMine===-1?1:0)),
+      upvotes: Math.max(0, prev.upvotes + (newMine === 1 ? 1 : 0) - (prevMine === 1 ? 1 : 0)),
+      downvotes: Math.max(0, prev.downvotes + (newMine === -1 ? 1 : 0) - (prevMine === -1 ? 1 : 0)),
       score: prev.score + delta
     });
+
     if (state.activeRegion) openSheetForRegion(state.activeRegion);
 
-    const { error } = await db.rpc("cast_vote",{ p_spot_id:Number(spotId), p_voter_key:getVoterKey(), p_vote:vote });
+    const { error } = await db.rpc("cast_vote", {
+      p_spot_id: Number(spotId),
+      p_voter_key: getVoterKey(),
+      p_vote: vote
+    });
+
     if (error) {
       state.myVotesBySpot.set(String(spotId), prevMine);
       state.votesBySpot.set(String(spotId), prev);
       if (state.activeRegion) openSheetForRegion(state.activeRegion);
-      alert(`Couldn't save vote: ${error.message||"unknown error"}`);
+      alert(`Couldn't save vote: ${error.message || "unknown error"}`);
       return;
     }
-    await fetchVoteTotals(); await fetchMyVotes();
+
+    await fetchVoteTotals();
+    await fetchMyVotes();
     if (state.activeRegion) openSheetForRegion(state.activeRegion);
   }
 
   function applyFilters() {
     state.visibleTrees = state.allTrees.filter(t =>
-      (state.filters.month==="all" || t.months.includes(state.filters.month)) &&
-      (!state.filters.name    || t.common_name.toLowerCase().includes(state.filters.name.toLowerCase())) &&
+      (state.filters.month === "all" || t.months.includes(state.filters.month)) &&
+      (!state.filters.name || t.common_name.toLowerCase().includes(state.filters.name.toLowerCase())) &&
       (!state.filters.borough || t.borough.toLowerCase().includes(state.filters.borough.toLowerCase())) &&
-      (!state.activeRegion    || t.region.toLowerCase()===state.activeRegion.toLowerCase())
+      (!state.activeRegion || t.region.toLowerCase() === state.activeRegion.toLowerCase())
     );
-    const ids = new Set(state.visibleTrees.map(t=>String(t.id)));
+
+    const ids = new Set(state.visibleTrees.map(t => String(t.id)));
     if (state.selectedId && !ids.has(String(state.selectedId))) state.selectedId = null;
+
     render();
   }
 
@@ -1070,20 +1047,26 @@
 
   function renderStats() {
     cTreesEl.textContent = state.visibleTrees.length.toLocaleString();
-    cBorEl.textContent   = new Set(state.visibleTrees.map(t=>t.borough).filter(Boolean)).size;
-    cTypEl.textContent   = new Set(state.visibleTrees.map(t=>t.common_name).filter(Boolean)).size;
+    cBorEl.textContent = new Set(state.visibleTrees.map(t => t.borough).filter(Boolean)).size;
+    cTypEl.textContent = new Set(state.visibleTrees.map(t => t.common_name).filter(Boolean)).size;
   }
 
   function renderStatus() {
-    if (!state.allTrees.length)     { statusEl.textContent="No tree data loaded yet."; return; }
-    if (!state.visibleTrees.length) { statusEl.textContent="No trees matched your filters."; return; }
+    if (!state.allTrees.length) {
+      statusEl.textContent = "No tree data loaded yet.";
+      return;
+    }
+    if (!state.visibleTrees.length) {
+      statusEl.textContent = "No trees matched your filters.";
+      return;
+    }
     statusEl.textContent = state.visibleTrees.length > MAX_CARDS
       ? `${state.visibleTrees.length.toLocaleString()} trees · showing first ${MAX_CARDS}`
       : `${state.visibleTrees.length.toLocaleString()} trees found`;
   }
 
   function renderCards() {
-    const visibleKey = state.visibleTrees.map(t=>t.id).join(",");
+    const visibleKey = state.visibleTrees.map(t => t.id).join(",");
     const sameSet = visibleKey === state._lastVisibleIds;
     const sameSel = state.selectedId === state._lastSelectedId;
     if (sameSet && sameSel) return;
@@ -1096,7 +1079,10 @@
       if (prevSel !== null) document.querySelector(`.tree-card[data-id="${prevSel}"]`)?.classList.remove("active");
       if (state.selectedId !== null) {
         const el = document.querySelector(`.tree-card[data-id="${state.selectedId}"]`);
-        if (el) { el.classList.add("active"); el.scrollIntoView({behavior:"smooth",block:"nearest"}); }
+        if (el) {
+          el.classList.add("active");
+          el.scrollIntoView({ behaviour:"smooth", block:"nearest" });
+        }
       }
       return;
     }
@@ -1108,32 +1094,45 @@
     }
 
     const frag = document.createDocumentFragment();
+
     list.slice(0, MAX_CARDS).forEach(t => {
-      const isActive = String(t.id)===String(state.selectedId);
-      const badges = t.months.map(m=>`<span class="mbadge ${mbClass(m)}">${esc(m)}</span>`).join("");
+      const isActive = String(t.id) === String(state.selectedId);
+      const badges = t.months.map(m => `<span class="mbadge ${mbClass(m)}">${esc(m)}</span>`).join("");
+
       const btn = document.createElement("button");
-      btn.className = `tree-card${isActive?" active":""}`;
-      btn.type = "button"; btn.dataset.id = t.id;
+      btn.className = `tree-card${isActive ? " active" : ""}`;
+      btn.type = "button";
+      btn.dataset.id = t.id;
+
       btn.innerHTML = `
         <div class="card-top">
           <div class="tree-name">${esc(t.common_name)}</div>
           <div class="month-badges">${badges}</div>
         </div>
         <div class="card-meta">
-          ${t.region  ?`<span><strong>Area</strong> ${esc(t.region)}</span>`:""}
-          ${t.borough ?`<span><strong>Borough</strong> ${esc(t.borough)}</span>`:""}
-          ${t.location?`<span><strong>Place</strong> ${esc(t.location)}</span>`:""}
+          ${t.region ? `<span><strong>Area</strong> ${esc(t.region)}</span>` : ""}
+          ${t.borough ? `<span><strong>Borough</strong> ${esc(t.borough)}</span>` : ""}
+          ${t.location ? `<span><strong>Place</strong> ${esc(t.location)}</span>` : ""}
         </div>
         <div class="card-actions">
           <span class="view-btn">View on map</span>
-          ${Number.isFinite(t.lat)&&Number.isFinite(t.lon)?`<a class="card-link" href="${mapsUrl(t.lat,t.lon)}" target="_blank" rel="noopener noreferrer">Open in Maps ↗</a>`:""}
-        </div>`;
+          ${Number.isFinite(t.lat) && Number.isFinite(t.lon) ? `<a class="card-link" href="${mapsUrl(t.lat,t.lon)}" target="_blank" rel="noopener noreferrer">Open in Maps ↗</a>` : ""}
+        </div>
+      `;
+
       btn.addEventListener("click", () => selectTree(t.id, true));
       frag.appendChild(btn);
     });
+
     resultsEl.replaceChildren(frag);
+
     if (state.selectedId !== null) {
-      requestAnimationFrame(() => document.querySelector(`.tree-card[data-id="${state.selectedId}"]`)?.scrollIntoView({behavior:"smooth",block:"nearest"}));
+      requestAnimationFrame(() => {
+        document.querySelector(`.tree-card[data-id="${state.selectedId}"]`)?.scrollIntoView({
+          behaviour: "smooth",
+          block: "nearest"
+        });
+      });
     }
   }
 
@@ -1141,39 +1140,46 @@
     const v = getVoteTotals(t.id);
     return `<div style="font-family:'DM Sans',sans-serif;font-size:0.84rem;color:#7a6e65;line-height:1.6;min-width:185px;">
       <div style="font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:700;color:#2a1f1a;margin-bottom:5px;">${esc(t.common_name)}</div>
-      ${t.region  ?`<div><strong>Area</strong> ${esc(t.region)}</div>`:""}
-      ${t.borough ?`<div><strong>Borough</strong> ${esc(t.borough)}</div>`:""}
-      ${t.location?`<div><strong>Place</strong> ${esc(t.location)}</div>`:""}
-      ${t.bloom_period?`<div><strong>Bloom</strong> ${esc(t.bloom_period)}</div>`:""}
-      <div style="margin-top:8px;font-size:0.78rem;color:#d4607a;font-weight:700;">Score ${v.score>=0?"+":""}${v.score}</div>
+      ${t.region ? `<div><strong>Area</strong> ${esc(t.region)}</div>` : ""}
+      ${t.borough ? `<div><strong>Borough</strong> ${esc(t.borough)}</div>` : ""}
+      ${t.location ? `<div><strong>Place</strong> ${esc(t.location)}</div>` : ""}
+      ${t.bloom_period ? `<div><strong>Bloom</strong> ${esc(t.bloom_period)}</div>` : ""}
+      <div style="margin-top:8px;font-size:0.78rem;color:#d4607a;font-weight:700;">Score ${v.score >= 0 ? "+" : ""}${v.score}</div>
       <a href="${mapsUrl(t.lat,t.lon)}" target="_blank" rel="noopener noreferrer" style="margin-top:10px;color:#d4607a;font-weight:700;text-decoration:none;display:inline-block;">Open in Maps ↗</a>
     </div>`;
   }
 
   function renderMarkers() {
-    const valid = state.visibleTrees.filter(t=>Number.isFinite(t.lat)&&Number.isFinite(t.lon));
-    const newIds = new Set(valid.map(t=>String(t.id)));
+    const valid = state.visibleTrees.filter(t => Number.isFinite(t.lat) && Number.isFinite(t.lon));
+    const newIds = new Set(valid.map(t => String(t.id)));
 
     for (const id of state.markersById.keys()) {
-      if (!newIds.has(id)) { markerGroup.removeLayer(state.markersById.get(id)); state.markersById.delete(id); }
+      if (!newIds.has(id)) {
+        markerGroup.removeLayer(state.markersById.get(id));
+        state.markersById.delete(id);
+      }
     }
 
     const bounds = [];
+
     valid.forEach(t => {
-      const id = String(t.id), isSel = id===String(state.selectedId);
+      const id = String(t.id);
+      const isSel = id === String(state.selectedId);
+
       if (state.markersById.has(id)) {
         state.markersById.get(id).setStyle(markerStyle(t, isSel));
       } else {
-        const m = L.circleMarker([t.lat,t.lon], markerStyle(t,isSel)).bindPopup(popupHtml(t));
+        const m = L.circleMarker([t.lat, t.lon], markerStyle(t, isSel)).bindPopup(popupHtml(t));
         m.on("click", () => selectTree(t.id, false));
         markerGroup.addLayer(m);
         state.markersById.set(id, m);
       }
+
       bounds.push([t.lat, t.lon]);
     });
 
     if (bounds.length && !state.hasInitialFit) {
-      map.fitBounds(bounds, {padding:[28,28]});
+      map.fitBounds(bounds, { padding:[28,28] });
       state.hasInitialFit = true;
     }
   }
@@ -1185,34 +1191,44 @@
   }
 
   function render() {
-    renderStats(); renderStatus(); renderCards(); renderMarkers(); renderMapInfo();
+    renderStats();
+    renderStatus();
+    renderCards();
+    renderMarkers();
+    renderMapInfo();
   }
 
   function selectTree(id, flyTo = true) {
-    const tree = state.allTrees.find(t=>String(t.id)===String(id));
+    const tree = state.allTrees.find(t => String(t.id) === String(id));
     if (!tree) return;
 
-    const inVisible = state.visibleTrees.some(t=>String(t.id)===String(id));
+    const inVisible = state.visibleTrees.some(t => String(t.id) === String(id));
     if (!inVisible) {
-      state.activeRegion = ""; state.filters.name = ""; state.filters.borough = "";
-      nameInput.value = ""; boroughInput.value = "";
-      buildFlowerGrid(); buildRegionChips(); applyFilters();
+      state.activeRegion = "";
+      state.filters.name = "";
+      state.filters.borough = "";
+      nameInput.value = "";
+      boroughInput.value = "";
+      buildFlowerGrid();
+      buildRegionChips();
+      applyFilters();
     }
 
     const prevId = state.selectedId;
     state.selectedId = tree.id;
 
     if (prevId !== null && state.markersById.has(String(prevId))) {
-      const pt = state.allTrees.find(t=>String(t.id)===String(prevId));
+      const pt = state.allTrees.find(t => String(t.id) === String(prevId));
       if (pt) state.markersById.get(String(prevId)).setStyle(markerStyle(pt, false));
     }
+
     const marker = state.markersById.get(String(tree.id));
     if (marker) marker.setStyle(markerStyle(tree, true));
 
     renderCards();
 
     if (flyTo && Number.isFinite(tree.lat) && Number.isFinite(tree.lon)) {
-      map.flyTo([tree.lat,tree.lon], Math.max(map.getZoom(),16), {duration:0.7});
+      map.flyTo([tree.lat, tree.lon], Math.max(map.getZoom(), 16), { duration: 0.7 });
       map.once("moveend", () => marker?.openPopup());
     } else {
       marker?.openPopup();
@@ -1221,22 +1237,24 @@
 
   function rankedRegionTrees(region) {
     return state.allTrees
-      .filter(t=>t.region.toLowerCase()===region.toLowerCase())
-      .map(t=>({...t,...getVoteTotals(t.id),myVote:getMyVote(t.id)}))
-      .sort((a,b)=>(b.score-a.score)||(b.upvotes-a.upvotes)||a.common_name.localeCompare(b.common_name));
+      .filter(t => t.region.toLowerCase() === region.toLowerCase())
+      .map(t => ({ ...t, ...getVoteTotals(t.id), myVote: getMyVote(t.id) }))
+      .sort((a,b) => (b.score - a.score) || (b.upvotes - a.upvotes) || a.common_name.localeCompare(b.common_name));
   }
 
   function openSheetForRegion(region) {
     const spots = rankedRegionTrees(region);
     sheetTitleEl.textContent = `${region} London`;
-    sheetSubEl.textContent   = `${spots.length} spot${spots.length===1?"":"s"} · sorted by community love`;
+    sheetSubEl.textContent = `${spots.length} spot${spots.length === 1 ? "" : "s"} · sorted by community love`;
 
     if (!spots.length) {
       sheetListEl.innerHTML = `<div class="empty">No places found in this area yet.</div>`;
-      sheetEl.classList.add("open"); return;
+      sheetEl.classList.add("open");
+      return;
     }
 
     const frag = document.createDocumentFragment();
+
     spots.forEach(t => {
       const card = document.createElement("div");
       card.className = "sheet-card";
@@ -1244,82 +1262,123 @@
         <div class="sheet-card-top">
           <div class="sheet-name">${esc(t.common_name)}</div>
           <div class="sheet-meta">
-            ${t.location?`${esc(t.location)}<br>`:""}
-            ${t.borough?`${esc(t.borough)} · `:""}${esc(t.bloom_period||"Spring")}
+            ${t.location ? `${esc(t.location)}<br>` : ""}
+            ${t.borough ? `${esc(t.borough)} · ` : ""}${esc(t.bloom_period || "Spring")}
           </div>
         </div>
         <div class="vote-row">
-          <button class="vote-btn up ${t.myVote===1?"active up":""}"   data-spot="${esc(t.id)}" data-vote="1"  type="button">👍 <span>${t.upvotes}</span></button>
-          <button class="vote-btn down ${t.myVote===-1?"active down":""}" data-spot="${esc(t.id)}" data-vote="-1" type="button">👎 <span>${t.downvotes}</span></button>
-          <span class="score-pill">${t.score>=0?"+":""}${t.score}</span>
-          ${Number.isFinite(t.lat)&&Number.isFinite(t.lon)?`
+          <button class="vote-btn up ${t.myVote === 1 ? "active up" : ""}" data-spot="${esc(t.id)}" data-vote="1" type="button">👍 <span>${t.upvotes}</span></button>
+          <button class="vote-btn down ${t.myVote === -1 ? "active down" : ""}" data-spot="${esc(t.id)}" data-vote="-1" type="button">👎 <span>${t.downvotes}</span></button>
+          <span class="score-pill">${t.score >= 0 ? "+" : ""}${t.score}</span>
+          ${Number.isFinite(t.lat) && Number.isFinite(t.lon) ? `
             <button class="view-map-btn" data-id="${esc(t.id)}" type="button">🗺 Map</button>
-            <a class="sheet-link" href="${mapsUrl(t.lat,t.lon)}" target="_blank" rel="noopener noreferrer">Open in Maps ↗</a>`:""}
-        </div>`;
+            <a class="sheet-link" href="${mapsUrl(t.lat,t.lon)}" target="_blank" rel="noopener noreferrer">Open in Maps ↗</a>
+          ` : ""}
+        </div>
+      `;
       frag.appendChild(card);
     });
+
     sheetListEl.replaceChildren(frag);
 
-    sheetListEl.querySelectorAll(".vote-btn").forEach(btn =>
-      btn.addEventListener("click", () => castVote(btn.dataset.spot, Number(btn.dataset.vote))));
-    sheetListEl.querySelectorAll(".view-map-btn").forEach(btn =>
-      btn.addEventListener("click", () => { closeSheet(); selectTree(btn.dataset.id, true); }));
+    sheetListEl.querySelectorAll(".vote-btn").forEach(btn => {
+      btn.addEventListener("click", () => castVote(btn.dataset.spot, Number(btn.dataset.vote)));
+    });
+
+    sheetListEl.querySelectorAll(".view-map-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        closeSheet();
+        selectTree(btn.dataset.id, true);
+      });
+    });
 
     sheetEl.classList.add("open");
   }
 
-  function closeSheet() { sheetEl.classList.remove("open"); }
+  function closeSheet() {
+    sheetEl.classList.remove("open");
+  }
 
   function resetFilters() {
-    state.filters = {month:"all",name:"",borough:""}; state.selectedId=null; state.activeRegion="";
-    nameInput.value=""; boroughInput.value="";
-    document.querySelectorAll(".month-chip").forEach(b=>b.classList.remove("active"));
+    state.filters = { month:"all", name:"", borough:"" };
+    state.selectedId = null;
+    state.activeRegion = "";
+    nameInput.value = "";
+    boroughInput.value = "";
+
+    document.querySelectorAll(".month-chip").forEach(b => b.classList.remove("active"));
     document.querySelector('.month-chip[data-month="all"]')?.classList.add("active");
-    buildFlowerGrid(); buildRegionChips(); closeSheet(); applyFilters();
-    map.fitBounds(LONDON_BOUNDS, {padding:[24,24]});
+
+    buildFlowerGrid();
+    buildRegionChips();
+    closeSheet();
+    applyFilters();
+    map.fitBounds(LONDON_BOUNDS, { padding:[24,24] });
   }
 
   function initMap() {
     LONDON_BOUNDS = L.latLngBounds([51.28, -0.52], [51.70, 0.33]);
+
     map = L.map("map", {
-      zoomControl:true, preferCanvas:true,
-      maxBounds:LONDON_BOUNDS, maxBoundsViscosity:1.0,
-      minZoom:10, maxZoom:18
+      zoomControl: true,
+      preferCanvas: true,
+      maxBounds: LONDON_BOUNDS,
+      maxBoundsViscosity: 1.0,
+      minZoom: 10,
+      maxZoom: 18
     });
+
     map.fitBounds(LONDON_BOUNDS);
+
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      maxZoom:19, attribution:"&copy; OpenStreetMap contributors"
+      maxZoom: 19,
+      attribution: "&copy; OpenStreetMap contributors"
     }).addTo(map);
+
     markerGroup = L.layerGroup().addTo(map);
 
     map.on("click", e => {
       if (!e.originalEvent.target.closest(".leaflet-interactive")) {
         if (state.selectedId !== null) {
-          const prev = state.allTrees.find(t=>String(t.id)===String(state.selectedId));
-          if (prev) state.markersById.get(String(prev.id))?.setStyle(markerStyle(prev,false));
-          state.selectedId = null; renderCards();
+          const prev = state.allTrees.find(t => String(t.id) === String(state.selectedId));
+          if (prev) state.markersById.get(String(prev.id))?.setStyle(markerStyle(prev, false));
+          state.selectedId = null;
+          renderCards();
         }
       }
     });
   }
 
   window.addEventListener("load", async () => {
-    initMap(); buildFlowerGrid(); buildRegionChips();
+    initMap();
+    buildFlowerGrid();
+    buildRegionChips();
 
     document.querySelectorAll(".month-chip").forEach(btn => {
       btn.addEventListener("click", () => {
-        document.querySelectorAll(".month-chip").forEach(b=>b.classList.remove("active"));
+        document.querySelectorAll(".month-chip").forEach(b => b.classList.remove("active"));
         btn.classList.add("active");
         state.filters.month = btn.dataset.month;
         applyFilters();
       });
     });
 
-    nameInput.addEventListener("input", () => { state.filters.name=nameInput.value.trim(); buildFlowerGrid(); scheduleApplyFilters(); });
-    boroughInput.addEventListener("input", () => { state.filters.borough=boroughInput.value.trim(); scheduleApplyFilters(); });
+    nameInput.addEventListener("input", () => {
+      state.filters.name = nameInput.value.trim();
+      buildFlowerGrid();
+      scheduleApplyFilters();
+    });
+
+    boroughInput.addEventListener("input", () => {
+      state.filters.borough = boroughInput.value.trim();
+      scheduleApplyFilters();
+    });
+
     document.getElementById("clearFiltersBtn").addEventListener("click", resetFilters);
     document.getElementById("closeSheetBtn").addEventListener("click", closeSheet);
-    document.addEventListener("keydown", e => { if (e.key==="Escape") closeSheet(); });
+    document.addEventListener("keydown", e => {
+      if (e.key === "Escape") closeSheet();
+    });
 
     await fetchWeather();
     await fetchTrees();

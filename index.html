@@ -2,114 +2,498 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>London Blooms</title>
 
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet" />
+
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+    crossorigin=""
+  />
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin=""
+  ></script>
 
   <style>
-    body { margin:0; font-family: sans-serif; }
-    #map { height:100vh; width:100%; }
-    .panel {
-      position:absolute;
-      top:10px;
-      left:10px;
-      background:white;
+    :root{
+      --bg:#fbf7f2;
+      --panel:#fffdf9;
+      --ink:#1e1a17;
+      --muted:#6f665f;
+      --line:#e7ddd2;
+      --accent:#d86c8f;
+      --accent-soft:#f6d7e1;
+      --gold:#c9a55a;
+      --shadow:0 10px 30px rgba(0,0,0,0.08);
+      --radius:18px;
+    }
+
+    *{box-sizing:border-box}
+
+    body{
+      margin:0;
+      font-family:'DM Sans', sans-serif;
+      background:var(--bg);
+      color:var(--ink);
+    }
+
+    .page{
+      display:grid;
+      grid-template-columns:390px 1fr;
+      min-height:100vh;
+    }
+
+    .sidebar{
+      background:var(--panel);
+      border-right:1px solid var(--line);
+      padding:24px 18px;
+      overflow:auto;
+    }
+
+    .title{
+      font-family:'Playfair Display', serif;
+      font-size:2rem;
+      margin:0 0 6px;
+    }
+
+    .subtitle{
+      color:var(--muted);
+      font-size:0.95rem;
+      margin:0 0 18px;
+      line-height:1.5;
+    }
+
+    .controls{
+      display:grid;
+      gap:12px;
+      margin-bottom:18px;
+    }
+
+    .control-card{
+      border:1px solid var(--line);
+      border-radius:16px;
       padding:12px;
-      border-radius:8px;
+      background:#fff;
+    }
+
+    .control-label{
+      font-size:0.85rem;
+      font-weight:700;
+      margin-bottom:8px;
+      color:var(--muted);
+    }
+
+    input, select{
+      width:100%;
+      padding:10px 12px;
+      border:1px solid var(--line);
+      border-radius:12px;
+      font:inherit;
+      background:#fff;
+      color:var(--ink);
+      outline:none;
+    }
+
+    .stats{
+      display:grid;
+      grid-template-columns:repeat(3, 1fr);
+      gap:10px;
+      margin-bottom:18px;
+    }
+
+    .stat{
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:12px;
+      text-align:center;
+    }
+
+    .stat .num{
+      font-size:1.2rem;
+      font-weight:700;
+    }
+
+    .stat .lab{
+      font-size:0.8rem;
+      color:var(--muted);
+      margin-top:4px;
+    }
+
+    .results{
+      display:grid;
+      gap:12px;
+    }
+
+    .tree-card{
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:14px;
+      box-shadow:var(--shadow);
+      cursor:pointer;
+      transition:transform .15s ease, border-color .15s ease;
+    }
+
+    .tree-card:hover{
+      transform:translateY(-2px);
+      border-color:var(--accent);
+    }
+
+    .tree-name{
+      font-weight:700;
+      font-size:1rem;
+      margin-bottom:6px;
+    }
+
+    .tree-meta{
+      font-size:0.9rem;
+      color:var(--muted);
+      line-height:1.5;
+    }
+
+    .badge-row{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      margin-top:10px;
+    }
+
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      padding:6px 10px;
+      border-radius:999px;
+      font-size:0.78rem;
+      font-weight:700;
+      border:1px solid var(--line);
+      background:#fffafc;
+      color:#7c3150;
+    }
+
+    .map-wrap{
+      position:relative;
+    }
+
+    #map{
+      width:100%;
+      height:100vh;
+    }
+
+    .floating-note{
+      position:absolute;
+      top:18px;
+      right:18px;
       z-index:1000;
-      box-shadow:0 5px 20px rgba(0,0,0,0.1);
+      background:rgba(255,255,255,0.95);
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:10px 12px;
+      box-shadow:var(--shadow);
+      font-size:0.88rem;
+      color:var(--muted);
+      max-width:320px;
+      line-height:1.45;
+    }
+
+    .leaflet-popup-content{
+      font-family:'DM Sans', sans-serif;
+      line-height:1.5;
+    }
+
+    .popup-title{
+      font-weight:700;
+      font-size:1rem;
+      margin-bottom:6px;
+      color:var(--ink);
+    }
+
+    .empty{
+      border:1px dashed var(--line);
+      border-radius:16px;
+      padding:18px;
+      color:var(--muted);
+      background:#fff;
+    }
+
+    .tiny-note{
+      margin-top:10px;
+      color:var(--muted);
+      font-size:0.8rem;
+      line-height:1.4;
+      margin-bottom:14px;
+    }
+
+    @media (max-width: 900px){
+      .page{
+        grid-template-columns:1fr;
+      }
+      .sidebar{
+        max-height:45vh;
+      }
+      #map{
+        height:55vh;
+      }
     }
   </style>
 </head>
 <body>
+  <div class="page">
+    <aside class="sidebar">
+      <h1 class="title">London Blooms</h1>
+      <p class="subtitle">
+        Explore spring-flowering trees across London using Supabase and exact coordinates.
+      </p>
 
-<div class="panel">
-  <strong>London Blooms 🌸</strong><br><br>
+      <div class="controls">
+        <div class="control-card">
+          <div class="control-label">Bloom month</div>
+          <select id="monthFilter">
+            <option value="all">All spring trees</option>
+            <option value="March">March</option>
+            <option value="April">April</option>
+            <option value="May">May</option>
+          </select>
+        </div>
 
-  <select id="month">
-    <option value="all">All</option>
-    <option value="March">March</option>
-    <option value="April">April</option>
-    <option value="May">May</option>
-  </select>
+        <div class="control-card">
+          <div class="control-label">Search by borough, tree, species or place</div>
+          <input id="searchInput" type="text" placeholder="e.g. Camden, Cherry, Magnolia" />
+        </div>
+      </div>
 
-  <input id="search" placeholder="Search..." style="margin-top:8px; width:100%"/>
-</div>
+      <div class="stats">
+        <div class="stat">
+          <div class="num" id="countTrees">0</div>
+          <div class="lab">trees shown</div>
+        </div>
+        <div class="stat">
+          <div class="num" id="countBoroughs">0</div>
+          <div class="lab">boroughs</div>
+        </div>
+        <div class="stat">
+          <div class="num" id="countTypes">0</div>
+          <div class="lab">tree names</div>
+        </div>
+      </div>
 
-<div id="map"></div>
+      <div class="tiny-note" id="statusNote">Loading from Supabase...</div>
+      <div class="results" id="results"></div>
+    </aside>
 
-<script>
-const supabase = window.supabase.createClient(
-  "https://esfjzhgzfbcrrewjvoan.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVzZmp6aGd6ZmJjcnJld2p2b2FuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQzNjg3NjIsImV4cCI6MjA4OTk0NDc2Mn0.kJOMlq3vHwYWwogSIyLccveHecA5D7WX2RwLzMqe8bY"
-);
+    <main class="map-wrap">
+      <div class="floating-note">
+        This version queries Supabase first instead of pulling the whole raw dataset into the browser.
+      </div>
+      <div id="map"></div>
+    </main>
+  </div>
 
-const map = L.map('map').setView([51.5074, -0.1278], 10);
+  <script>
+    const SUPABASE_URL = "https://esfjzhgzfbcrrewjvoan.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVzZmp6aGd6ZmJjcnJld2p2b2FuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQzNjg3NjIsImV4cCI6MjA4OTk0NDc2Mn0.kJOMlq3vHwYWwogSIyLccveHecA5D7WX2RwLzMqe8bY";
+    const TABLE_NAME = "spring_trees";
+    const MAX_RESULTS = 1200;
+    const MAX_CARDS = 150;
 
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-let markers = L.layerGroup().addTo(map);
+    const map = L.map('map').setView([51.5074, -0.1278], 10);
 
-async function loadData() {
-  const month = document.getElementById("month").value;
-  const search = document.getElementById("search").value;
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
 
-  let query = supabase
-    .from("spring_trees")
-    .select("lat, lon, common_name, borough, bloom_period")
-    .limit(1000);
+    let currentTrees = [];
+    let markersLayer = L.layerGroup().addTo(map);
+    let hasFittedInitially = false;
+    let debounceTimer;
 
-  if (month !== "all") {
-    if (month === "March") {
-      query = query.in("bloom_period", ["March", "March-April"]);
+    const monthFilterEl = document.getElementById('monthFilter');
+    const searchInputEl = document.getElementById('searchInput');
+    const resultsEl = document.getElementById('results');
+    const statusNoteEl = document.getElementById('statusNote');
+    const countTreesEl = document.getElementById('countTrees');
+    const countBoroughsEl = document.getElementById('countBoroughs');
+    const countTypesEl = document.getElementById('countTypes');
+
+    function escapeHtml(str) {
+      return String(str ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
     }
-    if (month === "April") {
-      query = query.in("bloom_period", ["April", "March-April", "April-May"]);
+
+    function parseMonths(bloomPeriod) {
+      if (!bloomPeriod) return [];
+      if (bloomPeriod === "March-April") return ["March", "April"];
+      if (bloomPeriod === "April-May") return ["April", "May"];
+      return [bloomPeriod];
     }
-    if (month === "May") {
-      query = query.in("bloom_period", ["May", "April-May"]);
+
+    function normaliseTree(row, index) {
+      return {
+        id: row.id ?? row.uniqueid ?? `row-${index}`,
+        uniqueid: row.uniqueid ?? "",
+        common_name: row.common_name ?? "",
+        scientific_name: row.taxon_species ?? "",
+        borough: row.borough ?? "",
+        location: row.location ?? "",
+        latitude: Number(row.lat),
+        longitude: Number(row.lon),
+        bloom_period: row.bloom_period ?? "",
+        bloomMonths: parseMonths(row.bloom_period)
+      };
     }
-  }
 
-  if (search) {
-    query = query.or(
-      `common_name.ilike.%${search}%,borough.ilike.%${search}%`
-    );
-  }
+    async function fetchTrees() {
+      const selectedMonth = monthFilterEl.value;
+      const q = searchInputEl.value.trim();
 
-  const { data, error } = await query;
+      statusNoteEl.textContent = "Loading from Supabase...";
+      resultsEl.innerHTML = `<div class="empty">Loading spring trees...</div>`;
 
-  if (error) {
-    console.error(error);
-    alert(error.message);
-    return;
-  }
+      let query = supabaseClient
+        .from(TABLE_NAME)
+        .select('id, uniqueid, borough, lat, lon, common_name, taxon_species, location, bloom_period')
+        .not('lat', 'is', null)
+        .not('lon', 'is', null)
+        .limit(MAX_RESULTS);
 
-  markers.clearLayers();
+      if (selectedMonth !== "all") {
+        if (selectedMonth === "March") {
+          query = query.in('bloom_period', ['March', 'March-April']);
+        } else if (selectedMonth === "April") {
+          query = query.in('bloom_period', ['March-April', 'April', 'April-May']);
+        } else if (selectedMonth === "May") {
+          query = query.in('bloom_period', ['May', 'April-May']);
+        }
+      }
 
-  data.forEach(tree => {
-    if (!tree.lat || !tree.lon) return;
+      if (q) {
+        const safe = q.replace(/,/g, ' ');
+        query = query.or(
+          `borough.ilike.%${safe}%,common_name.ilike.%${safe}%,taxon_species.ilike.%${safe}%,location.ilike.%${safe}%`
+        );
+      }
 
-    L.marker([tree.lat, tree.lon])
-      .bindPopup(
-        `<b>${tree.common_name}</b><br>
-         ${tree.borough}<br>
-         ${tree.bloom_period}`
-      )
-      .addTo(markers);
-  });
-}
+      query = query.order('common_name', { ascending: true });
 
-document.getElementById("month").addEventListener("change", loadData);
-document.getElementById("search").addEventListener("input", () => {
-  setTimeout(loadData, 300);
-});
+      const { data, error } = await query;
 
-loadData();
-</script>
+      if (error) {
+        console.error(error);
+        statusNoteEl.textContent = "Failed to load data.";
+        resultsEl.innerHTML = `<div class="empty">Error loading data: ${escapeHtml(error.message)}</div>`;
+        currentTrees = [];
+        updateStats([]);
+        renderMarkers([]);
+        return;
+      }
 
+      currentTrees = (data || []).map(normaliseTree);
+
+      statusNoteEl.textContent =
+        currentTrees.length >= MAX_RESULTS
+          ? `Showing the first ${MAX_RESULTS.toLocaleString()} matching trees. Narrow the search for a tighter view.`
+          : `${currentTrees.length.toLocaleString()} matching trees loaded.`;
+
+      updateStats(currentTrees);
+      renderCards(currentTrees);
+      renderMarkers(currentTrees);
+    }
+
+    function updateStats(trees) {
+      countTreesEl.textContent = trees.length.toLocaleString();
+
+      const boroughs = new Set(trees.map(t => t.borough).filter(Boolean));
+      countBoroughsEl.textContent = boroughs.size.toLocaleString();
+
+      const names = new Set(trees.map(t => t.common_name).filter(Boolean));
+      countTypesEl.textContent = names.size.toLocaleString();
+    }
+
+    function renderCards(trees) {
+      if (!trees.length) {
+        resultsEl.innerHTML = `<div class="empty">No spring trees matched your filters.</div>`;
+        return;
+      }
+
+      resultsEl.innerHTML = trees.slice(0, MAX_CARDS).map(tree => `
+        <div class="tree-card" data-id="${escapeHtml(tree.id)}">
+          <div class="tree-name">${escapeHtml(tree.common_name)}</div>
+          <div class="tree-meta">
+            ${tree.scientific_name ? `<div><strong>Scientific:</strong> ${escapeHtml(tree.scientific_name)}</div>` : ""}
+            ${tree.borough ? `<div><strong>Borough:</strong> ${escapeHtml(tree.borough)}</div>` : ""}
+            ${tree.location ? `<div><strong>Location:</strong> ${escapeHtml(tree.location)}</div>` : ""}
+            ${tree.bloom_period ? `<div><strong>Bloom:</strong> ${escapeHtml(tree.bloom_period)}</div>` : ""}
+          </div>
+          <div class="badge-row">
+            ${tree.bloomMonths.map(m => `<span class="badge">${escapeHtml(m)}</span>`).join("")}
+          </div>
+        </div>
+      `).join("");
+
+      document.querySelectorAll('.tree-card').forEach(card => {
+        card.addEventListener('click', () => {
+          const tree = trees.find(t => String(t.id) === String(card.dataset.id));
+          if (!tree) return;
+          map.setView([tree.latitude, tree.longitude], 17);
+        });
+      });
+    }
+
+    function renderMarkers(trees) {
+      markersLayer.clearLayers();
+
+      if (!trees.length) return;
+
+      const bounds = [];
+
+      trees.forEach(tree => {
+        if (!Number.isFinite(tree.latitude) || !Number.isFinite(tree.longitude)) return;
+
+        const popup = `
+          <div class="popup-title">${escapeHtml(tree.common_name)}</div>
+          ${tree.scientific_name ? `<div><strong>Scientific:</strong> ${escapeHtml(tree.scientific_name)}</div>` : ""}
+          ${tree.borough ? `<div><strong>Borough:</strong> ${escapeHtml(tree.borough)}</div>` : ""}
+          ${tree.location ? `<div><strong>Location:</strong> ${escapeHtml(tree.location)}</div>` : ""}
+          ${tree.bloom_period ? `<div><strong>Bloom:</strong> ${escapeHtml(tree.bloom_period)}</div>` : ""}
+          <div><strong>Coordinates:</strong> ${tree.latitude.toFixed(5)}, ${tree.longitude.toFixed(5)}</div>
+        `;
+
+        const marker = L.marker([tree.latitude, tree.longitude]).bindPopup(popup);
+        markersLayer.addLayer(marker);
+        bounds.push([tree.latitude, tree.longitude]);
+      });
+
+      if (bounds.length && !hasFittedInitially) {
+        map.fitBounds(bounds, { padding: [30, 30] });
+        hasFittedInitially = true;
+      }
+    }
+
+    function scheduleFetch() {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(fetchTrees, 250);
+    }
+
+    monthFilterEl.addEventListener('change', fetchTrees);
+    searchInputEl.addEventListener('input', scheduleFetch);
+
+    fetchTrees();
+  </script>
 </body>
 </html>

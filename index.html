@@ -1,679 +1,734 @@
-<script>
-  const SUPABASE_URL = "https://esfjzhgzfbcrrewjvoan.supabase.co";
-  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVzZmp6aGd6ZmJjcnJld2p2b2FuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQzNjg3NjIsImV4cCI6MjA4OTk0NDc2Mn0.kJOMlq3vHwYWwogSIyLccveHecA5D7WX2RwLzMqe8bY";
-  const TABLE_NAME = "spring_trees";
-  const WEATHER_URL = "https://api.open-meteo.com/v1/forecast?latitude=51.5074&longitude=-0.1278&daily=temperature_2m_mean&current=temperature_2m&timezone=Europe%2FLondon&forecast_days=1&past_days=7";
-  const MAX_RESULTS = 1000;
-  const MAX_CARDS = 120;
+/* ============================================================
+   London Blooms — improved script
+   Drop this in as a replacement for the existing <script> block.
+   ============================================================ */
 
-  const FLOWERS = [
-    { icon:"🌸", name:"Cherry" },
-    { icon:"🌸", name:"Cherry Plum" },
-    { icon:"🌺", name:"Magnolia" },
-    { icon:"🌼", name:"Crab Apple" },
-    { icon:"🌿", name:"Hawthorn" },
-    { icon:"🍐", name:"Pear" },
-    { icon:"🍎", name:"Apple" },
-    { icon:"🟣", name:"Plum" },
-    { icon:"🌸", name:"Almond" },
-    { icon:"🌼", name:"Blackthorn" },
-    { icon:"🌳", name:"Rowan" }
-  ];
+// ─── Config ──────────────────────────────────────────────────
+const SUPABASE_URL     = "https://esfjzhgzfbcrrewjvoan.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVzZmp6aGd6ZmJjcnJld2p2b2FuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQzNjg3NjIsImV4cCI6MjA4OTk0NDc2Mn0.kJOMlq3vHwYWwogSIyLccveHecA5D7WX2RwLzMqe8bY";
+const TABLE_NAME       = "spring_trees";
+const WEATHER_URL      = "https://api.open-meteo.com/v1/forecast?latitude=51.5074&longitude=-0.1278&daily=temperature_2m_mean&current=temperature_2m&timezone=Europe%2FLondon&forecast_days=1&past_days=7";
+const MAX_RESULTS      = 1000;
+const MAX_CARDS        = 120;
 
-  const REGIONS = ["Central", "North", "South", "East", "West", "Other"];
+const LONDON_BOUNDS = L.latLngBounds([51.28, -0.52], [51.70, 0.33]);
 
-  const SPECIES_COLORS = {
-    cherry:         { fill:"#f4a7b9", stroke:"#bd5d79" },
-    "cherry plum":  { fill:"#f2a4c0", stroke:"#b85b83" },
-    magnolia:       { fill:"#d6b3ff", stroke:"#8457b8" },
-    "crab apple":   { fill:"#ffd36e", stroke:"#b9851e" },
-    hawthorn:       { fill:"#7abf88", stroke:"#3f7a4c" },
-    pear:           { fill:"#b5d96a", stroke:"#6b8d1e" },
-    apple:          { fill:"#f28b82", stroke:"#b6413c" },
-    plum:           { fill:"#b08ad8", stroke:"#6d49a8" },
-    almond:         { fill:"#f6c7d5", stroke:"#c96f8d" },
-    blackthorn:     { fill:"#d8ecff", stroke:"#6e98c5" },
-    rowan:          { fill:"#ff9d5c", stroke:"#b85a1e" },
-    default:        { fill:"#d4607a", stroke:"#8f3550" }
+// ─── Data constants ───────────────────────────────────────────
+const FLOWERS = [
+  { icon: "🌸", name: "Cherry" },
+  { icon: "🌸", name: "Cherry Plum" },
+  { icon: "🌺", name: "Magnolia" },
+  { icon: "🌼", name: "Crab Apple" },
+  { icon: "🌿", name: "Hawthorn" },
+  { icon: "🍐", name: "Pear" },
+  { icon: "🍎", name: "Apple" },
+  { icon: "🟣", name: "Plum" },
+  { icon: "🌸", name: "Almond" },
+  { icon: "🌼", name: "Blackthorn" },
+  { icon: "🌳", name: "Rowan" },
+];
+
+const REGIONS = ["Central", "North", "South", "East", "West", "Other"];
+
+const SPECIES_COLORS = {
+  cherry:        { fill: "#f4a7b9", stroke: "#bd5d79" },
+  "cherry plum": { fill: "#f2a4c0", stroke: "#b85b83" },
+  magnolia:      { fill: "#d6b3ff", stroke: "#8457b8" },
+  "crab apple":  { fill: "#ffd36e", stroke: "#b9851e" },
+  hawthorn:      { fill: "#7abf88", stroke: "#3f7a4c" },
+  pear:          { fill: "#b5d96a", stroke: "#6b8d1e" },
+  apple:         { fill: "#f28b82", stroke: "#b6413c" },
+  plum:          { fill: "#b08ad8", stroke: "#6d49a8" },
+  almond:        { fill: "#f6c7d5", stroke: "#c96f8d" },
+  blackthorn:    { fill: "#d8ecff", stroke: "#6e98c5" },
+  rowan:         { fill: "#ff9d5c", stroke: "#b85a1e" },
+  default:       { fill: "#d4607a", stroke: "#8f3550" },
+};
+
+// ─── DOM refs ─────────────────────────────────────────────────
+const nameInput      = document.getElementById("nameInput");
+const boroughInput   = document.getElementById("boroughInput");
+const boroughListEl  = document.getElementById("boroughList");
+const resultsEl      = document.getElementById("results");
+const statusEl       = document.getElementById("statusBar");
+const cTreesEl       = document.getElementById("cTrees");
+const cBorEl         = document.getElementById("cBoroughs");
+const cTypEl         = document.getElementById("cTypes");
+const flowerGridEl   = document.getElementById("flowerGrid");
+const regionChipsEl  = document.getElementById("regionChips");
+const mapInfoEl      = document.getElementById("mapInfo");
+const sheetEl        = document.getElementById("bottomSheet");
+const sheetTitleEl   = document.getElementById("sheetTitle");
+const sheetSubEl     = document.getElementById("sheetSub");
+const sheetListEl    = document.getElementById("sheetList");
+const bloomEmojiEl   = document.getElementById("bloomEmoji");
+const bloomStageNameEl = document.getElementById("bloomStageName");
+const bloomTempEl    = document.getElementById("bloomTemp");
+const bloomBadgeEl   = document.getElementById("bloomBadge");
+
+// ─── App state ────────────────────────────────────────────────
+const state = {
+  allTrees:       [],
+  visibleTrees:   [],
+  selectedId:     null,
+  activeRegion:   "",
+  filters:        { month: "all", name: "", borough: "" },
+  votesBySpot:    new Map(),
+  myVotesBySpot:  new Map(),
+  markersById:    new Map(),
+  hasInitialFit:  false,
+  filterDebounce: null,
+  // Track what was last rendered so we only diff what changed
+  _lastVisibleIds: "",
+  _lastSelectedId: null,
+};
+
+let map, markerGroup;
+const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// ─── Helpers ──────────────────────────────────────────────────
+function esc(s) {
+  return String(s ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+function getVoterKey() {
+  let key = localStorage.getItem("lb_voter_key");
+  if (!key) { key = crypto.randomUUID(); localStorage.setItem("lb_voter_key", key); }
+  return key;
+}
+
+function mapsUrl(lat, lon) {
+  return `https://www.google.com/maps?q=${encodeURIComponent(lat)},${encodeURIComponent(lon)}`;
+}
+
+function parseMonths(p) {
+  if (!p) return [];
+  if (p === "March-April") return ["March", "April"];
+  if (p === "April-May")   return ["April", "May"];
+  return [p];
+}
+
+function regionFromBorough(borough) {
+  const b = String(borough || "").trim().toLowerCase();
+  const MAP = {
+    Central: ["camden","city of london","city","islington","kensington and chelsea","westminster","lambeth","southwark"],
+    North:   ["barnet","enfield","haringey","harrow","brent"],
+    South:   ["bromley","croydon","greenwich","kingston upon thames","merton","richmond upon thames","sutton","wandsworth","lewisham","bexley"],
+    East:    ["barking and dagenham","hackney","havering","newham","redbridge","tower hamlets","waltham forest"],
+    West:    ["ealing","hammersmith and fulham","hillingdon","hounslow"],
   };
+  for (const [region, boroughs] of Object.entries(MAP)) {
+    if (boroughs.includes(b)) return region;
+  }
+  return "Other";
+}
 
-  const LONDON_BOUNDS = L.latLngBounds([51.28, -0.52], [51.70, 0.33]);
-
-  const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-  const state = {
-    allTrees: [],
-    visibleTrees: [],
-    selectedId: null,
-    activeRegion: "",
-    filters: {
-      month: "all",
-      name: "",
-      borough: ""
-    },
-    votesBySpot: new Map(),
-    myVotesBySpot: new Map(),
-    markersById: new Map(),
-    hasInitialFit: false,
-    debounce: null
+function normaliseRow(row, i) {
+  return {
+    id:          Number.isFinite(+row.id) ? +row.id : i,
+    common_name: row.common_name ?? "Unknown",
+    borough:     row.borough ?? "",
+    region:      regionFromBorough(row.borough),
+    location:    row.location ?? "",
+    lat:         Number.isFinite(+row.lat) ? +row.lat : null,
+    lon:         Number.isFinite(+row.lon) ? +row.lon : null,
+    bloom_period: row.bloom_period ?? "",
+    months:      parseMonths(row.bloom_period),
   };
-
-  let map, markers;
-
-  const nameInput = document.getElementById("nameInput");
-  const boroughInput = document.getElementById("boroughInput");
-  const boroughListEl = document.getElementById("boroughList");
-  const resultsEl = document.getElementById("results");
-  const statusEl = document.getElementById("statusBar");
-  const cTreesEl = document.getElementById("cTrees");
-  const cBorEl = document.getElementById("cBoroughs");
-  const cTypEl = document.getElementById("cTypes");
-  const flowerGridEl = document.getElementById("flowerGrid");
-  const regionChipsEl = document.getElementById("regionChips");
-  const mapInfoEl = document.getElementById("mapInfo");
-  const sheetEl = document.getElementById("bottomSheet");
-  const sheetTitleEl = document.getElementById("sheetTitle");
-  const sheetSubEl = document.getElementById("sheetSub");
-  const sheetListEl = document.getElementById("sheetList");
-  const bloomEmojiEl = document.getElementById("bloomEmoji");
-  const bloomStageNameEl = document.getElementById("bloomStageName");
-  const bloomTempEl = document.getElementById("bloomTemp");
-  const bloomBadgeEl = document.getElementById("bloomBadge");
-
-  function esc(s) {
-    return String(s ?? "")
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&#039;");
-  }
-
-  function getVoterKey() {
-    let key = localStorage.getItem("lb_voter_key");
-    if (!key) {
-      key = crypto.randomUUID();
-      localStorage.setItem("lb_voter_key", key);
-    }
-    return key;
-  }
-
-  function mapsUrl(lat, lon) {
-    return `https://www.google.com/maps?q=${encodeURIComponent(lat)},${encodeURIComponent(lon)}`;
-  }
-
-  function parseMonths(p) {
-    if (!p) return [];
-    if (p === "March-April") return ["March", "April"];
-    if (p === "April-May") return ["April", "May"];
-    return [p];
-  }
-
-  function regionFromBorough(borough) {
-    const b = String(borough || "").trim().toLowerCase();
-
-    if ([
-      "camden", "city of london", "city", "islington",
-      "kensington and chelsea", "westminster", "lambeth", "southwark"
-    ].includes(b)) return "Central";
-
-    if ([
-      "barnet", "enfield", "haringey", "harrow", "brent"
-    ].includes(b)) return "North";
-
-    if ([
-      "bromley", "croydon", "greenwich", "kingston upon thames", "merton",
-      "richmond upon thames", "sutton", "wandsworth", "lewisham", "bexley"
-    ].includes(b)) return "South";
-
-    if ([
-      "barking and dagenham", "hackney", "havering", "newham",
-      "redbridge", "tower hamlets", "waltham forest"
-    ].includes(b)) return "East";
-
-    if ([
-      "ealing", "hammersmith and fulham", "hillingdon", "hounslow"
-    ].includes(b)) return "West";
-
-    return "Other";
-  }
-
-  function normaliseRow(row, i) {
-    return {
-      id: Number.isFinite(+row.id) ? +row.id : i,
-      common_name: row.common_name ?? "Unknown",
-      borough: row.borough ?? "",
-      region: regionFromBorough(row.borough),
-      location: row.location ?? "",
-      lat: Number.isFinite(+row.lat) ? +row.lat : null,
-      lon: Number.isFinite(+row.lon) ? +row.lon : null,
-      bloom_period: row.bloom_period ?? "",
-      months: parseMonths(row.bloom_period)
-    };
-  }
-
-  function speciesKey(name) {
-    const n = String(name || "").trim().toLowerCase();
-    return Object.keys(SPECIES_COLORS).find(k => k !== "default" && n.includes(k)) || "default";
-  }
-
-  function markerStyleFor(tree, isSelected = false) {
-    const base = SPECIES_COLORS[speciesKey(tree.common_name)] || SPECIES_COLORS.default;
-    return {
-      radius: isSelected ? 9 : 6.5,
-      weight: isSelected ? 2.8 : 1.7,
-      color: isSelected ? "#ffffff" : base.stroke,
-      fillColor: base.fill,
-      fillOpacity: 0.95
-    };
-  }
-
-  function getVoteTotals(spotId) {
-    return state.votesBySpot.get(String(spotId)) || { upvotes: 0, downvotes: 0, score: 0 };
-  }
-
-  function getMyVote(spotId) {
-    return state.myVotesBySpot.get(String(spotId)) || 0;
-  }
-
-  function buildFlowerGrid() {
-    flowerGridEl.innerHTML = FLOWERS.map(f => `
-      <button class="flower-btn ${state.filters.name.toLowerCase() === f.name.toLowerCase() ? "active" : ""}" data-name="${esc(f.name)}" type="button">
-        ${f.icon} ${esc(f.name)}
-      </button>
-    `).join("");
-
-    flowerGridEl.querySelectorAll(".flower-btn").forEach(btn => {
-      btn.addEventListener("click", () => {
-        const name = btn.dataset.name;
-        if (state.filters.name.toLowerCase() === name.toLowerCase()) {
-          state.filters.name = "";
-          nameInput.value = "";
-        } else {
-          state.filters.name = name;
-          nameInput.value = name;
-        }
-        buildFlowerGrid();
-        scheduleApplyFilters();
-      });
-    });
-  }
-
-  function buildRegionChips() {
-    regionChipsEl.innerHTML = REGIONS.map(region => `
-      <button class="region-chip ${state.activeRegion === region ? "active" : ""}" data-region="${region}" type="button">
-        ${region}
-      </button>
-    `).join("");
-
-    regionChipsEl.querySelectorAll(".region-chip").forEach(btn => {
-      btn.addEventListener("click", () => {
-        const region = btn.dataset.region;
-        state.activeRegion = state.activeRegion === region ? "" : region;
-        buildRegionChips();
-        applyFilters();
-        if (state.activeRegion) openSheetForRegion(state.activeRegion);
-        else closeSheet();
-      });
-    });
-  }
-
-  function populateBoroughList() {
-    const boroughs = [...new Set(
-      state.allTrees.map(t => (t.borough || "").trim()).filter(Boolean)
-    )].sort((a, b) => a.localeCompare(b));
-
-    boroughListEl.innerHTML = boroughs.map(b => `<option value="${esc(b)}"></option>`).join("");
-  }
-
-  async function fetchWeather() {
-    try {
-      const r = await fetch(WEATHER_URL);
-      const d = await r.json();
-      const means = d.daily?.temperature_2m_mean ?? [];
-      const avg = means.length ? means.reduce((a, b) => a + b, 0) / means.length : null;
-      const cur = d.current?.temperature_2m ?? null;
-
-      let label = "Seasonal signal";
-      let emoji = "🌿";
-
-      if (avg !== null) {
-        if (avg < 8) {
-          label = "Early Bud";
-          emoji = "🌱";
-        } else if (avg < 12) {
-          label = "Bud Burst";
-          emoji = "🌱";
-        } else if (avg < 17) {
-          label = "Peak Blossom";
-          emoji = "🌸";
-        } else {
-          label = "Fading";
-          emoji = "🍃";
-        }
-      }
-
-      bloomEmojiEl.textContent = emoji;
-      bloomStageNameEl.textContent = label;
-      bloomTempEl.textContent = avg !== null
-        ? `Based on recent temperature · 7-day avg ${avg.toFixed(1)} °C${cur !== null ? ` · Now ${cur.toFixed(0)} °C` : ""}`
-        : "Temperature unavailable";
-      bloomBadgeEl.textContent = label;
-    } catch (error) {
-      console.error("fetchWeather error:", error);
-      bloomStageNameEl.textContent = "Unavailable";
-      bloomTempEl.textContent = "Weather unavailable right now";
-      bloomBadgeEl.textContent = "Unavailable";
-    }
-  }
-
-  async function fetchTrees() {
-    statusEl.textContent = "Loading trees…";
-
-    const { data, error } = await db
-      .from(TABLE_NAME)
-      .select("id, borough, lat, lon, common_name, location, bloom_period")
-      .not("lat", "is", null)
-      .not("lon", "is", null)
-      .limit(MAX_RESULTS)
-      .order("common_name", { ascending: true });
-
-    if (error) {
-      console.error("fetchTrees error:", error);
-      state.allTrees = [];
-      state.visibleTrees = [];
-      render();
-      statusEl.textContent = `Couldn’t load tree data: ${error.message || "unknown error"}`;
-      return;
-    }
-
-    state.allTrees = (data || []).map(normaliseRow);
-    populateBoroughList();
-    applyFilters();
-  }
-
-  async function fetchVoteTotals() {
-    const { data, error } = await db.from("spot_vote_totals").select("*");
-
-    if (error) {
-      console.error("fetchVoteTotals error:", error);
-      return;
-    }
-
-    state.votesBySpot = new Map((data || []).map(r => [
-      String(r.spot_id),
-      {
-        upvotes: Number(r.upvotes || 0),
-        downvotes: Number(r.downvotes || 0),
-        score: Number(r.score || 0)
-      }
-    ]));
-  }
-
-  async function fetchMyVotes() {
-    const voterKey = getVoterKey();
-
-    const { data, error } = await db
-      .from("spot_votes")
-      .select("spot_id, vote")
-      .eq("voter_key", voterKey);
-
-    if (error) {
-      console.error("fetchMyVotes error:", error);
-      return;
-    }
-
-    state.myVotesBySpot = new Map((data || []).map(r => [
-      String(r.spot_id),
-      Number(r.vote)
-    ]));
-  }
-
-  async function castVote(spotId, vote) {
-    const voterKey = getVoterKey();
-
-    const { error } = await db.rpc("cast_vote", {
-      p_spot_id: Number(spotId),
-      p_voter_key: voterKey,
-      p_vote: vote
-    });
-
-    if (error) {
-      console.error("castVote error:", error);
-      alert(`Couldn’t save your vote: ${error.message || "unknown error"}`);
-      return;
-    }
-
-    await fetchVoteTotals();
-    await fetchMyVotes();
-    render();
-
-    if (state.activeRegion) {
-      openSheetForRegion(state.activeRegion);
-    }
-  }
-
-  function monthMatches(tree, month) {
-    if (month === "all") return true;
-    return tree.months.includes(month);
-  }
-
-  function nameMatches(tree, query) {
-    if (!query) return true;
-    return tree.common_name.toLowerCase().includes(query.toLowerCase());
-  }
-
-  function boroughMatches(tree, query) {
-    if (!query) return true;
-    return tree.borough.toLowerCase().includes(query.toLowerCase());
-  }
-
-  function regionMatches(tree, region) {
-    if (!region) return true;
-    return (tree.region || "").toLowerCase() === region.toLowerCase();
-  }
-
-  function applyFilters() {
-    state.visibleTrees = state.allTrees.filter(t =>
-      monthMatches(t, state.filters.month) &&
-      nameMatches(t, state.filters.name) &&
-      boroughMatches(t, state.filters.borough) &&
-      regionMatches(t, state.activeRegion)
-    );
-
-    const visibleIds = new Set(state.visibleTrees.map(t => String(t.id)));
-    if (state.selectedId && !visibleIds.has(String(state.selectedId))) {
-      state.selectedId = null;
-    }
-
-    render();
-  }
-
-  function scheduleApplyFilters() {
-    clearTimeout(state.debounce);
-    state.debounce = setTimeout(applyFilters, 220);
-  }
-
-  function updateStats(list) {
-    cTreesEl.textContent = list.length.toLocaleString();
-    cBorEl.textContent = new Set(list.map(t => t.borough).filter(Boolean)).size;
-    cTypEl.textContent = new Set(list.map(t => t.common_name).filter(Boolean)).size;
-  }
-
-  function renderStatus() {
-    if (!state.allTrees.length) {
-      statusEl.textContent = "No tree data loaded yet.";
-      return;
-    }
-
-    if (!state.visibleTrees.length) {
-      statusEl.textContent = "No trees matched your filters.";
-      return;
-    }
-
-    if (state.visibleTrees.length > MAX_CARDS) {
-      statusEl.textContent = `${state.visibleTrees.length.toLocaleString()} trees found · showing first ${MAX_CARDS} in the list`;
-      return;
-    }
-
-    statusEl.textContent = `${state.visibleTrees.length.toLocaleString()} trees found`;
-  }
-
-  function mbClass(m) {
-    return m === "March" ? "march" : m === "April" ? "april" : "may";
-  }
-
-  function renderCards() {
-    const list = state.visibleTrees;
-
-    if (!list.length) {
-      resultsEl.innerHTML = `
-        <div class="empty">
-          No trees matched your filters.<br><br>
-          Try a different flower name, reset your filters, or choose another area.
-        </div>
-      `;
-      return;
-    }
-
-    resultsEl.innerHTML = list.slice(0, MAX_CARDS).map(t => {
-      const isActive = String(t.id) === String(state.selectedId);
-      const badges = t.months.map(m => `<span class="mbadge ${mbClass(m)}">${esc(m)}</span>`).join("");
-
-      return `
-        <button class="tree-card ${isActive ? "active" : ""}" data-id="${esc(t.id)}" type="button">
-          <div class="card-top">
-            <div class="tree-name">${esc(t.common_name)}</div>
-            <div class="month-badges">${badges}</div>
-          </div>
-          <div class="card-meta">
-            ${t.region ? `<span><strong>Area</strong> ${esc(t.region)}</span>` : ""}
-            ${t.borough ? `<span><strong>Borough</strong> ${esc(t.borough)}</span>` : ""}
-            ${t.location ? `<span><strong>Place</strong> ${esc(t.location)}</span>` : ""}
-          </div>
-          <div class="card-actions">
-            <span class="view-btn">View on map</span>
-            ${Number.isFinite(t.lat) && Number.isFinite(t.lon)
-              ? `<a class="card-link" href="${mapsUrl(t.lat, t.lon)}" target="_blank" rel="noopener noreferrer">Open in Maps ↗</a>`
-              : ""}
-          </div>
-        </button>
-      `;
-    }).join("");
-
-    resultsEl.querySelectorAll(".tree-card").forEach(card => {
-      card.addEventListener("click", () => selectTree(card.dataset.id, true));
-    });
-  }
-
-  function popupHtml(t) {
-    const votes = getVoteTotals(t.id);
-
-    return `
-      <div style="font-family:'DM Sans',sans-serif;font-size:0.84rem;color:#7a6e65;line-height:1.6;min-width:180px;">
-        <div style="font-family:'Playfair Display',serif;font-size:1.05rem;font-weight:700;color:#1f1a16;margin-bottom:5px;">
-          ${esc(t.common_name)}
-        </div>
-        ${t.region ? `<div><strong>Area</strong> ${esc(t.region)}</div>` : ""}
-        ${t.borough ? `<div><strong>Borough</strong> ${esc(t.borough)}</div>` : ""}
-        ${t.location ? `<div><strong>Place</strong> ${esc(t.location)}</div>` : ""}
-        ${t.bloom_period ? `<div><strong>Bloom</strong> ${esc(t.bloom_period)}</div>` : ""}
-        <div style="margin-top:8px;font-size:0.78rem;color:#d4607a;font-weight:700;">
-          Score ${votes.score >= 0 ? "+" : ""}${votes.score}
-        </div>
-        <a href="${mapsUrl(t.lat, t.lon)}" target="_blank" rel="noopener noreferrer" style="margin-top:10px;color:#d4607a;font-weight:700;text-decoration:none;display:inline-block;">
-          Open in Maps ↗
-        </a>
-      </div>
-    `;
-  }
-
-  function renderMarkers() {
-    markers.clearLayers();
-    state.markersById = new Map();
-
-    const valid = state.visibleTrees.filter(t => Number.isFinite(t.lat) && Number.isFinite(t.lon));
-    if (!valid.length) return;
-
-    const bounds = [];
-
-    valid.forEach(t => {
-      const isSelected = String(t.id) === String(state.selectedId);
-      const marker = L.circleMarker([t.lat, t.lon], markerStyleFor(t, isSelected))
-        .bindPopup(popupHtml(t));
-
-      marker.on("click", () => selectTree(t.id, false));
-
-      markers.addLayer(marker);
-      state.markersById.set(String(t.id), marker);
-      bounds.push([t.lat, t.lon]);
-    });
-
-    if (bounds.length && !state.hasInitialFit) {
-      map.fitBounds(bounds, { padding: [28, 28] });
-      state.hasInitialFit = true;
-    }
-  }
-
-  function render() {
-    updateStats(state.visibleTrees);
-    renderStatus();
-    renderCards();
-    renderMarkers();
-
-    mapInfoEl.innerHTML = state.activeRegion
-      ? `<strong>${esc(state.activeRegion)} London</strong><br><span>Showing places in this area</span>`
-      : `<strong>London Blooms</strong><br><span>Choose an area chip or click a marker</span>`;
-  }
-
-  function selectTree(id, flyTo = true) {
-    const tree = state.visibleTrees.find(t => String(t.id) === String(id));
-    if (!tree) return;
-
-    state.selectedId = tree.id;
-    render();
-
-    if (flyTo && Number.isFinite(tree.lat) && Number.isFinite(tree.lon)) {
-      map.flyTo([tree.lat, tree.lon], Math.max(map.getZoom(), 16), { duration: 0.8 });
-    }
-
-    const marker = state.markersById.get(String(tree.id));
-    if (marker) {
-      setTimeout(() => marker.openPopup(), 220);
-    }
-  }
-
-  function rankedRegionTrees(region) {
-    return state.allTrees
-      .filter(t => (t.region || "").toLowerCase() === region.toLowerCase())
-      .map(t => ({ ...t, ...getVoteTotals(t.id), myVote: getMyVote(t.id) }))
-      .sort((a, b) =>
-        (b.score - a.score) ||
-        (b.upvotes - a.upvotes) ||
-        a.common_name.localeCompare(b.common_name)
-      );
-  }
-
-  function openSheetForRegion(region) {
-    const spots = rankedRegionTrees(region);
-
-    sheetTitleEl.textContent = `${region} London`;
-    sheetSubEl.textContent = `${spots.length} spot${spots.length === 1 ? "" : "s"} · sorted by community love`;
-
-    if (!spots.length) {
-      sheetListEl.innerHTML = `<div class="empty">No places found in this area yet.</div>`;
-      sheetEl.classList.add("open");
-      return;
-    }
-
-    sheetListEl.innerHTML = spots.map(t => `
-      <div class="sheet-card">
-        <div class="sheet-card-top">
-          <div>
-            <div class="sheet-name">${esc(t.common_name)}</div>
-            <div class="sheet-meta">
-              ${t.location ? `${esc(t.location)}<br>` : ""}
-              ${t.borough ? `${esc(t.borough)} · ` : ""}${esc(t.bloom_period || "Spring")}
-            </div>
-          </div>
-        </div>
-        <div class="vote-row">
-          <button class="vote-btn up ${t.myVote === 1 ? "active up" : ""}" data-spot="${esc(t.id)}" data-vote="1" type="button">
-            👍 <span>${t.upvotes}</span>
-          </button>
-          <button class="vote-btn down ${t.myVote === -1 ? "active down" : ""}" data-spot="${esc(t.id)}" data-vote="-1" type="button">
-            👎 <span>${t.downvotes}</span>
-          </button>
-          <span class="score-pill">${t.score >= 0 ? "+" : ""}${t.score}</span>
-          ${Number.isFinite(t.lat) && Number.isFinite(t.lon)
-            ? `<a class="sheet-link" href="${mapsUrl(t.lat, t.lon)}" target="_blank" rel="noopener noreferrer">Open in Maps ↗</a>`
-            : ""}
-        </div>
-      </div>
-    `).join("");
-
-    sheetListEl.querySelectorAll(".vote-btn").forEach(btn => {
-      btn.addEventListener("click", () => castVote(btn.dataset.spot, Number(btn.dataset.vote)));
-    });
-
-    sheetEl.classList.add("open");
-  }
-
-  function closeSheet() {
-    sheetEl.classList.remove("open");
-  }
-
-  function resetFilters() {
-    state.filters = { month: "all", name: "", borough: "" };
-    state.selectedId = null;
-    state.activeRegion = "";
-
-    nameInput.value = "";
-    boroughInput.value = "";
-
-    document.querySelectorAll(".month-chip").forEach(b => b.classList.remove("active"));
-    document.querySelector('.month-chip[data-month="all"]').classList.add("active");
-
-    buildFlowerGrid();
-    buildRegionChips();
-    closeSheet();
-    applyFilters();
-
-    map.fitBounds(LONDON_BOUNDS, { padding: [24, 24] });
-  }
-
-  function initMap() {
-    map = L.map("map", {
-      zoomControl: true,
-      preferCanvas: true,
-      maxBounds: LONDON_BOUNDS,
-      maxBoundsViscosity: 1.0,
-      minZoom: 10,
-      maxZoom: 18
-    });
-
-    map.fitBounds(LONDON_BOUNDS);
-
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      maxZoom: 19,
-      attribution: "&copy; OpenStreetMap contributors"
-    }).addTo(map);
-
-    markers = L.layerGroup().addTo(map);
-  }
-
-  window.addEventListener("load", async () => {
-    initMap();
-    buildFlowerGrid();
-    buildRegionChips();
-
-    document.querySelectorAll(".month-chip").forEach(btn => {
-      btn.addEventListener("click", () => {
-        document.querySelectorAll(".month-chip").forEach(b => b.classList.remove("active"));
-        btn.classList.add("active");
-        state.filters.month = btn.dataset.month;
-        applyFilters();
-      });
-    });
-
-    nameInput.addEventListener("input", () => {
-      state.filters.name = nameInput.value.trim();
+}
+
+function speciesKey(name) {
+  const n = String(name || "").trim().toLowerCase();
+  return Object.keys(SPECIES_COLORS).find(k => k !== "default" && n.includes(k)) || "default";
+}
+
+function markerStyle(tree, isSelected = false) {
+  const c = SPECIES_COLORS[speciesKey(tree.common_name)] || SPECIES_COLORS.default;
+  return {
+    radius:      isSelected ? 10 : 7,
+    weight:      isSelected ? 3   : 1.8,
+    color:       isSelected ? "#ffffff" : c.stroke,
+    fillColor:   c.fill,
+    fillOpacity: isSelected ? 1 : 0.92,
+    className:   isSelected ? "marker-selected" : "",
+  };
+}
+
+function getVoteTotals(spotId) {
+  return state.votesBySpot.get(String(spotId)) || { upvotes: 0, downvotes: 0, score: 0 };
+}
+
+function getMyVote(spotId) {
+  return state.myVotesBySpot.get(String(spotId)) || 0;
+}
+
+function mbClass(m) {
+  return m === "March" ? "march" : m === "April" ? "april" : "may";
+}
+
+// ─── UI builders ──────────────────────────────────────────────
+function buildFlowerGrid() {
+  flowerGridEl.innerHTML = FLOWERS.map(f => `
+    <button class="flower-btn ${state.filters.name.toLowerCase() === f.name.toLowerCase() ? "active" : ""}"
+            data-name="${esc(f.name)}" type="button">
+      ${f.icon} ${esc(f.name)}
+    </button>
+  `).join("");
+
+  flowerGridEl.querySelectorAll(".flower-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const name = btn.dataset.name;
+      const toggled = state.filters.name.toLowerCase() === name.toLowerCase();
+      state.filters.name = toggled ? "" : name;
+      nameInput.value = toggled ? "" : name;
       buildFlowerGrid();
       scheduleApplyFilters();
     });
-
-    boroughInput.addEventListener("input", () => {
-      state.filters.borough = boroughInput.value.trim();
-      scheduleApplyFilters();
-    });
-
-    document.getElementById("clearFiltersBtn").addEventListener("click", resetFilters);
-    document.getElementById("closeSheetBtn").addEventListener("click", closeSheet);
-
-    await fetchWeather();
-    await fetchTrees();
-    await fetchVoteTotals();
-    await fetchMyVotes();
-    render();
   });
-</script>
+}
+
+function buildRegionChips() {
+  regionChipsEl.innerHTML = REGIONS.map(r => `
+    <button class="region-chip ${state.activeRegion === r ? "active" : ""}"
+            data-region="${r}" type="button">${r}</button>
+  `).join("");
+
+  regionChipsEl.querySelectorAll(".region-chip").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const region = btn.dataset.region;
+      const toggled = state.activeRegion === region;
+      state.activeRegion = toggled ? "" : region;
+      buildRegionChips();
+      applyFilters();
+      if (state.activeRegion) openSheetForRegion(state.activeRegion);
+      else closeSheet();
+    });
+  });
+}
+
+function populateBoroughList() {
+  const boroughs = [...new Set(
+    state.allTrees.map(t => (t.borough || "").trim()).filter(Boolean)
+  )].sort((a, b) => a.localeCompare(b));
+  boroughListEl.innerHTML = boroughs.map(b => `<option value="${esc(b)}"></option>`).join("");
+}
+
+// ─── Weather ──────────────────────────────────────────────────
+async function fetchWeather() {
+  try {
+    const r = await fetch(WEATHER_URL);
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    const d = await r.json();
+    const means = d.daily?.temperature_2m_mean ?? [];
+    const avg   = means.length ? means.reduce((a, b) => a + b, 0) / means.length : null;
+    const cur   = d.current?.temperature_2m ?? null;
+
+    let label = "Seasonal Signal", emoji = "🌿";
+    if (avg !== null) {
+      if      (avg <  8)  { label = "Early Bud";     emoji = "🌱"; }
+      else if (avg < 12)  { label = "Bud Burst";     emoji = "🌱"; }
+      else if (avg < 17)  { label = "Peak Blossom";  emoji = "🌸"; }
+      else                { label = "Fading";         emoji = "🍃"; }
+    }
+
+    bloomEmojiEl.textContent     = emoji;
+    bloomStageNameEl.textContent = label;
+    bloomTempEl.textContent      = avg !== null
+      ? `7-day avg ${avg.toFixed(1)} °C${cur !== null ? ` · Now ${cur.toFixed(0)} °C` : ""}`
+      : "Temperature unavailable";
+    bloomBadgeEl.textContent = label;
+  } catch (err) {
+    console.warn("fetchWeather:", err);
+    bloomStageNameEl.textContent = "Unavailable";
+    bloomTempEl.textContent      = "Weather data unavailable";
+    bloomBadgeEl.textContent     = "?";
+  }
+}
+
+// ─── Data fetching ────────────────────────────────────────────
+async function fetchTrees() {
+  statusEl.textContent = "Loading trees…";
+  const { data, error } = await db
+    .from(TABLE_NAME)
+    .select("id, borough, lat, lon, common_name, location, bloom_period")
+    .not("lat", "is", null)
+    .not("lon", "is", null)
+    .limit(MAX_RESULTS)
+    .order("common_name", { ascending: true });
+
+  if (error) {
+    console.error("fetchTrees:", error);
+    statusEl.textContent = `Couldn't load trees: ${error.message || "unknown error"}`;
+    return;
+  }
+
+  state.allTrees = (data || []).map(normaliseRow);
+  populateBoroughList();
+  applyFilters();
+}
+
+async function fetchVoteTotals() {
+  const { data, error } = await db.from("spot_vote_totals").select("*");
+  if (error) { console.warn("fetchVoteTotals:", error); return; }
+  state.votesBySpot = new Map((data || []).map(r => [
+    String(r.spot_id),
+    { upvotes: Number(r.upvotes || 0), downvotes: Number(r.downvotes || 0), score: Number(r.score || 0) },
+  ]));
+}
+
+async function fetchMyVotes() {
+  const { data, error } = await db.from("spot_votes").select("spot_id, vote").eq("voter_key", getVoterKey());
+  if (error) { console.warn("fetchMyVotes:", error); return; }
+  state.myVotesBySpot = new Map((data || []).map(r => [String(r.spot_id), Number(r.vote)]));
+}
+
+async function castVote(spotId, vote) {
+  const voterKey = getVoterKey();
+
+  // Optimistic update so the UI feels instant
+  const prev      = getVoteTotals(spotId);
+  const prevMine  = getMyVote(spotId);
+  const delta     = vote === prevMine ? -prevMine : vote - prevMine; // toggle or switch
+  const newMine   = vote === prevMine ? 0 : vote;
+  state.myVotesBySpot.set(String(spotId), newMine);
+  state.votesBySpot.set(String(spotId), {
+    upvotes:   Math.max(0, prev.upvotes   + (delta > 0 ?  1 : newMine ===  1 ? 0 : prevMine ===  1 ? -1 : 0)),
+    downvotes: Math.max(0, prev.downvotes + (delta < 0 ? -1 : newMine === -1 ? 0 : prevMine === -1 ? -1 : 0)),
+    score:     prev.score + delta,
+  });
+  // Re-render sheet only (no full map rebuild)
+  if (state.activeRegion) openSheetForRegion(state.activeRegion);
+
+  const { error } = await db.rpc("cast_vote", {
+    p_spot_id:   Number(spotId),
+    p_voter_key: voterKey,
+    p_vote:      vote,
+  });
+
+  if (error) {
+    console.error("castVote:", error);
+    // Roll back optimistic update
+    state.myVotesBySpot.set(String(spotId), prevMine);
+    state.votesBySpot.set(String(spotId), prev);
+    if (state.activeRegion) openSheetForRegion(state.activeRegion);
+    alert(`Couldn't save your vote: ${error.message || "unknown error"}`);
+    return;
+  }
+
+  // Confirm with server data
+  await fetchVoteTotals();
+  await fetchMyVotes();
+  if (state.activeRegion) openSheetForRegion(state.activeRegion);
+}
+
+// ─── Filtering ────────────────────────────────────────────────
+function applyFilters() {
+  state.visibleTrees = state.allTrees.filter(t =>
+    (state.filters.month === "all" || t.months.includes(state.filters.month)) &&
+    (!state.filters.name    || t.common_name.toLowerCase().includes(state.filters.name.toLowerCase())) &&
+    (!state.filters.borough || t.borough.toLowerCase().includes(state.filters.borough.toLowerCase())) &&
+    (!state.activeRegion    || t.region.toLowerCase() === state.activeRegion.toLowerCase())
+  );
+
+  const visibleIds = new Set(state.visibleTrees.map(t => String(t.id)));
+  if (state.selectedId && !visibleIds.has(String(state.selectedId))) state.selectedId = null;
+
+  render();
+}
+
+function scheduleApplyFilters() {
+  clearTimeout(state.filterDebounce);
+  state.filterDebounce = setTimeout(applyFilters, 220);
+}
+
+// ─── Rendering ────────────────────────────────────────────────
+
+// Stats bar
+function renderStats() {
+  cTreesEl.textContent = state.visibleTrees.length.toLocaleString();
+  cBorEl.textContent   = new Set(state.visibleTrees.map(t => t.borough).filter(Boolean)).size;
+  cTypEl.textContent   = new Set(state.visibleTrees.map(t => t.common_name).filter(Boolean)).size;
+}
+
+// Status text
+function renderStatus() {
+  if (!state.allTrees.length)     { statusEl.textContent = "No tree data loaded yet."; return; }
+  if (!state.visibleTrees.length) { statusEl.textContent = "No trees matched your filters."; return; }
+  statusEl.textContent = state.visibleTrees.length > MAX_CARDS
+    ? `${state.visibleTrees.length.toLocaleString()} trees · showing first ${MAX_CARDS}`
+    : `${state.visibleTrees.length.toLocaleString()} trees found`;
+}
+
+// Cards — only rebuilds when the visible set or selection actually changes
+function renderCards() {
+  const visibleKey = state.visibleTrees.map(t => t.id).join(",");
+  const sameSet    = visibleKey === state._lastVisibleIds;
+  const sameSel    = state.selectedId === state._lastSelectedId;
+  if (sameSet && sameSel) return; // nothing to do
+
+  const prevSelectedId   = state._lastSelectedId;
+  state._lastVisibleIds  = visibleKey;
+  state._lastSelectedId  = state.selectedId;
+
+  // If only selection changed, just swap CSS classes — much cheaper than full rebuild
+  if (sameSet && !sameSel) {
+    if (prevSelectedId !== null) {
+      document.querySelector(`.tree-card[data-id="${prevSelectedId}"]`)?.classList.remove("active");
+    }
+    if (state.selectedId !== null) {
+      const el = document.querySelector(`.tree-card[data-id="${state.selectedId}"]`);
+      if (el) {
+        el.classList.add("active");
+        el.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      }
+    }
+    return;
+  }
+
+  // Full rebuild
+  const list = state.visibleTrees;
+  if (!list.length) {
+    resultsEl.innerHTML = `
+      <div class="empty">
+        No trees matched your filters.<br><br>
+        Try a different flower name, reset your filters, or choose another area.
+      </div>`;
+    return;
+  }
+
+  const fragment = document.createDocumentFragment();
+  list.slice(0, MAX_CARDS).forEach(t => {
+    const isActive = String(t.id) === String(state.selectedId);
+    const badges   = t.months.map(m => `<span class="mbadge ${mbClass(m)}">${esc(m)}</span>`).join("");
+    const div      = document.createElement("button");
+    div.className  = `tree-card${isActive ? " active" : ""}`;
+    div.type       = "button";
+    div.dataset.id = t.id;
+    div.innerHTML  = `
+      <div class="card-top">
+        <div class="tree-name">${esc(t.common_name)}</div>
+        <div class="month-badges">${badges}</div>
+      </div>
+      <div class="card-meta">
+        ${t.region  ? `<span><strong>Area</strong> ${esc(t.region)}</span>`   : ""}
+        ${t.borough ? `<span><strong>Borough</strong> ${esc(t.borough)}</span>` : ""}
+        ${t.location? `<span><strong>Place</strong> ${esc(t.location)}</span>`  : ""}
+      </div>
+      <div class="card-actions">
+        <span class="view-btn">View on map</span>
+        ${Number.isFinite(t.lat) && Number.isFinite(t.lon)
+          ? `<a class="card-link" href="${mapsUrl(t.lat, t.lon)}" target="_blank" rel="noopener noreferrer">Open in Maps ↗</a>`
+          : ""}
+      </div>`;
+    div.addEventListener("click", () => selectTree(t.id, true));
+    fragment.appendChild(div);
+  });
+
+  resultsEl.replaceChildren(fragment);
+
+  // Scroll active card into view after paint
+  if (state.selectedId !== null) {
+    requestAnimationFrame(() => {
+      document.querySelector(`.tree-card[data-id="${state.selectedId}"]`)
+        ?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    });
+  }
+}
+
+// Popup HTML
+function popupHtml(t) {
+  const v = getVoteTotals(t.id);
+  return `
+    <div style="font-family:'DM Sans',sans-serif;font-size:0.84rem;color:#7a6e65;line-height:1.6;min-width:185px;">
+      <div style="font-family:'Playfair Display',serif;font-size:1.05rem;font-weight:700;color:#1f1a16;margin-bottom:5px;">
+        ${esc(t.common_name)}
+      </div>
+      ${t.region   ? `<div><strong>Area</strong> ${esc(t.region)}</div>`         : ""}
+      ${t.borough  ? `<div><strong>Borough</strong> ${esc(t.borough)}</div>`      : ""}
+      ${t.location ? `<div><strong>Place</strong> ${esc(t.location)}</div>`       : ""}
+      ${t.bloom_period ? `<div><strong>Bloom</strong> ${esc(t.bloom_period)}</div>` : ""}
+      <div style="margin-top:8px;font-size:0.78rem;color:#d4607a;font-weight:700;">
+        Score ${v.score >= 0 ? "+" : ""}${v.score}
+      </div>
+      <a href="${mapsUrl(t.lat, t.lon)}" target="_blank" rel="noopener noreferrer"
+         style="margin-top:10px;color:#d4607a;font-weight:700;text-decoration:none;display:inline-block;">
+        Open in Maps ↗
+      </a>
+    </div>`;
+}
+
+/**
+ * Markers — diffed so we only add/remove what changed.
+ * Avoids the clearLayers() + full rebuild on every filter change.
+ */
+function renderMarkers() {
+  const valid       = state.visibleTrees.filter(t => Number.isFinite(t.lat) && Number.isFinite(t.lon));
+  const newIds      = new Set(valid.map(t => String(t.id)));
+  const existingIds = new Set(state.markersById.keys());
+
+  // Remove markers no longer in visible set
+  for (const id of existingIds) {
+    if (!newIds.has(id)) {
+      const m = state.markersById.get(id);
+      markerGroup.removeLayer(m);
+      state.markersById.delete(id);
+    }
+  }
+
+  const bounds = [];
+
+  // Add new markers; update existing ones if selection state changed
+  valid.forEach(t => {
+    const id         = String(t.id);
+    const isSelected = id === String(state.selectedId);
+
+    if (state.markersById.has(id)) {
+      // Just restyle if already present
+      state.markersById.get(id).setStyle(markerStyle(t, isSelected));
+    } else {
+      const marker = L.circleMarker([t.lat, t.lon], markerStyle(t, isSelected))
+        .bindPopup(popupHtml(t));
+      marker.on("click", () => selectTree(t.id, false));
+      markerGroup.addLayer(marker);
+      state.markersById.set(id, marker);
+    }
+
+    bounds.push([t.lat, t.lon]);
+  });
+
+  // Initial fit only
+  if (bounds.length && !state.hasInitialFit) {
+    map.fitBounds(bounds, { padding: [28, 28] });
+    state.hasInitialFit = true;
+  }
+}
+
+// Map info panel
+function renderMapInfo() {
+  mapInfoEl.innerHTML = state.activeRegion
+    ? `<strong>${esc(state.activeRegion)} London</strong><br><span>Showing places in this area</span>`
+    : `<strong>London Blooms</strong><br><span>Choose an area or click a marker</span>`;
+}
+
+// Master render — coordinates all sub-renders
+function render() {
+  renderStats();
+  renderStatus();
+  renderCards();
+  renderMarkers();
+  renderMapInfo();
+}
+
+// ─── Tree selection ───────────────────────────────────────────
+function selectTree(id, flyTo = true) {
+  // Accept id from either visibleTrees or allTrees (e.g. called from region sheet)
+  const tree = state.allTrees.find(t => String(t.id) === String(id));
+  if (!tree) return;
+
+  // If the tree isn't currently visible, clear region/filters so it appears
+  const inVisible = state.visibleTrees.some(t => String(t.id) === String(id));
+  if (!inVisible) {
+    state.activeRegion   = "";
+    state.filters.name   = "";
+    state.filters.borough = "";
+    nameInput.value      = "";
+    boroughInput.value   = "";
+    buildFlowerGrid();
+    buildRegionChips();
+    applyFilters(); // re-renders
+  }
+
+  const prevId     = state.selectedId;
+  state.selectedId = tree.id;
+
+  // Diff-update markers for the two affected markers only
+  if (prevId !== null && state.markersById.has(String(prevId))) {
+    const prevTree = state.allTrees.find(t => String(t.id) === String(prevId));
+    if (prevTree) state.markersById.get(String(prevId)).setStyle(markerStyle(prevTree, false));
+  }
+  const marker = state.markersById.get(String(tree.id));
+  if (marker) marker.setStyle(markerStyle(tree, true));
+
+  // Update card highlighting
+  renderCards();
+
+  if (flyTo && Number.isFinite(tree.lat) && Number.isFinite(tree.lon)) {
+    map.flyTo([tree.lat, tree.lon], Math.max(map.getZoom(), 16), { duration: 0.7 });
+    // Open popup after flyTo completes
+    marker?.on("moveend", function openAfterFly() {
+      marker.openPopup();
+      marker.off("moveend", openAfterFly);
+    });
+    map.once("moveend", () => marker?.openPopup());
+  } else {
+    marker?.openPopup();
+  }
+}
+
+// ─── Region sheet ─────────────────────────────────────────────
+function rankedRegionTrees(region) {
+  return state.allTrees
+    .filter(t => t.region.toLowerCase() === region.toLowerCase())
+    .map(t => ({ ...t, ...getVoteTotals(t.id), myVote: getMyVote(t.id) }))
+    .sort((a, b) =>
+      (b.score - a.score) ||
+      (b.upvotes - a.upvotes) ||
+      a.common_name.localeCompare(b.common_name)
+    );
+}
+
+function openSheetForRegion(region) {
+  const spots = rankedRegionTrees(region);
+  sheetTitleEl.textContent = `${region} London`;
+  sheetSubEl.textContent   = `${spots.length} spot${spots.length === 1 ? "" : "s"} · sorted by community love`;
+
+  if (!spots.length) {
+    sheetListEl.innerHTML = `<div class="empty">No places found in this area yet.</div>`;
+    sheetEl.classList.add("open");
+    return;
+  }
+
+  const fragment = document.createDocumentFragment();
+  spots.forEach(t => {
+    const card = document.createElement("div");
+    card.className = "sheet-card";
+    card.innerHTML = `
+      <div class="sheet-card-top">
+        <div>
+          <div class="sheet-name">${esc(t.common_name)}</div>
+          <div class="sheet-meta">
+            ${t.location ? `${esc(t.location)}<br>` : ""}
+            ${t.borough ? `${esc(t.borough)} · ` : ""}${esc(t.bloom_period || "Spring")}
+          </div>
+        </div>
+      </div>
+      <div class="vote-row">
+        <button class="vote-btn up ${t.myVote === 1  ? "active up"   : ""}" data-spot="${esc(t.id)}" data-vote="1"  type="button">👍 <span>${t.upvotes}</span></button>
+        <button class="vote-btn down ${t.myVote === -1 ? "active down" : ""}" data-spot="${esc(t.id)}" data-vote="-1" type="button">👎 <span>${t.downvotes}</span></button>
+        <span class="score-pill">${t.score >= 0 ? "+" : ""}${t.score}</span>
+        ${Number.isFinite(t.lat) && Number.isFinite(t.lon)
+          ? `<button class="view-map-btn" data-id="${esc(t.id)}" type="button">🗺 Map</button>
+             <a class="sheet-link" href="${mapsUrl(t.lat, t.lon)}" target="_blank" rel="noopener noreferrer">Open in Maps ↗</a>`
+          : ""}
+      </div>`;
+    fragment.appendChild(card);
+  });
+
+  sheetListEl.replaceChildren(fragment);
+
+  // Wire up vote buttons
+  sheetListEl.querySelectorAll(".vote-btn").forEach(btn => {
+    btn.addEventListener("click", () => castVote(btn.dataset.spot, Number(btn.dataset.vote)));
+  });
+
+  // Wire up "Map" buttons — flies to the spot and closes the sheet
+  sheetListEl.querySelectorAll(".view-map-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      closeSheet();
+      selectTree(btn.dataset.id, true);
+    });
+  });
+
+  sheetEl.classList.add("open");
+}
+
+function closeSheet() {
+  sheetEl.classList.remove("open");
+}
+
+// ─── Reset ────────────────────────────────────────────────────
+function resetFilters() {
+  state.filters      = { month: "all", name: "", borough: "" };
+  state.selectedId   = null;
+  state.activeRegion = "";
+  nameInput.value    = "";
+  boroughInput.value = "";
+
+  document.querySelectorAll(".month-chip").forEach(b => b.classList.remove("active"));
+  document.querySelector('.month-chip[data-month="all"]')?.classList.add("active");
+
+  buildFlowerGrid();
+  buildRegionChips();
+  closeSheet();
+  applyFilters();
+  map.fitBounds(LONDON_BOUNDS, { padding: [24, 24] });
+}
+
+// ─── Map init ─────────────────────────────────────────────────
+function initMap() {
+  map = L.map("map", {
+    zoomControl:        true,
+    preferCanvas:       true,
+    maxBounds:          LONDON_BOUNDS,
+    maxBoundsViscosity: 1.0,
+    minZoom:            10,
+    maxZoom:            18,
+  });
+
+  map.fitBounds(LONDON_BOUNDS);
+
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    maxZoom:     19,
+    attribution: "&copy; OpenStreetMap contributors",
+  }).addTo(map);
+
+  markerGroup = L.layerGroup().addTo(map);
+
+  // Close popup / deselect when clicking empty map
+  map.on("click", e => {
+    if (!e.originalEvent.target.closest(".leaflet-marker-pane, .leaflet-overlay-pane")) {
+      if (state.selectedId !== null) {
+        const prev = state.allTrees.find(t => String(t.id) === String(state.selectedId));
+        if (prev) state.markersById.get(String(prev.id))?.setStyle(markerStyle(prev, false));
+        state.selectedId = null;
+        renderCards();
+      }
+    }
+  });
+}
+
+// ─── Boot ─────────────────────────────────────────────────────
+window.addEventListener("load", async () => {
+  initMap();
+  buildFlowerGrid();
+  buildRegionChips();
+
+  document.querySelectorAll(".month-chip").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".month-chip").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      state.filters.month = btn.dataset.month;
+      applyFilters();
+    });
+  });
+
+  nameInput.addEventListener("input", () => {
+    state.filters.name = nameInput.value.trim();
+    buildFlowerGrid();
+    scheduleApplyFilters();
+  });
+
+  boroughInput.addEventListener("input", () => {
+    state.filters.borough = boroughInput.value.trim();
+    scheduleApplyFilters();
+  });
+
+  document.getElementById("clearFiltersBtn").addEventListener("click", resetFilters);
+  document.getElementById("closeSheetBtn").addEventListener("click", closeSheet);
+
+  // Keyboard: Escape closes sheet
+  document.addEventListener("keydown", e => {
+    if (e.key === "Escape") closeSheet();
+  });
+
+  await fetchWeather();
+  await fetchTrees();
+  await fetchVoteTotals();
+  await fetchMyVotes();
+  render();
+});

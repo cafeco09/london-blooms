@@ -897,44 +897,41 @@
   }
 
   async function fetchTrees() {
-    statusEl.textContent = "Loading trees…";
+  statusEl.textContent = "Loading trees…";
 
-    const pageSize = 1000;
-    let from = 0;
-    let allRows = [];
+  const targetSpecies = [
+    "Cherry",
+    "Cherry Plum",
+    "Japanese Cherry",
+    "Magnolia",
+    "Crab Apple",
+    "Hawthorn",
+    "Midland Hawthorn",
+    "Pear",
+    "Apple",
+    "Blackthorn",
+    "Rowan"
+  ];
 
-    while (true) {
-      const { data, error } = await db
-        .from(TABLE_NAME)
-        .select("id, borough, lat, lon, common_name, location, bloom_period")
-        .not("lat", "is", null)
-        .not("lon", "is", null)
-        .order("id", { ascending: true })
-        .range(from, from + pageSize - 1);
+  const { data, error } = await db
+    .from(TABLE_NAME)
+    .select("id, borough, lat, lon, common_name, location, bloom_period")
+    .in("common_name", targetSpecies)
+    .not("lat", "is", null)
+    .not("lon", "is", null)
+    .not("bloom_period", "is", null)
+    .limit(30000);
 
-      if (error) {
-        statusEl.textContent = `Couldn't load trees: ${error.message || "unknown error"}`;
-        console.error("fetchTrees error:", error);
-        return;
-      }
-
-      const rows = data || [];
-      allRows = allRows.concat(rows);
-
-      if (rows.length < pageSize) break;
-      from += pageSize;
-    }
-
-    state.allTrees = allRows.map(normaliseRow);
-
-    console.log("Loaded rows:", state.allTrees.length);
-    console.log("Unique ids:", new Set(state.allTrees.map(t => t.id)).size);
-    console.log("Species found:", [...new Set(state.allTrees.map(t => t.common_name))].sort());
-
-    populateBoroughList();
-    applyFilters();
+  if (error) {
+    statusEl.textContent = `Couldn't load trees: ${error.message || "unknown error"}`;
+    console.error("fetchTrees error:", error);
+    return;
   }
 
+  state.allTrees = (data || []).map(normaliseRow);
+  populateBoroughList();
+  applyFilters();
+}
   async function fetchVoteTotals() {
     const { data, error } = await db.from("spot_vote_totals").select("*");
     if (error) {

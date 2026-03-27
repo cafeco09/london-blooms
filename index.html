@@ -694,10 +694,13 @@
         transform: translateY(100%);
         transition: transform 0.35s cubic-bezier(0.32,0.72,0,1);
         box-shadow: 0 -8px 32px rgba(42,31,26,0.12);
+        /* Prevent closed sidebar from blocking map touches */
+        pointer-events: none;
       }
 
       #sidebar.open {
         transform: translateY(0);
+        pointer-events: auto;
       }
 
       /* Drag handle */
@@ -1312,7 +1315,11 @@
     nearbyResultsListEl.innerHTML = `<div class="searchedAround"><strong>Searched around:</strong><br>${searchedLabel}</div>${nearest.map(t => `<div class="nearbyCard" data-id="${esc(t.id)}"><div class="nearbyName">${esc(t.common_name)}</div><div class="nearbyMeta">${t.location?`${esc(t.location)}<br>`:""}${t.borough?`${esc(t.borough)}<br>`:""}<strong>Coords:</strong> ${Number(t.lat).toFixed(5)}, ${Number(t.lon).toFixed(5)}</div><div class="nearbyMiles">${t.distanceMiles.toFixed(1)} miles away</div></div>`).join("")}`;
     nearbyResultsEl.style.display = "block";
     nearbyResultsListEl.querySelectorAll(".nearbyCard").forEach(card => {
-      card.addEventListener("click", () => { selectTree(card.dataset.id, true); if (isMobile()) closeSidebar(); });
+      card.addEventListener("click", () => {
+        if (isMobile()) closeSidebar();
+        // Small delay so sidebar is out of the way before popup fires
+        setTimeout(() => selectTree(card.dataset.id, true), isMobile() ? 360 : 0);
+      });
     });
   }
 
@@ -1505,7 +1512,8 @@
     map.on("popupopen", () => {
       if (window.innerWidth <= 640) {
         insightsPanelEl.classList.add("popup-open");
-        closeSidebar();
+        // Defer sidebar close so it doesn't interfere with popup rendering
+        setTimeout(closeSidebar, 50);
       }
     });
 

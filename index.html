@@ -10,7 +10,11 @@
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
@@ -302,31 +306,6 @@
       height: 100%;
     }
 
-    #mapInfo {
-      position: absolute;
-      top: 14px;
-      left: 14px;
-      z-index: 400;
-      background: rgba(255, 251, 252, 0.92);
-      backdrop-filter: blur(8px);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 11px 14px;
-      font-size: 0.78rem;
-      color: var(--soil);
-      line-height: 1.45;
-      box-shadow: 0 5px 18px var(--shadow);
-      pointer-events: none;
-    }
-
-    #mapInfo strong {
-      display: block;
-      font-family: var(--font-display);
-      font-size: 1rem;
-      font-weight: 700;
-      color: var(--bark);
-    }
-
     .leaflet-popup-content-wrapper {
       border-radius: 14px !important;
       border: 1px solid var(--border) !important;
@@ -422,6 +401,22 @@
       text-decoration: none;
     }
 
+    .marker-cluster-small,
+    .marker-cluster-medium,
+    .marker-cluster-large {
+      background: rgba(201, 92, 118, 0.16) !important;
+    }
+
+    .marker-cluster-small div,
+    .marker-cluster-medium div,
+    .marker-cluster-large div {
+      background: rgba(201, 92, 118, 0.88) !important;
+      color: white !important;
+      font-family: var(--font-body) !important;
+      font-weight: 700 !important;
+      border: 2px solid white;
+    }
+
     @media (max-width: 760px) {
       #main {
         flex-direction: column;
@@ -506,7 +501,14 @@
 
       <div class="filterLabel">Location</div>
       <div class="inputs">
-        <input id="locationInput" type="text" placeholder="Search borough, park, street or place…" autocomplete="off" />
+        <input
+          id="locationInput"
+          type="text"
+          placeholder="Search borough, park, street or place…"
+          autocomplete="off"
+          list="locationSuggestions"
+        />
+        <datalist id="locationSuggestions"></datalist>
       </div>
 
       <button id="resetBtn" type="button">Reset filters</button>
@@ -516,11 +518,6 @@
 
   <div id="mapWrap">
     <div id="map"></div>
-
-    <div id="mapInfo">
-      <strong>Explore the map</strong>
-      Type a location on the left, then click a blossom marker to vote.
-    </div>
   </div>
 </div>
 
@@ -530,6 +527,8 @@
   const TABLE_NAME = "spring_trees";
   const WEATHER_URL = "https://api.open-meteo.com/v1/forecast?latitude=51.5074&longitude=-0.1278&daily=temperature_2m_mean&current=temperature_2m&timezone=Europe%2FLondon&forecast_days=1&past_days=7";
   const PER_SPECIES_LIMIT = 220;
+  const SEARCH_RADIUS_MILES = 5;
+  const GEOCODE_DEBOUNCE_MS = 450;
 
   const FLOWERS = [
     { icon:"🌸", name:"Cherry" },
@@ -577,13 +576,17 @@
     votesBySpot: new Map(),
     myVotesBySpot: new Map(),
     hasInitialFit: false,
-    filterDebounce: null
+    filterDebounce: null,
+    geocodeDebounce: null,
+    searchCenter: null,
+    searchMode: "none"
   };
 
-  let map, markerLayer, LONDON_BOUNDS;
+  let map, markerClusterLayer, LONDON_BOUNDS;
 
   const flowerGridEl = document.getElementById("flowerGrid");
   const locationInput = document.getElementById("locationInput");
+  const locationSuggestionsEl = document.getElementById("locationSuggestions");
   const statusEl = document.getElementById("statusBar");
   const cTreesEl = document.getElementById("cTrees");
   const cPlacesEl = document.getElementById("cPlaces");
@@ -640,6 +643,17 @@
     return Object.keys(SPECIES_COLORS).find(k => k !== "default" && n.includes(k)) || "default";
   }
 
+  function flowerEmoji(name) {
+    const n = String(name || "").toLowerCase();
+    if (n.includes("magnolia")) return "🌺";
+    if (n.includes("apple")) return "🌼";
+    if (n.includes("hawthorn")) return "🌿";
+    if (n.includes("pear")) return "🍐";
+    if (n.includes("rowan")) return "🌳";
+    if (n.includes("plum")) return "🟣";
+    return "🌸";
+  }
+
   function markerStyle(tree, isSelected = false) {
     const c = SPECIES_COLORS[speciesKey(tree.common_name)] || SPECIES_COLORS.default;
     return {
@@ -651,12 +665,53 @@
     };
   }
 
+  function createTreeIcon(tree, isSelected = false) {
+    const c = SPECIES_COLORS[speciesKey(tree.common_name)] || SPECIES_COLORS.default;
+    const size = isSelected ? 24 : 20;
+    const emoji = flowerEmoji(tree.common_name);
+
+    return L.divIcon({
+      className: "",
+      iconSize: [size, size],
+      iconAnchor: [size / 2, size / 2],
+      popupAnchor: [0, -size / 2],
+      html: `
+        <div style="
+          width:${size}px;
+          height:${size}px;
+          border-radius:50%;
+          background:${c.fill};
+          border:${isSelected ? 3 : 2}px solid ${isSelected ? "#ffffff" : c.stroke};
+          display:flex;
+          align-items:center;
+          justify-content:center;
+          font-size:${isSelected ? 12 : 11}px;
+          box-shadow:0 2px 8px rgba(0,0,0,0.14);
+        ">${emoji}</div>
+      `
+    });
+  }
+
   function getVoteTotals(id) {
     return state.votesBySpot.get(String(id)) || { upvotes: 0, downvotes: 0, score: 0 };
   }
 
   function getMyVote(id) {
     return state.myVotesBySpot.get(String(id)) || 0;
+  }
+
+  function milesBetween(lat1, lon1, lat2, lon2) {
+    const R = 3958.8;
+    const toRad = d => d * Math.PI / 180;
+
+    const dLat = toRad(lat2 - lat1);
+    const dLon = toRad(lon2 - lon1);
+
+    const a =
+      Math.sin(dLat / 2) ** 2 +
+      Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
+
+    return 2 * R * Math.asin(Math.sqrt(a));
   }
 
   function buildFlowerGrid() {
@@ -676,9 +731,21 @@
         const off = state.filters.name.toLowerCase() === name.toLowerCase();
         state.filters.name = off ? "" : name;
         buildFlowerGrid();
-        applyFilters();
+        handleLocationSearch();
       });
     });
+  }
+
+  function buildLocationSuggestions() {
+    const values = new Set();
+
+    state.allTrees.forEach(t => {
+      if (t.location && t.location.trim()) values.add(t.location.trim());
+      if (t.borough && t.borough.trim()) values.add(t.borough.trim());
+    });
+
+    const sorted = [...values].sort((a, b) => a.localeCompare(b)).slice(0, 500);
+    locationSuggestionsEl.innerHTML = sorted.map(v => `<option value="${esc(v)}"></option>`).join("");
   }
 
   async function fetchWeather() {
@@ -725,6 +792,29 @@
     }
   }
 
+  async function geocodeLocation(query) {
+    const q = String(query || "").trim();
+    if (!q) return null;
+
+    try {
+      const url = `https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&countrycodes=gb&q=${encodeURIComponent(q)}`;
+      const res = await fetch(url, { headers: { "Accept": "application/json" } });
+      if (!res.ok) return null;
+
+      const data = await res.json();
+      if (!Array.isArray(data) || !data.length) return null;
+
+      return {
+        lat: Number(data[0].lat),
+        lon: Number(data[0].lon),
+        label: data[0].display_name || q
+      };
+    } catch (err) {
+      console.warn("Geocode failed:", err);
+      return null;
+    }
+  }
+
   async function fetchTrees() {
     statusEl.textContent = "Loading blossoms…";
     const combined = [];
@@ -748,6 +838,7 @@
     }
 
     state.allTrees = combined.map(normaliseRow);
+    buildLocationSuggestions();
     applyFilters();
   }
 
@@ -820,23 +911,72 @@
     refreshPopupIfSelected(spotId);
   }
 
+  function baseFilteredTrees() {
+    return state.allTrees.filter(t =>
+      (state.filters.month === "all" || t.months.includes(state.filters.month)) &&
+      (!state.filters.name || t.common_name.toLowerCase().includes(state.filters.name.toLowerCase()))
+    );
+  }
+
   function applyFilters() {
     const q = state.filters.location.toLowerCase().trim();
+    const base = baseFilteredTrees();
 
-    state.visibleTrees = state.allTrees.filter(t =>
-      (state.filters.month === "all" || t.months.includes(state.filters.month)) &&
-      (!state.filters.name || t.common_name.toLowerCase().includes(state.filters.name.toLowerCase())) &&
-      (
-        !q ||
+    if (!q) {
+      state.visibleTrees = base;
+      state.searchMode = "none";
+    } else {
+      const textMatches = base.filter(t =>
         t.location.toLowerCase().includes(q) ||
         t.borough.toLowerCase().includes(q) ||
         t.common_name.toLowerCase().includes(q)
-      )
-    );
+      );
+
+      if (textMatches.length > 0) {
+        state.visibleTrees = textMatches;
+        state.searchMode = "text";
+      } else if (state.searchCenter) {
+        state.visibleTrees = base.filter(t => {
+          if (!Number.isFinite(t.lat) || !Number.isFinite(t.lon)) return false;
+          return milesBetween(state.searchCenter.lat, state.searchCenter.lon, t.lat, t.lon) <= SEARCH_RADIUS_MILES;
+        });
+        state.searchMode = "radius";
+      } else {
+        state.visibleTrees = [];
+        state.searchMode = "none";
+      }
+    }
 
     renderStats();
     renderStatus();
     renderMarkers();
+  }
+
+  async function handleLocationSearch() {
+    const q = state.filters.location.trim();
+
+    clearTimeout(state.geocodeDebounce);
+    state.searchCenter = null;
+    state.searchMode = "none";
+
+    applyFilters();
+
+    if (!q) return;
+    if (state.visibleTrees.length > 0) return;
+
+    state.geocodeDebounce = setTimeout(async () => {
+      const centre = await geocodeLocation(q);
+      if (!centre) {
+        state.searchCenter = null;
+        state.searchMode = "none";
+        applyFilters();
+        return;
+      }
+
+      state.searchCenter = centre;
+      state.searchMode = "radius";
+      applyFilters();
+    }, GEOCODE_DEBOUNCE_MS);
   }
 
   function renderStats() {
@@ -853,8 +993,23 @@
       return;
     }
 
+    if (!state.filters.location.trim()) {
+      statusEl.textContent = `${state.visibleTrees.length.toLocaleString()} blossom spots on the map`;
+      return;
+    }
+
     if (!state.visibleTrees.length) {
       statusEl.textContent = "No blossom markers match this search.";
+      return;
+    }
+
+    if (state.searchMode === "text") {
+      statusEl.textContent = `${state.visibleTrees.length.toLocaleString()} text-matched blossom spots`;
+      return;
+    }
+
+    if (state.searchMode === "radius" && state.searchCenter) {
+      statusEl.textContent = `${state.visibleTrees.length.toLocaleString()} blossom spots within ${SEARCH_RADIUS_MILES} miles`;
       return;
     }
 
@@ -878,19 +1033,8 @@
         <div class="popupScore">Community score ${votes.score >= 0 ? "+" : ""}${votes.score}</div>
 
         <div class="popupVotes">
-          <button
-            class="popupVoteBtn ${mine === 1 ? "active up" : ""}"
-            data-spot="${esc(t.id)}"
-            data-vote="1"
-            type="button"
-          >👍 <span>${votes.upvotes}</span></button>
-
-          <button
-            class="popupVoteBtn ${mine === -1 ? "active down" : ""}"
-            data-spot="${esc(t.id)}"
-            data-vote="-1"
-            type="button"
-          >👎 <span>${votes.downvotes}</span></button>
+          <button class="popupVoteBtn ${mine === 1 ? "active up" : ""}" data-spot="${esc(t.id)}" data-vote="1" type="button">👍 <span>${votes.upvotes}</span></button>
+          <button class="popupVoteBtn ${mine === -1 ? "active down" : ""}" data-spot="${esc(t.id)}" data-vote="-1" type="button">👎 <span>${votes.downvotes}</span></button>
         </div>
 
         <div class="popupLinks">
@@ -906,7 +1050,7 @@
 
     for (const id of state.markersById.keys()) {
       if (!newIds.has(id)) {
-        markerLayer.removeLayer(state.markersById.get(id));
+        markerClusterLayer.removeLayer(state.markersById.get(id));
         state.markersById.delete(id);
       }
     }
@@ -919,12 +1063,17 @@
 
       if (state.markersById.has(id)) {
         const marker = state.markersById.get(id);
-        marker.setStyle(markerStyle(t, isSelected));
+        marker.setIcon(createTreeIcon(t, isSelected));
         marker.setPopupContent(popupHtml(t));
       } else {
-        const marker = L.circleMarker([t.lat, t.lon], markerStyle(t, isSelected)).bindPopup(popupHtml(t));
+        const marker = L.marker([t.lat, t.lon], {
+          icon: createTreeIcon(t, isSelected),
+          keyboard: false
+        }).bindPopup(popupHtml(t));
+
         marker.on("click", () => selectTree(t.id, false));
-        markerLayer.addLayer(marker);
+
+        markerClusterLayer.addLayer(marker);
         state.markersById.set(id, marker);
       }
 
@@ -959,12 +1108,12 @@
     if (prevId !== null && state.markersById.has(String(prevId))) {
       const prevTree = state.allTrees.find(t => String(t.id) === String(prevId));
       if (prevTree) {
-        state.markersById.get(String(prevId)).setStyle(markerStyle(prevTree, false));
+        state.markersById.get(String(prevId)).setIcon(createTreeIcon(prevTree, false));
       }
     }
 
     const marker = state.markersById.get(String(tree.id));
-    if (marker) marker.setStyle(markerStyle(tree, true));
+    if (marker) marker.setIcon(createTreeIcon(tree, true));
 
     if (flyTo && Number.isFinite(tree.lat) && Number.isFinite(tree.lon)) {
       map.flyTo([tree.lat, tree.lon], Math.max(map.getZoom(), 15), { duration: 0.7 });
@@ -977,8 +1126,11 @@
   function resetFilters() {
     state.filters = { month: "all", name: "", location: "" };
     state.selectedId = null;
+    state.searchCenter = null;
+    state.searchMode = "none";
 
     locationInput.value = "";
+
     document.querySelectorAll("#monthChips .chip").forEach(btn => btn.classList.remove("active"));
     document.querySelector('#monthChips .chip[data-month="all"]')?.classList.add("active");
 
@@ -1009,13 +1161,21 @@
       attribution: "&copy; OpenStreetMap contributors"
     }).addTo(map);
 
-    markerLayer = L.layerGroup().addTo(map);
+    markerClusterLayer = L.markerClusterGroup({
+      showCoverageOnHover: false,
+      spiderfyOnMaxZoom: true,
+      zoomToBoundsOnClick: true,
+      disableClusteringAtZoom: 16,
+      maxClusterRadius: 50
+    });
+
+    map.addLayer(markerClusterLayer);
 
     map.on("popupclose", () => {
       if (state.selectedId !== null) {
         const prev = state.allTrees.find(t => String(t.id) === String(state.selectedId));
         if (prev) {
-          state.markersById.get(String(prev.id))?.setStyle(markerStyle(prev, false));
+          state.markersById.get(String(prev.id))?.setIcon(createTreeIcon(prev, false));
         }
         state.selectedId = null;
       }
@@ -1046,14 +1206,14 @@
         document.querySelectorAll("#monthChips .chip").forEach(b => b.classList.remove("active"));
         btn.classList.add("active");
         state.filters.month = btn.dataset.month;
-        applyFilters();
+        handleLocationSearch();
       });
     });
 
     locationInput.addEventListener("input", () => {
       state.filters.location = locationInput.value.trim();
       clearTimeout(state.filterDebounce);
-      state.filterDebounce = setTimeout(applyFilters, 180);
+      state.filterDebounce = setTimeout(handleLocationSearch, 180);
     });
 
     document.getElementById("resetBtn").addEventListener("click", resetFilters);

@@ -1317,8 +1317,7 @@
     nearbyResultsListEl.querySelectorAll(".nearbyCard").forEach(card => {
       card.addEventListener("click", () => {
         if (isMobile()) closeSidebar();
-        // Small delay so sidebar is out of the way before popup fires
-        setTimeout(() => selectTree(card.dataset.id, true), isMobile() ? 360 : 0);
+        selectTree(card.dataset.id, true);
       });
     });
   }

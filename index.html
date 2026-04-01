@@ -15,6 +15,8 @@
   <meta property="og:title" content="London Blooms 🌸 — Find Cherry Blossoms Near You">
   <meta property="og:description" content="Discover blossom spots across London with bloom timing, weather, and a community-updated map.">
   <meta property="og:image" content="https://cafeco09.github.io/london-blooms/preview-image-v2.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
 
   <!-- Twitter / X -->
   <meta name="twitter:card" content="summary_large_image">
@@ -50,7 +52,6 @@
       --soil: #5d454c;
       --cream: #ffffff;
       --border: #f1e1e6;
-      --border-strong: #e6c8d1;
       --shadow: rgba(180,100,120,0.10);
       --sidebar-w: 380px;
       --header-h: 60px;
@@ -460,8 +461,7 @@
       flex-wrap: wrap;
     }
 
-    #resetBtn,
-    .softBtn {
+    #resetBtn {
       padding: 10px 12px;
       border: 1.5px solid var(--border);
       border-radius: 12px;
@@ -567,12 +567,40 @@
       -webkit-tap-highlight-color: transparent;
     }
 
+    .mapHint {
+      position: absolute;
+      top: 14px;
+      left: 14px;
+      z-index: 390;
+      max-width: min(360px, calc(100% - 28px));
+      background: rgba(255,255,255,0.92);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      box-shadow: 0 10px 28px rgba(42,31,26,0.10);
+      padding: 10px 12px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--soil);
+      line-height: 1.45;
+      transition: opacity 0.2s ease, transform 0.2s ease;
+    }
+
+    .mapHint.hidden {
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(-4px);
+    }
+
     #insightsPanel {
       position: absolute;
       top: 14px;
       right: 14px;
       z-index: 400;
-      width: min(310px, calc(100% - 28px));
+      width: min(280px, calc(100% - 28px));
+      max-height: min(72vh, 560px);
+      overflow-y: auto;
       background: rgba(255,255,255,0.94);
       backdrop-filter: blur(14px);
       -webkit-backdrop-filter: blur(14px);
@@ -651,77 +679,6 @@
       display: block;
       margin-bottom: 4px;
       color: var(--bark);
-    }
-
-    .placeList {
-      display: flex;
-      flex-direction: column;
-      gap: 9px;
-      margin-top: 8px;
-    }
-
-    .placeCard {
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 11px 12px;
-      background: #fff;
-      cursor: pointer;
-      transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
-      box-shadow: 0 6px 16px rgba(0,0,0,0.03);
-    }
-
-    .placeCard:hover {
-      border-color: var(--blush);
-      transform: translateY(-1px);
-      box-shadow: 0 8px 18px rgba(0,0,0,0.04);
-    }
-
-    .placeTop {
-      display: flex;
-      justify-content: space-between;
-      gap: 10px;
-      margin-bottom: 4px;
-      align-items: flex-start;
-    }
-
-    .placeName {
-      font-family: var(--font-display);
-      font-size: 1rem;
-      font-weight: 700;
-      color: var(--bark);
-      line-height: 1.1;
-    }
-
-    .placeTag {
-      font-size: 0.67rem;
-      font-weight: 700;
-      color: var(--rose);
-      background: var(--petal);
-      border: 1px solid var(--blush);
-      border-radius: 999px;
-      padding: 3px 8px;
-      white-space: nowrap;
-    }
-
-    .placeMeta {
-      font-size: 0.73rem;
-      color: #8f7b80;
-      line-height: 1.45;
-    }
-
-    .panelActionBtn {
-      margin-top: 12px;
-      width: 100%;
-      border: none;
-      border-radius: 13px;
-      background: linear-gradient(135deg, var(--rose), var(--deep-rose));
-      color: #fff;
-      padding: 11px 14px;
-      font-family: var(--font-body);
-      font-size: 0.78rem;
-      font-weight: 700;
-      cursor: pointer;
-      box-shadow: 0 10px 24px rgba(201,92,118,0.22);
     }
 
     .leaflet-popup-content-wrapper {
@@ -903,13 +860,22 @@
         font-size: 0.7rem;
       }
 
+      #mapHint {
+        top: 10px;
+        left: 10px;
+        right: 10px;
+        max-width: none;
+        font-size: 0.75rem;
+        padding: 9px 11px;
+      }
+
       #insightsPanel {
         top: auto;
         bottom: 86px;
         right: 10px;
         left: 10px;
         width: auto;
-        max-height: 35vh;
+        max-height: 32vh;
         overflow-y: auto;
         border-radius: 16px;
       }
@@ -1079,9 +1045,13 @@
   <div id="mapWrap">
     <div id="map"></div>
 
-    <div id="insightsPanel">
+    <div id="mapHint" class="mapHint">
+      🌸 Tap a flower to view spot details and community votes
+    </div>
+
+    <div id="insightsPanel" class="hidden" aria-live="polite">
       <div id="insightsTitle">Spot details</div>
-      <div class="insightSub">Select a blossom marker to see location details and community votes.</div>
+      <div class="insightSub">Location details and community votes for the selected spot.</div>
       <div id="insightsBody"></div>
     </div>
   </div>
@@ -1171,6 +1141,7 @@
   const bloomBadgeEl = document.getElementById("bloomBadge");
   const insightsBodyEl = document.getElementById("insightsBody");
   const insightsPanelEl = document.getElementById("insightsPanel");
+  const mapHintEl = document.getElementById("mapHint");
   const sidebarEl = document.getElementById("sidebar");
   const primaryCtaBtn = document.getElementById("primaryCtaBtn");
   const sidebarOverlayEl = document.getElementById("sidebarOverlay");
@@ -1187,6 +1158,16 @@
   function closeSidebar() {
     sidebarEl.classList.remove("open");
     sidebarOverlayEl.classList.remove("visible");
+  }
+
+  function showInsightsPanel() {
+    insightsPanelEl.classList.remove("hidden");
+    mapHintEl?.classList.add("hidden");
+  }
+
+  function hideInsightsPanel() {
+    insightsPanelEl.classList.add("hidden");
+    mapHintEl?.classList.remove("hidden");
   }
 
   sidebarOverlayEl.addEventListener("click", closeSidebar);
@@ -1760,63 +1741,17 @@
 
   function renderInsightsForSelected() {
     if (!state.selectedId) {
-      const featured = state.visibleTrees
-        .filter(t => Number.isFinite(t.lat) && Number.isFinite(t.lon))
-        .slice(0, 3);
-
-      if (!featured.length) {
-        insightsBodyEl.innerHTML = `
-          <div class="insightRow">
-            <span class="insightLabel">Status</span>
-            <span class="insightValue">No spots visible</span>
-          </div>
-        `;
-        return;
-      }
-
-      insightsBodyEl.innerHTML = `
-        <div class="placeList">
-          ${featured.map(t => {
-            const votes = getVoteTotals(t.id);
-            const totalVotes = totalVotesFor(t.id);
-            const tag =
-              totalVotes >= 8 ? "Community favourite" :
-              totalVotes >= 3 ? "Recently noticed" :
-              "Worth exploring";
-
-            return `
-              <div class="placeCard" data-place-id="${esc(t.id)}">
-                <div class="placeTop">
-                  <div class="placeName">${esc(t.common_name)}</div>
-                  <div class="placeTag">${tag}</div>
-                </div>
-                <div class="placeMeta">
-                  ${t.location ? `${esc(t.location)}<br>` : ""}
-                  ${t.borough ? `${esc(t.borough)}<br>` : ""}
-                  👍 ${votes.upvotes} community votes
-                </div>
-              </div>
-            `;
-          }).join("")}
-        </div>
-        <button class="panelActionBtn" type="button" id="openFiltersFromPanel">Browse nearby spots</button>
-      `;
-
-      insightsBodyEl.querySelectorAll("[data-place-id]").forEach(card => {
-        card.addEventListener("click", () => {
-          selectTree(card.dataset.placeId, true);
-        });
-      });
-
-      document.getElementById("openFiltersFromPanel")?.addEventListener("click", () => {
-        openSidebar();
-      });
-
+      insightsBodyEl.innerHTML = "";
+      hideInsightsPanel();
       return;
     }
 
     const tree = state.allTrees.find(t => String(t.id) === String(state.selectedId));
-    if (!tree) return;
+    if (!tree) {
+      insightsBodyEl.innerHTML = "";
+      hideInsightsPanel();
+      return;
+    }
 
     const votes = getVoteTotals(tree.id);
     const totalVotes = totalVotesFor(tree.id);
@@ -1858,13 +1793,15 @@
         </div>
       ` : ""}
 
-      <button class="panelActionBtn" type="button" id="voteSpotBtn">Vote on this spot</button>
+      <button class="panelActionBtn" type="button" id="voteSpotBtn" style="margin-top:12px;width:100%;border:none;border-radius:13px;background:linear-gradient(135deg,var(--rose),var(--deep-rose));color:#fff;padding:11px 14px;font-family:var(--font-body);font-size:0.78rem;font-weight:700;cursor:pointer;box-shadow:0 10px 24px rgba(201,92,118,0.22);">Vote on this spot</button>
     `;
 
     document.getElementById("voteSpotBtn")?.addEventListener("click", () => {
       const mine = getMyVote(tree.id);
       castVote(tree.id, mine === 1 ? 0 : 1);
     });
+
+    showInsightsPanel();
   }
 
   function refreshPopupIfSelected(spotId) {
@@ -1985,12 +1922,16 @@
 
     map.on("popupclose", () => {
       insightsPanelEl.classList.remove("popup-open");
+
       if (state.selectedId !== null) {
         const prev = state.allTrees.find(t => String(t.id) === String(state.selectedId));
-        if (prev) state.markersById.get(String(prev.id))?.setIcon(createTreeIcon(prev, false));
-        state.selectedId = null;
-        renderInsightsForSelected();
+        if (prev) {
+          state.markersById.get(String(prev.id))?.setIcon(createTreeIcon(prev, false));
+        }
       }
+
+      state.selectedId = null;
+      renderInsightsForSelected();
     });
 
     const ro = new ResizeObserver(() => map.invalidateSize());
@@ -2047,7 +1988,7 @@
   primaryCtaBtn.addEventListener("click", focusSearchExperience);
 
   const SHARE_URL  = "https://cafeco09.github.io/london-blooms/";
-  const SHARE_TEXT = "Find cherry blossoms blooming across London 🌸";
+  const SHARE_TEXT = "Find spring blossom spots across London 🌸";
 
   function toggleShareDropdown(e) {
     e.stopPropagation();
@@ -2096,6 +2037,7 @@
     buildFlowerGrid();
     renderInsightsForSelected();
     updateMobileCtaLabel();
+    hideInsightsPanel();
 
     document.querySelectorAll("#monthChips .chip").forEach(btn => {
       btn.addEventListener("click", () => {
@@ -2127,6 +2069,7 @@
     renderHeatmap();
     renderInsightsForSelected();
     updateMobileCtaLabel();
+    hideInsightsPanel();
   });
 </script>
 </body>

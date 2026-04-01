@@ -5,6 +5,24 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>London Blooms 🌸</title>
 
+  <!-- Primary Meta -->
+  <meta name="title" content="London Blooms 🌸 — Find Cherry Blossoms Near You">
+  <meta name="description" content="Discover the best blossom spots across London with live bloom status, weather, and a community-updated map.">
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://cafeco09.github.io/london-blooms/">
+  <meta property="og:title" content="London Blooms 🌸 — Find Cherry Blossoms Near You">
+  <meta property="og:description" content="Discover the best blossom spots across London with live bloom status, weather, and a community-updated map.">
+  <meta property="og:image" content="https://cafeco09.github.io/london-blooms/preview-image.jpg">
+
+  <!-- Twitter / X -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:url" content="https://cafeco09.github.io/london-blooms/">
+  <meta name="twitter:title" content="London Blooms 🌸 — Find Cherry Blossoms Near You">
+  <meta name="twitter:description" content="Discover the best blossom spots across London with live bloom status, weather, and a community-updated map.">
+  <meta name="twitter:image" content="https://cafeco09.github.io/london-blooms/preview-image.jpg">
+
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -119,6 +137,80 @@
     #supportBtn:hover {
       transform: translateY(-1px);
       box-shadow: 0 6px 18px rgba(0,0,0,0.14);
+    }
+
+    #shareBtn {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: var(--petal);
+      color: var(--rose);
+      border: 1.5px solid var(--blush);
+      font-family: var(--font-body);
+      font-size: 0.75rem;
+      font-weight: 700;
+      white-space: nowrap;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    #shareBtn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 18px rgba(201,92,118,0.18);
+    }
+
+    #shareDropdown {
+      position: absolute;
+      top: calc(var(--header-h) + 6px);
+      right: 16px;
+      z-index: 800;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      box-shadow: 0 10px 30px rgba(42,31,26,0.14);
+      padding: 6px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 180px;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(-6px);
+      transition: opacity 0.18s ease, transform 0.18s ease;
+    }
+
+    #shareDropdown.open {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateY(0);
+    }
+
+    .shareOption {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 9px 12px;
+      border-radius: 10px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--bark);
+      text-decoration: none;
+      cursor: pointer;
+      background: none;
+      border: none;
+      font-family: var(--font-body);
+      width: 100%;
+      text-align: left;
+      transition: background 0.12s ease;
+    }
+
+    .shareOption:hover { background: var(--petal); }
+
+    @media (max-width: 380px) {
+      #shareBtn span { display: none; }
     }
 
     /* ── MAIN LAYOUT ─────────────────────────────────── */
@@ -803,11 +895,26 @@
 
   <div id="headerRight">
     <span id="bloomBadge">Loading…</span>
+    <button id="shareBtn" type="button" aria-label="Share London Blooms" onclick="toggleShareDropdown(event)">
+      📤 <span>Share</span>
+    </button>
     <a id="supportBtn" href="https://buymeacoffee.com/anshdt" target="_blank" rel="noopener noreferrer">
       ☕ <span>Buy me a coffee</span>
     </a>
   </div>
 </header>
+
+<!-- Share dropdown -->
+<div id="shareDropdown" role="menu">
+  <button class="shareOption" id="shareNativeBtn" onclick="shareNative()" type="button">📱 Share via…</button>
+  <a class="shareOption" id="shareXBtn"
+     href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fcafeco09.github.io%2Flondon-blooms%2F&text=Find%20cherry%20blossoms%20blooming%20across%20London%20%F0%9F%8C%B8"
+     target="_blank" rel="noopener" onclick="closeShareDropdown()">𝕏 Share on X</a>
+  <a class="shareOption" id="shareFbBtn"
+     href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fcafeco09.github.io%2Flondon-blooms%2F"
+     target="_blank" rel="noopener" onclick="closeShareDropdown()">📘 Share on Facebook</a>
+  <button class="shareOption" id="shareCopyBtn" onclick="copyLink()" type="button">🔗 Copy link</button>
+</div>
 
 <!-- Mobile overlay -->
 <div id="sidebarOverlay"></div>
@@ -1541,6 +1648,46 @@
       if (!spotId || !vote) return;
       await castVote(spotId, vote);
     });
+  }
+
+  /* ── SHARE ─────────────────────────────────────────── */
+  const SHARE_URL  = "https://cafeco09.github.io/london-blooms/";
+  const SHARE_TEXT = "Find cherry blossoms blooming across London 🌸";
+
+  function toggleShareDropdown(e) {
+    e.stopPropagation();
+    document.getElementById("shareDropdown").classList.toggle("open");
+  }
+
+  function closeShareDropdown() {
+    document.getElementById("shareDropdown").classList.remove("open");
+  }
+
+  document.addEventListener("click", e => {
+    if (!e.target.closest("#shareDropdown") && !e.target.closest("#shareBtn")) {
+      closeShareDropdown();
+    }
+  });
+
+  async function shareNative() {
+    closeShareDropdown();
+    const data = { title: "London Blooms 🌸", text: SHARE_TEXT, url: SHARE_URL };
+    if (navigator.share && navigator.canShare(data)) {
+      try { await navigator.share(data); } catch (err) { if (err.name !== "AbortError") copyLink(); }
+    } else {
+      copyLink();
+    }
+  }
+
+  async function copyLink() {
+    closeShareDropdown();
+    try {
+      await navigator.clipboard.writeText(SHARE_URL);
+      const btn = document.getElementById("shareCopyBtn");
+      const orig = btn.textContent;
+      btn.textContent = "✅ Copied!";
+      setTimeout(() => { btn.textContent = orig; }, 2000);
+    } catch (_) {}
   }
 
   window.addEventListener("load", async () => {

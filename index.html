@@ -7,20 +7,20 @@
 
   <!-- Primary Meta -->
   <meta name="title" content="London Blooms 🌸 — Find Cherry Blossoms Near You">
-  <meta name="description" content="Discover the best blossom spots across London with live bloom status, weather, and a community-updated map.">
+  <meta name="description" content="Discover blossom spots across London with bloom timing, weather, and a community-updated map.">
 
   <!-- Open Graph / Facebook -->
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://cafeco09.github.io/london-blooms/">
   <meta property="og:title" content="London Blooms 🌸 — Find Cherry Blossoms Near You">
-  <meta property="og:description" content="Discover the best blossom spots across London with live bloom status, weather, and a community-updated map.">
+  <meta property="og:description" content="Discover blossom spots across London with bloom timing, weather, and a community-updated map.">
   <meta property="og:image" content="https://cafeco09.github.io/london-blooms/preview-image.png">
 
   <!-- Twitter / X -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:url" content="https://cafeco09.github.io/london-blooms/">
   <meta name="twitter:title" content="London Blooms 🌸 — Find Cherry Blossoms Near You">
-  <meta name="twitter:description" content="Discover the best blossom spots across London with live bloom status, weather, and a community-updated map.">
+  <meta name="twitter:description" content="Discover blossom spots across London with bloom timing, weather, and a community-updated map.">
   <meta name="twitter:image" content="https://cafeco09.github.io/london-blooms/preview-image.png">
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -41,17 +41,19 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --blush: #f2c4ce;
+      --blush: #f5d3db;
       --rose: #c95c76;
       --deep-rose: #8f3550;
-      --petal: #fff5f7;
-      --bark: #3a2a2e;
-      --soil: #5a4048;
+      --petal: #fff7f9;
+      --petal-2: #fffafb;
+      --bark: #35262a;
+      --soil: #5d454c;
       --cream: #ffffff;
-      --border: #f0dde3;
+      --border: #f1e1e6;
+      --border-strong: #e6c8d1;
       --shadow: rgba(180,100,120,0.10);
       --sidebar-w: 380px;
-      --header-h: 58px;
+      --header-h: 60px;
       --font-display: 'Cormorant Garamond', Georgia, serif;
       --font-body: 'DM Sans', system-ui, sans-serif;
     }
@@ -80,10 +82,10 @@
       justify-content: space-between;
       padding: 0 16px 0 18px;
       border-bottom: 1px solid var(--border);
-      background: rgba(255, 250, 252, 0.97);
-      backdrop-filter: blur(10px);
+      background: rgba(255, 250, 252, 0.96);
+      backdrop-filter: blur(12px);
       z-index: 600;
-      gap: 8px;
+      gap: 10px;
     }
 
     #headerTitle {
@@ -91,7 +93,7 @@
       align-items: center;
       gap: 8px;
       font-family: var(--font-display);
-      font-size: clamp(1.2rem, 4vw, 1.6rem);
+      font-size: clamp(1.25rem, 4vw, 1.7rem);
       font-weight: 600;
       color: var(--rose);
       white-space: nowrap;
@@ -112,69 +114,60 @@
       text-transform: uppercase;
       background: var(--rose);
       color: #fff;
-      padding: 5px 10px;
+      padding: 6px 10px;
       border-radius: 999px;
       white-space: nowrap;
+      box-shadow: 0 6px 20px rgba(201,92,118,0.20);
     }
 
-    #supportBtn {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      padding: 8px 12px;
-      border-radius: 999px;
-      background: #ffdd00;
-      color: #2b2200;
-      text-decoration: none;
-      font-size: 0.75rem;
-      font-weight: 700;
-      white-space: nowrap;
-      box-shadow: 0 4px 14px rgba(0,0,0,0.10);
-      transition: transform 0.15s ease, box-shadow 0.15s ease;
-    }
-
-    #supportBtn:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 6px 18px rgba(0,0,0,0.14);
-    }
-
+    #supportBtn,
     #shareBtn {
       display: inline-flex;
       align-items: center;
-      gap: 5px;
+      gap: 6px;
       padding: 8px 12px;
       border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      white-space: nowrap;
+      transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+    }
+
+    #supportBtn {
+      background: #ffdd00;
+      color: #2b2200;
+      text-decoration: none;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.10);
+    }
+
+    #supportBtn:hover,
+    #shareBtn:hover {
+      transform: translateY(-1px);
+    }
+
+    #shareBtn {
       background: var(--petal);
       color: var(--rose);
       border: 1.5px solid var(--blush);
       font-family: var(--font-body);
-      font-size: 0.75rem;
-      font-weight: 700;
-      white-space: nowrap;
       cursor: pointer;
       box-shadow: 0 4px 14px rgba(0,0,0,0.06);
-      transition: transform 0.15s ease, box-shadow 0.15s ease;
-    }
-
-    #shareBtn:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 6px 18px rgba(201,92,118,0.18);
     }
 
     #shareDropdown {
       position: absolute;
-      top: calc(var(--header-h) + 6px);
+      top: calc(var(--header-h) + 8px);
       right: 16px;
       z-index: 800;
       background: #fff;
       border: 1px solid var(--border);
-      border-radius: 14px;
-      box-shadow: 0 10px 30px rgba(42,31,26,0.14);
+      border-radius: 16px;
+      box-shadow: 0 14px 34px rgba(42,31,26,0.16);
       padding: 6px;
       display: flex;
       flex-direction: column;
       gap: 2px;
-      min-width: 180px;
+      min-width: 190px;
       opacity: 0;
       pointer-events: none;
       transform: translateY(-6px);
@@ -191,8 +184,8 @@
       display: flex;
       align-items: center;
       gap: 9px;
-      padding: 9px 12px;
-      border-radius: 10px;
+      padding: 10px 12px;
+      border-radius: 12px;
       font-size: 0.78rem;
       font-weight: 600;
       color: var(--bark);
@@ -207,10 +200,6 @@
     }
 
     .shareOption:hover { background: var(--petal); }
-
-    @media (max-width: 380px) {
-      #shareBtn span { display: none; }
-    }
 
     #main {
       flex: 1;
@@ -239,7 +228,7 @@
       left: 50%;
       transform: translateX(-50%);
       z-index: 700;
-      background: var(--rose);
+      background: linear-gradient(135deg, var(--rose), var(--deep-rose));
       color: #fff;
       border: none;
       border-radius: 999px;
@@ -248,20 +237,20 @@
       font-size: 0.84rem;
       font-weight: 700;
       cursor: pointer;
-      box-shadow: 0 8px 24px rgba(201,92,118,0.34);
+      box-shadow: 0 12px 30px rgba(201,92,118,0.34);
       white-space: nowrap;
-      transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.2s ease;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
     }
 
     #primaryCtaBtn:hover {
       transform: translateX(-50%) translateY(-2px);
-      box-shadow: 0 10px 28px rgba(201,92,118,0.42);
+      box-shadow: 0 14px 34px rgba(201,92,118,0.42);
     }
 
     #banner {
-      padding: 12px 14px;
+      padding: 14px 14px 13px;
       border-bottom: 1px solid var(--border);
-      background: linear-gradient(135deg, var(--petal) 0%, #fce8ef 100%);
+      background: linear-gradient(135deg, var(--petal) 0%, #fdf0f4 100%);
       flex-shrink: 0;
     }
 
@@ -272,23 +261,31 @@
     }
 
     #bloomEmoji {
-      font-size: 1.6rem;
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255,255,255,0.75);
+      font-size: 1.35rem;
       line-height: 1;
       flex-shrink: 0;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.9);
     }
 
     #bloomStageName {
       font-family: var(--font-display);
-      font-size: 1.1rem;
-      font-weight: 600;
+      font-size: 1.18rem;
+      font-weight: 700;
       color: var(--rose);
-      line-height: 1.1;
+      line-height: 1.05;
     }
 
     #bloomTemp {
-      font-size: 0.72rem;
+      font-size: 0.74rem;
       color: #8d7a7f;
-      margin-top: 2px;
+      margin-top: 3px;
     }
 
     #statsBar {
@@ -300,7 +297,7 @@
     }
 
     .statCell {
-      padding: 9px 6px;
+      padding: 11px 6px 10px;
       text-align: center;
       border-right: 1px solid var(--border);
     }
@@ -309,7 +306,7 @@
 
     .statNum {
       font-family: var(--font-display);
-      font-size: 1.3rem;
+      font-size: 1.42rem;
       font-weight: 700;
       color: var(--rose);
       line-height: 1;
@@ -320,19 +317,27 @@
       text-transform: uppercase;
       letter-spacing: 0.08em;
       color: #a38f93;
-      margin-top: 3px;
+      margin-top: 4px;
     }
 
     #filters {
       flex: 1;
       overflow-y: auto;
       overflow-x: hidden;
-      padding: 12px 14px;
+      padding: 14px;
       background: #fff;
     }
 
-    #filters::-webkit-scrollbar { width: 5px; }
+    #filters::-webkit-scrollbar { width: 6px; }
     #filters::-webkit-scrollbar-thumb { background: #ead7dd; border-radius: 999px; }
+
+    .sectionCard {
+      background: var(--petal-2);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 12px;
+      margin-bottom: 12px;
+    }
 
     .filterLabel {
       font-size: 0.64rem;
@@ -340,21 +345,21 @@
       letter-spacing: 0.09em;
       text-transform: uppercase;
       color: #af999e;
-      margin-bottom: 7px;
+      margin-bottom: 8px;
     }
 
     .chipGroup {
       display: flex;
       flex-wrap: wrap;
-      gap: 5px;
-      margin-bottom: 12px;
+      gap: 6px;
+      margin-bottom: 2px;
     }
 
     .chip {
       font-family: var(--font-body);
       font-size: 0.72rem;
       font-weight: 500;
-      padding: 5px 10px;
+      padding: 6px 10px;
       border-radius: 999px;
       border: 1.5px solid var(--border);
       background: #fff;
@@ -397,34 +402,36 @@
     }
 
     .inputWrap {
-      margin-bottom: 10px;
+      margin-bottom: 0;
     }
 
     #locationInput {
       width: 100%;
       font-family: var(--font-body);
       font-size: 0.84rem;
-      padding: 10px 12px;
+      padding: 11px 12px;
       border: 1.5px solid var(--border);
-      border-radius: 12px;
+      border-radius: 13px;
       background: #fff;
       outline: none;
       -webkit-appearance: none;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
     }
 
     #locationInput:focus {
       border-color: var(--blush);
+      box-shadow: 0 0 0 4px rgba(201,92,118,0.08);
     }
 
     .radiusRow {
-      margin-bottom: 12px;
+      margin-bottom: 0;
     }
 
     .radiusTop {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 6px;
+      margin-bottom: 8px;
     }
 
     .radiusValue {
@@ -442,18 +449,26 @@
     .miniHint {
       font-size: 0.72rem;
       color: #9a868a;
-      margin-top: 4px;
-      line-height: 1.4;
+      margin-top: 6px;
+      line-height: 1.45;
     }
 
-    #resetBtn {
-      padding: 9px 12px;
+    .actionRow {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+      flex-wrap: wrap;
+    }
+
+    #resetBtn,
+    .softBtn {
+      padding: 10px 12px;
       border: 1.5px solid var(--border);
-      border-radius: 10px;
+      border-radius: 12px;
       background: white;
-      color: #9e8880;
+      color: #8f7b80;
       font-size: 0.75rem;
-      font-weight: 600;
+      font-weight: 700;
       cursor: pointer;
       white-space: nowrap;
       -webkit-tap-highlight-color: transparent;
@@ -461,14 +476,15 @@
 
     #statusBar {
       font-size: 0.74rem;
-      color: #9a868a;
-      padding-top: 8px;
+      color: #8f7b80;
+      padding-top: 10px;
+      line-height: 1.45;
     }
 
     #nearbyResults {
-      margin-top: 12px;
+      margin-top: 14px;
       border-top: 1px solid var(--border);
-      padding-top: 12px;
+      padding-top: 14px;
     }
 
     #nearbyResultsTitle {
@@ -491,12 +507,13 @@
     .nearbyCard {
       background: #fff;
       border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 10px 11px;
+      border-radius: 14px;
+      padding: 11px 12px;
       margin-bottom: 8px;
       cursor: pointer;
       transition: 0.15s ease;
       -webkit-tap-highlight-color: transparent;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.03);
     }
 
     .nearbyCard:hover {
@@ -506,29 +523,29 @@
 
     .nearbyName {
       font-family: var(--font-display);
-      font-size: 1rem;
+      font-size: 1.03rem;
       font-weight: 700;
       color: var(--bark);
       line-height: 1.1;
-      margin-bottom: 3px;
+      margin-bottom: 4px;
     }
 
     .nearbyMeta {
       font-size: 0.72rem;
       color: #8f7b80;
-      line-height: 1.4;
+      line-height: 1.45;
     }
 
     .nearbyMiles {
       display: inline-block;
-      margin-top: 5px;
+      margin-top: 7px;
       font-size: 0.68rem;
       font-weight: 700;
       color: var(--rose);
       background: var(--petal);
       border: 1px solid var(--blush);
       border-radius: 999px;
-      padding: 3px 8px;
+      padding: 4px 9px;
     }
 
     #mapWrap {
@@ -536,6 +553,7 @@
       min-width: 0;
       position: relative;
       overflow: hidden;
+      background: #f9f3f5;
     }
 
     #map {
@@ -554,14 +572,14 @@
       top: 14px;
       right: 14px;
       z-index: 400;
-      width: min(290px, calc(100% - 28px));
-      background: rgba(255,255,255,0.95);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      box-shadow: 0 10px 30px rgba(42,31,26,0.12);
-      padding: 14px;
+      width: min(310px, calc(100% - 28px));
+      background: rgba(255,255,255,0.94);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(241,225,230,0.95);
+      border-radius: 18px;
+      box-shadow: 0 14px 34px rgba(42,31,26,0.12);
+      padding: 15px;
       transition: opacity 0.2s ease, transform 0.2s ease;
     }
 
@@ -573,10 +591,10 @@
 
     #insightsTitle {
       font-family: var(--font-display);
-      font-size: 1.15rem;
+      font-size: 1.2rem;
       font-weight: 700;
       color: var(--bark);
-      line-height: 1.1;
+      line-height: 1.05;
       margin-bottom: 8px;
     }
 
@@ -584,14 +602,14 @@
       font-size: 0.75rem;
       color: #907d82;
       line-height: 1.5;
-      margin-bottom: 10px;
+      margin-bottom: 12px;
     }
 
     .insightRow {
       display: flex;
       justify-content: space-between;
       gap: 10px;
-      margin-bottom: 8px;
+      margin-bottom: 9px;
       font-size: 0.76rem;
     }
 
@@ -612,58 +630,61 @@
       color: var(--rose);
       background: var(--petal);
       border: 1px solid var(--blush);
-      padding: 5px 9px;
+      padding: 6px 10px;
       border-radius: 999px;
-      margin-top: 4px;
-      margin-bottom: 8px;
+      margin-top: 3px;
+      margin-bottom: 10px;
     }
 
-    .waitingBox {
+    .helperBox {
       margin-top: 10px;
-      padding: 10px 11px;
-      background: #fff7f9;
+      padding: 11px 12px;
+      background: #fff8fa;
       border: 1px dashed var(--blush);
-      border-radius: 12px;
+      border-radius: 13px;
       color: var(--deep-rose);
-      font-size: 0.76rem;
+      font-size: 0.75rem;
       line-height: 1.5;
     }
 
-    .waitingBox strong {
+    .helperBox strong {
       display: block;
       margin-bottom: 4px;
       color: var(--bark);
     }
 
-    .activityList {
+    .placeList {
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 9px;
       margin-top: 8px;
     }
 
-    .activityCard {
+    .placeCard {
       border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 10px 11px;
+      border-radius: 14px;
+      padding: 11px 12px;
       background: #fff;
       cursor: pointer;
-      transition: border-color 0.15s ease, transform 0.15s ease;
+      transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.03);
     }
 
-    .activityCard:hover {
+    .placeCard:hover {
       border-color: var(--blush);
       transform: translateY(-1px);
+      box-shadow: 0 8px 18px rgba(0,0,0,0.04);
     }
 
-    .activityTop {
+    .placeTop {
       display: flex;
       justify-content: space-between;
       gap: 10px;
       margin-bottom: 4px;
+      align-items: flex-start;
     }
 
-    .activityName {
+    .placeName {
       font-family: var(--font-display);
       font-size: 1rem;
       font-weight: 700;
@@ -671,8 +692,8 @@
       line-height: 1.1;
     }
 
-    .activityState {
-      font-size: 0.68rem;
+    .placeTag {
+      font-size: 0.67rem;
       font-weight: 700;
       color: var(--rose);
       background: var(--petal);
@@ -682,7 +703,7 @@
       white-space: nowrap;
     }
 
-    .activityMeta {
+    .placeMeta {
       font-size: 0.73rem;
       color: #8f7b80;
       line-height: 1.45;
@@ -692,27 +713,28 @@
       margin-top: 12px;
       width: 100%;
       border: none;
-      border-radius: 12px;
-      background: var(--rose);
+      border-radius: 13px;
+      background: linear-gradient(135deg, var(--rose), var(--deep-rose));
       color: #fff;
       padding: 11px 14px;
       font-family: var(--font-body);
       font-size: 0.78rem;
       font-weight: 700;
       cursor: pointer;
+      box-shadow: 0 10px 24px rgba(201,92,118,0.22);
     }
 
     .leaflet-popup-content-wrapper {
-      border-radius: 14px !important;
+      border-radius: 16px !important;
       border: 1px solid var(--border) !important;
-      box-shadow: 0 10px 32px rgba(42,31,26,0.18) !important;
+      box-shadow: 0 14px 32px rgba(42,31,26,0.18) !important;
     }
 
     .leaflet-popup-tip { background: #fff !important; }
 
     .popupWrap {
-      min-width: 210px;
-      max-width: 280px;
+      min-width: 220px;
+      max-width: 285px;
       font-family: var(--font-body);
       color: var(--soil);
       line-height: 1.5;
@@ -720,11 +742,11 @@
 
     .popupName {
       font-family: var(--font-display);
-      font-size: 1.12rem;
+      font-size: 1.16rem;
       font-weight: 700;
       color: var(--bark);
-      margin-bottom: 4px;
-      line-height: 1.1;
+      margin-bottom: 5px;
+      line-height: 1.08;
     }
 
     .popupMeta {
@@ -743,7 +765,7 @@
       color: var(--rose);
       background: var(--petal);
       border: 1px solid var(--blush);
-      padding: 4px 9px;
+      padding: 5px 9px;
       border-radius: 999px;
       margin-bottom: 8px;
     }
@@ -751,7 +773,7 @@
     .popupVotes {
       display: flex;
       gap: 6px;
-      margin-bottom: 8px;
+      margin-bottom: 9px;
       flex-wrap: wrap;
     }
 
@@ -760,7 +782,7 @@
       background: white;
       color: var(--soil);
       border-radius: 999px;
-      padding: 5px 10px;
+      padding: 6px 11px;
       font-size: 0.73rem;
       font-weight: 600;
       cursor: pointer;
@@ -768,6 +790,11 @@
       align-items: center;
       gap: 4px;
       -webkit-tap-highlight-color: transparent;
+      transition: 0.15s ease;
+    }
+
+    .popupVoteBtn:hover {
+      transform: translateY(-1px);
     }
 
     .popupVoteBtn.active.up {
@@ -782,7 +809,11 @@
       color: var(--deep-rose);
     }
 
-    .popupLinks { display: flex; gap: 8px; flex-wrap: wrap; }
+    .popupLinks {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
 
     .popupLink {
       font-size: 0.72rem;
@@ -808,13 +839,13 @@
     }
 
     @media (max-width: 900px) {
-      :root { --sidebar-w: 310px; }
+      :root { --sidebar-w: 320px; }
       #bloomBadge { display: none; }
     }
 
     @media (max-width: 640px) {
       :root {
-        --header-h: 52px;
+        --header-h: 54px;
         --sidebar-w: 100%;
       }
 
@@ -828,14 +859,14 @@
         bottom: 0;
         left: 0;
         right: 0;
-        height: 55vh;
+        height: 60vh;
         border-right: none;
         border-top: 1px solid var(--border);
-        border-radius: 20px 20px 0 0;
+        border-radius: 22px 22px 0 0;
         z-index: 650;
         transform: translateY(100%);
         transition: transform 0.35s cubic-bezier(0.32,0.72,0,1);
-        box-shadow: 0 -8px 32px rgba(42,31,26,0.12);
+        box-shadow: 0 -10px 34px rgba(42,31,26,0.12);
         pointer-events: none;
       }
 
@@ -847,10 +878,10 @@
       #sidebar::before {
         content: '';
         display: block;
-        width: 36px;
+        width: 38px;
         height: 4px;
         border-radius: 2px;
-        background: #ddd;
+        background: #e0d4d8;
         margin: 10px auto 0;
         flex-shrink: 0;
       }
@@ -874,12 +905,13 @@
 
       #insightsPanel {
         top: auto;
-        bottom: 84px;
+        bottom: 86px;
         right: 10px;
         left: 10px;
         width: auto;
         max-height: 35vh;
         overflow-y: auto;
+        border-radius: 16px;
       }
 
       #insightsPanel.popup-open {
@@ -899,13 +931,12 @@
 
     @media (max-width: 380px) {
       #headerTitle { font-size: 1.1rem; }
-
       #supportBtn {
         font-size: 0.65rem;
         padding: 6px 8px;
       }
-
-      #supportBtn span { display: none; }
+      #supportBtn span,
+      #shareBtn span { display: none; }
     }
 
     @supports (padding-bottom: env(safe-area-inset-bottom)) {
@@ -923,7 +954,7 @@
       position: fixed;
       inset: 0;
       z-index: 640;
-      background: rgba(58,42,46,0.3);
+      background: rgba(58,42,46,0.26);
       backdrop-filter: blur(2px);
     }
 
@@ -990,39 +1021,53 @@
     </div>
 
     <div id="filters">
-      <div class="filterLabel">Month</div>
-      <div id="monthChips" class="chipGroup">
-        <button class="chip month active" data-month="all" type="button">All</button>
-        <button class="chip month" data-month="March" type="button">March</button>
-        <button class="chip month" data-month="April" type="button">April</button>
-        <button class="chip month" data-month="May" type="button">May</button>
-      </div>
-
-      <div class="filterLabel">Flower</div>
-      <div id="flowerGrid" class="chipGroup"></div>
-
-      <div class="filterLabel">Location</div>
-      <div class="inputWrap">
-        <input id="locationInput" type="text" placeholder="Search place, borough, park…" autocomplete="off" />
-        <div class="miniHint">Pick from suggestions, or press Enter to search directly.</div>
-      </div>
-
-      <div class="radiusRow">
-        <div class="radiusTop">
-          <div class="filterLabel" style="margin:0;">Radius</div>
-          <div class="radiusValue"><span id="radiusValue">5</span> miles</div>
+      <div class="sectionCard">
+        <div class="filterLabel">Month</div>
+        <div id="monthChips" class="chipGroup">
+          <button class="chip month active" data-month="all" type="button">All</button>
+          <button class="chip month" data-month="March" type="button">March</button>
+          <button class="chip month" data-month="April" type="button">April</button>
+          <button class="chip month" data-month="May" type="button">May</button>
         </div>
-        <input id="radiusRange" type="range" min="1" max="15" step="1" value="5" />
       </div>
 
-      <div class="filterLabel">Map mode</div>
-      <div id="modeChips" class="chipGroup">
-        <button class="chip mode active" data-mode="markers" type="button">Markers</button>
-        <button class="chip mode" data-mode="heatmap" type="button">Heatmap</button>
+      <div class="sectionCard">
+        <div class="filterLabel">Flower</div>
+        <div id="flowerGrid" class="chipGroup"></div>
       </div>
 
-      <button id="resetBtn" type="button">Reset filters</button>
-      <div id="statusBar">Loading…</div>
+      <div class="sectionCard">
+        <div class="filterLabel">Location</div>
+        <div class="inputWrap">
+          <input id="locationInput" type="text" placeholder="Search park, borough, or place…" autocomplete="off" />
+          <div class="miniHint">Pick from suggestions, or press Enter to search directly.</div>
+        </div>
+      </div>
+
+      <div class="sectionCard">
+        <div class="radiusRow">
+          <div class="radiusTop">
+            <div class="filterLabel" style="margin:0;">Radius</div>
+            <div class="radiusValue"><span id="radiusValue">5</span> miles</div>
+          </div>
+          <input id="radiusRange" type="range" min="1" max="15" step="1" value="5" />
+          <div class="miniHint">Narrow your search around the selected location.</div>
+        </div>
+      </div>
+
+      <div class="sectionCard">
+        <div class="filterLabel">Map mode</div>
+        <div id="modeChips" class="chipGroup">
+          <button class="chip mode active" data-mode="markers" type="button">Markers</button>
+          <button class="chip mode" data-mode="heatmap" type="button">Heatmap</button>
+        </div>
+
+        <div class="actionRow">
+          <button id="resetBtn" type="button">Reset filters</button>
+        </div>
+
+        <div id="statusBar">Loading…</div>
+      </div>
 
       <div id="nearbyResults" style="display:none;">
         <div id="nearbyResultsTitle">Blossoms near your searched location</div>
@@ -1035,8 +1080,8 @@
     <div id="map"></div>
 
     <div id="insightsPanel">
-      <div id="insightsTitle">Live bloom activity</div>
-      <div class="insightSub">See where people are spotting blossoms and tap a place to explore it on the map.</div>
+      <div id="insightsTitle">Spot details</div>
+      <div class="insightSub">Select a blossom marker to see location details and community votes.</div>
       <div id="insightsBody"></div>
     </div>
   </div>
@@ -1215,13 +1260,12 @@
     const c = SPECIES_COLORS[speciesKey(tree.common_name)] || SPECIES_COLORS.default;
     const size = isSelected ? 24 : 20;
     const emoji = flowerEmoji(tree.common_name);
-
     return L.divIcon({
       className: "",
       iconSize: [size, size],
       iconAnchor: [size / 2, size / 2],
       popupAnchor: [0, -size / 2],
-      html: `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${c.fill};border:${isSelected ? 3 : 2}px solid ${isSelected ? "#ffffff" : c.stroke};display:flex;align-items:center;justify-content:center;font-size:${isSelected ? 12 : 11}px;box-shadow:0 2px 8px rgba(0,0,0,0.14);">${emoji}</div>`
+      html: `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${c.fill};border:${isSelected ? 3 : 2}px solid ${isSelected ? "#ffffff" : c.stroke};display:flex;align-items:center;justify-content:center;font-size:${isSelected ? 12 : 11}px;box-shadow:0 3px 10px rgba(0,0,0,0.14);">${emoji}</div>`
     });
   }
 
@@ -1307,7 +1351,6 @@
 
   async function geocodeFallback(query) {
     if (!window.google?.maps?.Geocoder) return null;
-
     const geocoder = new google.maps.Geocoder();
     return new Promise(resolve => {
       geocoder.geocode({ address: query, componentRestrictions: { country: "GB" } }, (results, status) => {
@@ -1368,7 +1411,6 @@
       e.preventDefault();
       const query = locationInput.value.trim();
       if (!query) return;
-
       const fallback = await geocodeFallback(query);
       if (fallback) await setSearchCenter(fallback);
     });
@@ -1634,10 +1676,10 @@
     const mine = getMyVote(t.id);
     const totalVotes = totalVotesFor(t.id);
 
-    const activityLabel =
-      totalVotes >= 10 ? "Busy today" :
-      totalVotes >= 4 ? "Picked recently" :
-      "Be the first to confirm";
+    const voteLabel =
+      totalVotes >= 8 ? "Community favourite" :
+      totalVotes >= 3 ? "Recently noticed" :
+      "Worth exploring";
 
     return `
       <div class="popupWrap" data-popup-id="${esc(t.id)}">
@@ -1649,7 +1691,7 @@
           ${t.bloom_period ? `<div><strong>Peak:</strong> ${esc(t.bloom_period)}</div>` : ""}
         </div>
 
-        <div class="popupScore">${activityLabel}</div>
+        <div class="popupScore">${voteLabel}</div>
 
         <div class="popupMeta" style="margin-bottom:10px;">
           👍 <strong>${votes.upvotes}</strong> people spotted blooms
@@ -1733,36 +1775,36 @@
       }
 
       insightsBodyEl.innerHTML = `
-        <div class="activityList">
+        <div class="placeList">
           ${featured.map(t => {
             const votes = getVoteTotals(t.id);
             const totalVotes = totalVotesFor(t.id);
-            const stateLabel =
-              totalVotes >= 10 ? "Busy today" :
-              totalVotes >= 4 ? "Picked recently" :
-              "Quiet now";
+            const tag =
+              totalVotes >= 8 ? "Community favourite" :
+              totalVotes >= 3 ? "Recently noticed" :
+              "Worth exploring";
 
             return `
-              <div class="activityCard" data-activity-id="${esc(t.id)}">
-                <div class="activityTop">
-                  <div class="activityName">${esc(t.common_name)}</div>
-                  <div class="activityState">${stateLabel}</div>
+              <div class="placeCard" data-place-id="${esc(t.id)}">
+                <div class="placeTop">
+                  <div class="placeName">${esc(t.common_name)}</div>
+                  <div class="placeTag">${tag}</div>
                 </div>
-                <div class="activityMeta">
+                <div class="placeMeta">
                   ${t.location ? `${esc(t.location)}<br>` : ""}
                   ${t.borough ? `${esc(t.borough)}<br>` : ""}
-                  👍 ${votes.upvotes} people spotted blooms
+                  👍 ${votes.upvotes} community votes
                 </div>
               </div>
             `;
           }).join("")}
         </div>
-        <button class="panelActionBtn" type="button" id="openFiltersFromPanel">See nearby spots</button>
+        <button class="panelActionBtn" type="button" id="openFiltersFromPanel">Browse nearby spots</button>
       `;
 
-      insightsBodyEl.querySelectorAll("[data-activity-id]").forEach(card => {
+      insightsBodyEl.querySelectorAll("[data-place-id]").forEach(card => {
         card.addEventListener("click", () => {
-          selectTree(card.dataset.activityId, true);
+          selectTree(card.dataset.placeId, true);
         });
       });
 
@@ -1779,23 +1821,23 @@
     const votes = getVoteTotals(tree.id);
     const totalVotes = totalVotesFor(tree.id);
 
-    const stateLabel =
-      totalVotes >= 10 ? "Busy today" :
-      totalVotes >= 4 ? "Picked recently" :
-      "Be the first to confirm";
+    const tag =
+      totalVotes >= 8 ? "Community favourite" :
+      totalVotes >= 3 ? "Recently noticed" :
+      "Be the first to add a signal";
 
     insightsBodyEl.innerHTML = `
       <div class="insightSub" style="margin-bottom:8px;">
-        <strong style="display:block;color:var(--bark);font-family:var(--font-display);font-size:1.05rem;">${esc(tree.common_name)}</strong>
+        <strong style="display:block;color:var(--bark);font-family:var(--font-display);font-size:1.08rem;">${esc(tree.common_name)}</strong>
         ${tree.location ? `${esc(tree.location)}<br>` : ""}
         ${tree.borough ? `${esc(tree.borough)}<br>` : ""}
         ${tree.bloom_period ? `Peak: ${esc(tree.bloom_period)}` : ""}
       </div>
 
-      <div class="insightPill">${stateLabel}</div>
+      <div class="insightPill">${tag}</div>
 
       <div class="insightRow">
-        <span class="insightLabel">People spotted blooms</span>
+        <span class="insightLabel">In bloom votes</span>
         <span class="insightValue">${votes.upvotes}</span>
       </div>
 
@@ -1808,6 +1850,13 @@
         <span class="insightLabel">Total activity</span>
         <span class="insightValue">${totalVotes}</span>
       </div>
+
+      ${totalVotes < 2 ? `
+        <div class="helperBox">
+          <strong>This spot needs more signals</strong>
+          If you've seen blossoms here recently, your vote helps others decide where to go.
+        </div>
+      ` : ""}
 
       <button class="panelActionBtn" type="button" id="voteSpotBtn">Vote on this spot</button>
     `;

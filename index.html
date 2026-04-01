@@ -21,7 +21,7 @@
   <meta name="twitter:url" content="https://cafeco09.github.io/london-blooms/">
   <meta name="twitter:title" content="London Blooms 🌸 — Find Cherry Blossoms Near You">
   <meta name="twitter:description" content="Discover the best blossom spots across London with live bloom status, weather, and a community-updated map.">
-  <meta name="twitter:image" content="https://cafeco09.github.io/london-blooms/preview-imagepng">
+  <meta name="twitter:image" content="https://cafeco09.github.io/london-blooms/preview-image.png">
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -72,7 +72,6 @@
       flex-direction: column;
     }
 
-    /* ── HEADER ─────────────────────────────────────── */
     #header {
       height: var(--header-h);
       flex-shrink: 0;
@@ -213,7 +212,6 @@
       #shareBtn span { display: none; }
     }
 
-    /* ── MAIN LAYOUT ─────────────────────────────────── */
     #main {
       flex: 1;
       min-height: 0;
@@ -221,7 +219,6 @@
       overflow: hidden;
     }
 
-    /* ── SIDEBAR ─────────────────────────────────────── */
     #sidebar {
       width: var(--sidebar-w);
       flex-shrink: 0;
@@ -235,8 +232,7 @@
       z-index: 500;
     }
 
-    /* ── SIDEBAR TOGGLE (mobile) ─────────────────────── */
-    #sidebarToggle {
+    #primaryCtaBtn {
       display: none;
       position: fixed;
       bottom: 20px;
@@ -244,27 +240,24 @@
       transform: translateX(-50%);
       z-index: 700;
       background: var(--rose);
-      color: white;
+      color: #fff;
       border: none;
       border-radius: 999px;
-      padding: 12px 20px;
+      padding: 13px 20px;
       font-family: var(--font-body);
-      font-size: 0.8rem;
+      font-size: 0.84rem;
       font-weight: 700;
       cursor: pointer;
-      box-shadow: 0 6px 20px rgba(201,92,118,0.35);
-      gap: 6px;
-      align-items: center;
+      box-shadow: 0 8px 24px rgba(201,92,118,0.34);
       white-space: nowrap;
-      transition: transform 0.15s ease, box-shadow 0.15s ease;
+      transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.2s ease;
     }
 
-    #sidebarToggle:hover {
+    #primaryCtaBtn:hover {
       transform: translateX(-50%) translateY(-2px);
-      box-shadow: 0 8px 24px rgba(201,92,118,0.4);
+      box-shadow: 0 10px 28px rgba(201,92,118,0.42);
     }
 
-    /* ── BANNER ──────────────────────────────────────── */
     #banner {
       padding: 12px 14px;
       border-bottom: 1px solid var(--border);
@@ -298,7 +291,6 @@
       margin-top: 2px;
     }
 
-    /* ── STATS BAR ───────────────────────────────────── */
     #statsBar {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -331,7 +323,6 @@
       margin-top: 3px;
     }
 
-    /* ── FILTERS ─────────────────────────────────────── */
     #filters {
       flex: 1;
       overflow-y: auto;
@@ -540,7 +531,6 @@
       padding: 3px 8px;
     }
 
-    /* ── MAP ─────────────────────────────────────────── */
     #mapWrap {
       flex: 1;
       min-width: 0;
@@ -559,7 +549,6 @@
       -webkit-tap-highlight-color: transparent;
     }
 
-    /* ── INSIGHTS PANEL ──────────────────────────────── */
     #insightsPanel {
       position: absolute;
       top: 14px;
@@ -646,7 +635,73 @@
       color: var(--bark);
     }
 
-    /* ── LEAFLET POPUP OVERRIDES ─────────────────────── */
+    .activityList {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 8px;
+    }
+
+    .activityCard {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px 11px;
+      background: #fff;
+      cursor: pointer;
+      transition: border-color 0.15s ease, transform 0.15s ease;
+    }
+
+    .activityCard:hover {
+      border-color: var(--blush);
+      transform: translateY(-1px);
+    }
+
+    .activityTop {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 4px;
+    }
+
+    .activityName {
+      font-family: var(--font-display);
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--bark);
+      line-height: 1.1;
+    }
+
+    .activityState {
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: var(--rose);
+      background: var(--petal);
+      border: 1px solid var(--blush);
+      border-radius: 999px;
+      padding: 3px 8px;
+      white-space: nowrap;
+    }
+
+    .activityMeta {
+      font-size: 0.73rem;
+      color: #8f7b80;
+      line-height: 1.45;
+    }
+
+    .panelActionBtn {
+      margin-top: 12px;
+      width: 100%;
+      border: none;
+      border-radius: 12px;
+      background: var(--rose);
+      color: #fff;
+      padding: 11px 14px;
+      font-family: var(--font-body);
+      font-size: 0.78rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
     .leaflet-popup-content-wrapper {
       border-radius: 14px !important;
       border: 1px solid var(--border) !important;
@@ -736,7 +791,6 @@
       text-decoration: none;
     }
 
-    /* ── MARKER CLUSTER COLOURS ──────────────────────── */
     .marker-cluster-small,
     .marker-cluster-medium,
     .marker-cluster-large {
@@ -753,14 +807,11 @@
       border: 2px solid white;
     }
 
-    /* ── RESPONSIVE: TABLET (≤900px) ────────────────── */
     @media (max-width: 900px) {
       :root { --sidebar-w: 310px; }
-
       #bloomBadge { display: none; }
     }
 
-    /* ── RESPONSIVE: MOBILE (≤640px) ────────────────── */
     @media (max-width: 640px) {
       :root {
         --header-h: 52px;
@@ -773,7 +824,6 @@
 
       #sidebar {
         width: 100%;
-        /* Hidden off-screen by default on mobile */
         position: fixed;
         bottom: 0;
         left: 0;
@@ -786,7 +836,6 @@
         transform: translateY(100%);
         transition: transform 0.35s cubic-bezier(0.32,0.72,0,1);
         box-shadow: 0 -8px 32px rgba(42,31,26,0.12);
-        /* Prevent closed sidebar from blocking map touches */
         pointer-events: none;
       }
 
@@ -795,7 +844,6 @@
         pointer-events: auto;
       }
 
-      /* Drag handle */
       #sidebar::before {
         content: '';
         display: block;
@@ -813,7 +861,7 @@
         height: calc(100% - var(--header-h));
       }
 
-      #sidebarToggle {
+      #primaryCtaBtn {
         display: inline-flex;
       }
 
@@ -826,7 +874,7 @@
 
       #insightsPanel {
         top: auto;
-        bottom: 80px; /* above the FAB */
+        bottom: 84px;
         right: 10px;
         left: 10px;
         width: auto;
@@ -849,7 +897,6 @@
       }
     }
 
-    /* ── RESPONSIVE: SMALL MOBILE (≤380px) ──────────── */
     @media (max-width: 380px) {
       #headerTitle { font-size: 1.1rem; }
 
@@ -861,18 +908,16 @@
       #supportBtn span { display: none; }
     }
 
-    /* ── SAFE AREA (iPhone notch/home bar) ───────────── */
     @supports (padding-bottom: env(safe-area-inset-bottom)) {
       #sidebar.open {
         padding-bottom: env(safe-area-inset-bottom);
       }
 
-      #sidebarToggle {
+      #primaryCtaBtn {
         bottom: calc(20px + env(safe-area-inset-bottom));
       }
     }
 
-    /* ── OVERLAY (when sidebar is open on mobile) ────── */
     #sidebarOverlay {
       display: none;
       position: fixed;
@@ -904,7 +949,6 @@
   </div>
 </header>
 
-<!-- Share dropdown -->
 <div id="shareDropdown" role="menu">
   <button class="shareOption" id="shareNativeBtn" onclick="shareNative()" type="button">📱 Share via…</button>
   <a class="shareOption" id="shareXBtn"
@@ -916,7 +960,6 @@
   <button class="shareOption" id="shareCopyBtn" onclick="copyLink()" type="button">🔗 Copy link</button>
 </div>
 
-<!-- Mobile overlay -->
 <div id="sidebarOverlay"></div>
 
 <div id="main">
@@ -992,20 +1035,14 @@
     <div id="map"></div>
 
     <div id="insightsPanel">
-      <div id="insightsTitle">Community insights</div>
-      <div class="insightSub">Click a blossom marker to see local voting signals.</div>
-      <div id="insightsBody">
-        <div class="insightRow">
-          <span class="insightLabel">Status</span>
-          <span class="insightValue">No place selected</span>
-        </div>
-      </div>
+      <div id="insightsTitle">Live bloom activity</div>
+      <div class="insightSub">See where people are spotting blossoms and tap a place to explore it on the map.</div>
+      <div id="insightsBody"></div>
     </div>
   </div>
 </div>
 
-<!-- Mobile FAB -->
-<button id="sidebarToggle" type="button" aria-label="Toggle filters">🌸 Filters</button>
+<button id="primaryCtaBtn" type="button" aria-label="Find blooms near me">📍 Find blooms near me</button>
 
 <script>
   const SUPABASE_URL = window.APP_CONFIG?.SUPABASE_URL;
@@ -1090,41 +1127,35 @@
   const insightsBodyEl = document.getElementById("insightsBody");
   const insightsPanelEl = document.getElementById("insightsPanel");
   const sidebarEl = document.getElementById("sidebar");
-  const sidebarToggleEl = document.getElementById("sidebarToggle");
+  const primaryCtaBtn = document.getElementById("primaryCtaBtn");
   const sidebarOverlayEl = document.getElementById("sidebarOverlay");
 
-  /* ── MOBILE SIDEBAR TOGGLE ─────────────────────────── */
-  function isMobile() { return window.innerWidth <= 640; }
+  function isMobile() {
+    return window.innerWidth <= 640;
+  }
 
   function openSidebar() {
     sidebarEl.classList.add("open");
     sidebarOverlayEl.classList.add("visible");
-    sidebarToggleEl.textContent = "✕ Close";
   }
 
   function closeSidebar() {
     sidebarEl.classList.remove("open");
     sidebarOverlayEl.classList.remove("visible");
-    sidebarToggleEl.textContent = "🌸 Filters";
   }
 
-  function toggleSidebar() {
-    if (sidebarEl.classList.contains("open")) closeSidebar();
-    else openSidebar();
-  }
-
-  sidebarToggleEl.addEventListener("click", toggleSidebar);
   sidebarOverlayEl.addEventListener("click", closeSidebar);
 
-  /* Touch-swipe down to close sidebar on mobile */
   let touchStartY = 0;
-  sidebarEl.addEventListener("touchstart", e => { touchStartY = e.touches[0].clientY; }, { passive: true });
+  sidebarEl.addEventListener("touchstart", e => {
+    touchStartY = e.touches[0].clientY;
+  }, { passive: true });
+
   sidebarEl.addEventListener("touchend", e => {
     const dy = e.changedTouches[0].clientY - touchStartY;
     if (dy > 60) closeSidebar();
   }, { passive: true });
 
-  /* ── UTILITIES ─────────────────────────────────────── */
   function esc(s) {
     return String(s ?? "")
       .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
@@ -1133,7 +1164,10 @@
 
   function getVoterKey() {
     let k = localStorage.getItem("lb_voter_key");
-    if (!k) { k = crypto.randomUUID(); localStorage.setItem("lb_voter_key", k); }
+    if (!k) {
+      k = crypto.randomUUID();
+      localStorage.setItem("lb_voter_key", k);
+    }
     return k;
   }
 
@@ -1181,6 +1215,7 @@
     const c = SPECIES_COLORS[speciesKey(tree.common_name)] || SPECIES_COLORS.default;
     const size = isSelected ? 24 : 20;
     const emoji = flowerEmoji(tree.common_name);
+
     return L.divIcon({
       className: "",
       iconSize: [size, size],
@@ -1194,7 +1229,9 @@
     return state.votesBySpot.get(String(id)) || { upvotes: 0, downvotes: 0, score: 0, total_votes: 0 };
   }
 
-  function getMyVote(id) { return state.myVotesBySpot.get(String(id)) || 0; }
+  function getMyVote(id) {
+    return state.myVotesBySpot.get(String(id)) || 0;
+  }
 
   function totalVotesFor(id) {
     const v = getVoteTotals(id);
@@ -1233,6 +1270,7 @@
     document.querySelectorAll('#modeChips .chip').forEach(btn => {
       btn.classList.toggle('active', btn.dataset.mode === mode);
     });
+
     if (mode === "markers") {
       if (!map.hasLayer(markerClusterLayer)) map.addLayer(markerClusterLayer);
       if (map.hasLayer(heatLayer)) map.removeLayer(heatLayer);
@@ -1244,13 +1282,18 @@
 
   function loadGoogleMaps() {
     return new Promise((resolve, reject) => {
-      if (window.google?.maps?.places) { resolve(); return; }
+      if (window.google?.maps?.places) {
+        resolve();
+        return;
+      }
+
       const existing = document.querySelector('script[data-google-loader="true"]');
       if (existing) {
         existing.addEventListener("load", () => resolve(), { once: true });
         existing.addEventListener("error", () => reject(new Error("Google Maps failed")), { once: true });
         return;
       }
+
       const script = document.createElement("script");
       script.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(GOOGLE_MAPS_API_KEY)}&libraries=places`;
       script.async = true;
@@ -1264,12 +1307,19 @@
 
   async function geocodeFallback(query) {
     if (!window.google?.maps?.Geocoder) return null;
+
     const geocoder = new google.maps.Geocoder();
     return new Promise(resolve => {
       geocoder.geocode({ address: query, componentRestrictions: { country: "GB" } }, (results, status) => {
         if (status === "OK" && results?.[0]?.geometry?.location) {
-          resolve({ label: results[0].formatted_address || query, lat: results[0].geometry.location.lat(), lon: results[0].geometry.location.lng() });
-        } else { resolve(null); }
+          resolve({
+            label: results[0].formatted_address || query,
+            lat: results[0].geometry.location.lat(),
+            lon: results[0].geometry.location.lng()
+          });
+        } else {
+          resolve(null);
+        }
       });
     });
   }
@@ -1277,6 +1327,7 @@
   async function setSearchCenter(placeObj) {
     state.searchCenter = placeObj;
     applyFilters();
+
     const validVisible = state.visibleTrees.filter(t => Number.isFinite(t.lat) && Number.isFinite(t.lon));
     if (validVisible.length) {
       const bounds = L.latLngBounds(validVisible.map(t => [t.lat, t.lon]));
@@ -1284,12 +1335,17 @@
     } else if (placeObj) {
       map.flyTo([placeObj.lat, placeObj.lon], 13, { duration: 0.7 });
     }
+
     if (isMobile()) closeSidebar();
   }
 
   async function initGoogleAutocompleteClassic() {
     await loadGoogleMaps();
-    if (!window.google?.maps?.places?.Autocomplete) { console.warn("Autocomplete N/A"); return; }
+
+    if (!window.google?.maps?.places?.Autocomplete) {
+      console.warn("Autocomplete not available");
+      return;
+    }
 
     googleAutocomplete = new google.maps.places.Autocomplete(locationInput, {
       componentRestrictions: { country: "gb" },
@@ -1299,6 +1355,7 @@
     googleAutocomplete.addListener("place_changed", async () => {
       const place = googleAutocomplete.getPlace();
       if (!place.geometry?.location) return;
+
       await setSearchCenter({
         label: place.name || place.formatted_address || locationInput.value.trim(),
         lat: place.geometry.location.lat(),
@@ -1311,6 +1368,7 @@
       e.preventDefault();
       const query = locationInput.value.trim();
       if (!query) return;
+
       const fallback = await geocodeFallback(query);
       if (fallback) await setSearchCenter(fallback);
     });
@@ -1320,20 +1378,36 @@
     try {
       const r = await fetch(WEATHER_URL);
       if (!r.ok) throw new Error(`HTTP ${r.status}`);
+
       const d = await r.json();
       const means = d.daily?.temperature_2m_mean ?? [];
       const avg = means.length ? means.reduce((a,b)=>a+b,0)/means.length : null;
       const current = d.current?.temperature_2m ?? null;
-      let label = "Spring signal", emoji = "🌿";
+
+      let label = "Spring signal";
+      let emoji = "🌿";
+
       if (avg !== null) {
-        if (avg < 8) { label = "Cool spring"; emoji = "🌱"; }
-        else if (avg < 12) { label = "Mild spring"; emoji = "🌱"; }
-        else if (avg < 17) { label = "Blossom weather"; emoji = "🌸"; }
-        else { label = "Warm spring"; emoji = "🍃"; }
+        if (avg < 8) {
+          label = "Cool spring";
+          emoji = "🌱";
+        } else if (avg < 12) {
+          label = "Mild spring";
+          emoji = "🌱";
+        } else if (avg < 17) {
+          label = "Blossom weather";
+          emoji = "🌸";
+        } else {
+          label = "Warm spring";
+          emoji = "🍃";
+        }
       }
+
       bloomEmojiEl.textContent = emoji;
       bloomStageNameEl.textContent = label;
-      bloomTempEl.textContent = avg !== null ? `7-day avg ${avg.toFixed(1)} °C${current !== null ? ` · Now ${current.toFixed(0)} °C` : ""}` : "Temperature unavailable";
+      bloomTempEl.textContent = avg !== null
+        ? `7-day avg ${avg.toFixed(1)} °C${current !== null ? ` · Now ${current.toFixed(0)} °C` : ""}`
+        : "Temperature unavailable";
       bloomBadgeEl.textContent = label;
     } catch (error) {
       bloomEmojiEl.textContent = "🌿";
@@ -1345,48 +1419,87 @@
 
   async function fetchTrees() {
     statusEl.textContent = "Loading blossoms…";
+
     const combined = [];
     for (const species of TARGET_SPECIES) {
       const { data, error } = await db.from(TABLE_NAME)
         .select("id, borough, lat, lon, common_name, location, bloom_period")
         .eq("common_name", species)
-        .not("lat", "is", null).not("lon", "is", null)
+        .not("lat", "is", null)
+        .not("lon", "is", null)
         .limit(PER_SPECIES_LIMIT);
-      if (error) { statusEl.textContent = `Couldn't load trees: ${error.message || "unknown error"}`; console.error(error); return; }
+
+      if (error) {
+        statusEl.textContent = `Couldn't load trees: ${error.message || "unknown error"}`;
+        console.error(error);
+        return;
+      }
+
       combined.push(...(data || []));
     }
+
     state.allTrees = combined.map(normaliseRow);
     applyFilters();
   }
 
   async function fetchVoteTotals() {
     const { data, error } = await db.from("spot_vote_totals").select("*");
-    if (error) { console.warn("fetchVoteTotals:", error); return; }
-    state.votesBySpot = new Map((data || []).map(r => [String(r.spot_id), { upvotes: Number(r.upvotes||0), downvotes: Number(r.downvotes||0), score: Number(r.score||0), total_votes: Number(r.total_votes||0) }]));
+    if (error) {
+      console.warn("fetchVoteTotals:", error);
+      return;
+    }
+
+    state.votesBySpot = new Map(
+      (data || []).map(r => [
+        String(r.spot_id),
+        {
+          upvotes: Number(r.upvotes || 0),
+          downvotes: Number(r.downvotes || 0),
+          score: Number(r.score || 0),
+          total_votes: Number(r.total_votes || 0)
+        }
+      ])
+    );
   }
 
   async function fetchMyVotes() {
-    const { data, error } = await db.from("spot_votes").select("spot_id, vote").eq("voter_key", getVoterKey());
-    if (error) { console.warn("fetchMyVotes:", error); return; }
-    state.myVotesBySpot = new Map((data || []).map(r => [String(r.spot_id), Number(r.vote)]));
+    const { data, error } = await db.from("spot_votes")
+      .select("spot_id, vote")
+      .eq("voter_key", getVoterKey());
+
+    if (error) {
+      console.warn("fetchMyVotes:", error);
+      return;
+    }
+
+    state.myVotesBySpot = new Map(
+      (data || []).map(r => [String(r.spot_id), Number(r.vote)])
+    );
   }
 
   async function castVote(spotId, vote) {
     const prev = getVoteTotals(spotId);
     const prevMine = getMyVote(spotId);
     const newMine = vote === prevMine ? 0 : vote;
-    const delta = newMine - prevMine;
-    const optimisticTotal = Math.max(prev.total_votes || 0, (prev.upvotes||0) + (prev.downvotes||0));
+    const optimisticTotal = Math.max(prev.total_votes || 0, (prev.upvotes || 0) + (prev.downvotes || 0));
+
     state.myVotesBySpot.set(String(spotId), newMine);
     state.votesBySpot.set(String(spotId), {
-      upvotes: Math.max(0, prev.upvotes + (newMine===1?1:0) - (prevMine===1?1:0)),
-      downvotes: Math.max(0, prev.downvotes + (newMine===-1?1:0) - (prevMine===-1?1:0)),
-      score: prev.score + delta,
+      upvotes: Math.max(0, prev.upvotes + (newMine === 1 ? 1 : 0) - (prevMine === 1 ? 1 : 0)),
+      downvotes: Math.max(0, prev.downvotes + (newMine === -1 ? 1 : 0) - (prevMine === -1 ? 1 : 0)),
+      score: prev.score + (newMine - prevMine),
       total_votes: optimisticTotal
     });
+
     refreshPopupIfSelected(spotId);
     renderInsightsForSelected();
-    const { error } = await db.rpc("cast_vote", { p_spot_id: String(spotId), p_voter_key: getVoterKey(), p_vote: vote });
+
+    const { error } = await db.rpc("cast_vote", {
+      p_spot_id: String(spotId),
+      p_voter_key: getVoterKey(),
+      p_vote: vote
+    });
+
     if (error) {
       state.myVotesBySpot.set(String(spotId), prevMine);
       state.votesBySpot.set(String(spotId), prev);
@@ -1395,6 +1508,7 @@
       alert(`Couldn't save vote: ${error.message || "unknown error"}`);
       return;
     }
+
     await fetchVoteTotals();
     await fetchMyVotes();
     refreshPopupIfSelected(spotId);
@@ -1409,18 +1523,50 @@
   }
 
   function renderNearbyResults() {
-    if (!state.searchCenter) { nearbyResultsEl.style.display = "none"; nearbyResultsListEl.innerHTML = ""; return; }
+    if (!state.searchCenter) {
+      nearbyResultsEl.style.display = "none";
+      nearbyResultsListEl.innerHTML = "";
+      return;
+    }
+
     const nearest = state.visibleTrees
-      .map(t => ({ ...t, distanceMiles: milesBetween(state.searchCenter.lat, state.searchCenter.lon, t.lat, t.lon) }))
-      .sort((a,b) => a.distanceMiles - b.distanceMiles).slice(0, 8);
-    const searchedLabel = state.searchCenter.label ? esc(state.searchCenter.label) : `${state.searchCenter.lat.toFixed(5)}, ${state.searchCenter.lon.toFixed(5)}`;
+      .map(t => ({
+        ...t,
+        distanceMiles: milesBetween(state.searchCenter.lat, state.searchCenter.lon, t.lat, t.lon)
+      }))
+      .sort((a,b) => a.distanceMiles - b.distanceMiles)
+      .slice(0, 8);
+
+    const searchedLabel = state.searchCenter.label
+      ? esc(state.searchCenter.label)
+      : `${state.searchCenter.lat.toFixed(5)}, ${state.searchCenter.lon.toFixed(5)}`;
+
     if (!nearest.length) {
-      nearbyResultsListEl.innerHTML = `<div class="searchedAround"><strong>Searched around:</strong><br>${searchedLabel}</div><div style="font-size:0.78rem;color:#8f7b80;">No blossom spots found within ${state.searchRadiusMiles} miles.</div>`;
+      nearbyResultsListEl.innerHTML = `
+        <div class="searchedAround"><strong>Searched around:</strong><br>${searchedLabel}</div>
+        <div style="font-size:0.78rem;color:#8f7b80;">No blossom spots found within ${state.searchRadiusMiles} miles.</div>
+      `;
       nearbyResultsEl.style.display = "block";
       return;
     }
-    nearbyResultsListEl.innerHTML = `<div class="searchedAround"><strong>Searched around:</strong><br>${searchedLabel}</div>${nearest.map(t => `<div class="nearbyCard" data-id="${esc(t.id)}"><div class="nearbyName">${esc(t.common_name)}</div><div class="nearbyMeta">${t.location?`${esc(t.location)}<br>`:""}${t.borough?`${esc(t.borough)}<br>`:""}<strong>Coords:</strong> ${Number(t.lat).toFixed(5)}, ${Number(t.lon).toFixed(5)}</div><div class="nearbyMiles">${t.distanceMiles.toFixed(1)} miles away</div></div>`).join("")}`;
+
+    nearbyResultsListEl.innerHTML = `
+      <div class="searchedAround"><strong>Searched around:</strong><br>${searchedLabel}</div>
+      ${nearest.map(t => `
+        <div class="nearbyCard" data-id="${esc(t.id)}">
+          <div class="nearbyName">${esc(t.common_name)}</div>
+          <div class="nearbyMeta">
+            ${t.location ? `${esc(t.location)}<br>` : ""}
+            ${t.borough ? `${esc(t.borough)}<br>` : ""}
+            <strong>Coords:</strong> ${Number(t.lat).toFixed(5)}, ${Number(t.lon).toFixed(5)}
+          </div>
+          <div class="nearbyMiles">${t.distanceMiles.toFixed(1)} miles away</div>
+        </div>
+      `).join("")}
+    `;
+
     nearbyResultsEl.style.display = "block";
+
     nearbyResultsListEl.querySelectorAll(".nearbyCard").forEach(card => {
       card.addEventListener("click", () => {
         if (isMobile()) closeSidebar();
@@ -1429,8 +1575,20 @@
     });
   }
 
+  function updateMobileCtaLabel() {
+    if (!primaryCtaBtn || !isMobile()) return;
+
+    if (state.searchCenter) {
+      const count = state.visibleTrees.length.toLocaleString();
+      primaryCtaBtn.textContent = `🌸 ${count} spots near you`;
+    } else {
+      primaryCtaBtn.textContent = "📍 Find blooms near me";
+    }
+  }
+
   function applyFilters() {
     const base = baseFilteredTrees();
+
     if (state.searchCenter) {
       state.visibleTrees = base.filter(t => {
         if (!Number.isFinite(t.lat) || !Number.isFinite(t.lon)) return false;
@@ -1439,11 +1597,14 @@
     } else {
       state.visibleTrees = base;
     }
+
     renderStats();
     renderStatus();
     renderMarkers();
     renderHeatmap();
     renderNearbyResults();
+    renderInsightsForSelected();
+    updateMobileCtaLabel();
   }
 
   function renderStats() {
@@ -1453,44 +1614,94 @@
   }
 
   function renderStatus() {
-    if (!state.allTrees.length) { statusEl.textContent = "No blossom data loaded yet."; return; }
+    if (!state.allTrees.length) {
+      statusEl.textContent = "No blossom data loaded yet.";
+      return;
+    }
+
     if (state.searchCenter) {
       statusEl.textContent = state.visibleTrees.length
         ? `${state.visibleTrees.length.toLocaleString()} blossom spots within ${state.searchRadiusMiles} miles`
         : `No blossom spots found within ${state.searchRadiusMiles} miles.`;
       return;
     }
+
     statusEl.textContent = `${state.visibleTrees.length.toLocaleString()} blossom spots on the map`;
   }
 
   function popupHtml(t) {
     const votes = getVoteTotals(t.id);
     const mine = getMyVote(t.id);
-    return `<div class="popupWrap" data-popup-id="${esc(t.id)}"><div class="popupName">${esc(t.common_name)}</div><div class="popupMeta">${t.borough?`<div><strong>Borough:</strong> ${esc(t.borough)}</div>`:""} ${t.location?`<div><strong>Place:</strong> ${esc(t.location)}</div>`:""} ${t.bloom_period?`<div><strong>Bloom:</strong> ${esc(t.bloom_period)}</div>`:""}</div><div class="popupScore">Community score ${votes.score>=0?"+":""}${votes.score}</div><div class="popupVotes"><button class="popupVoteBtn ${mine===1?"active up":""}" data-spot="${esc(t.id)}" data-vote="1" type="button">👍 <span>${votes.upvotes}</span></button><button class="popupVoteBtn ${mine===-1?"active down":""}" data-spot="${esc(t.id)}" data-vote="-1" type="button">👎 <span>${votes.downvotes}</span></button></div><div class="popupLinks"><a class="popupLink" href="${mapsUrl(t.lat,t.lon)}" target="_blank" rel="noopener noreferrer">Open in Maps ↗</a></div></div>`;
+    const totalVotes = totalVotesFor(t.id);
+
+    const activityLabel =
+      totalVotes >= 10 ? "Busy today" :
+      totalVotes >= 4 ? "Picked recently" :
+      "Be the first to confirm";
+
+    return `
+      <div class="popupWrap" data-popup-id="${esc(t.id)}">
+        <div class="popupName">${esc(t.common_name)}</div>
+
+        <div class="popupMeta">
+          ${t.borough ? `<div><strong>Borough:</strong> ${esc(t.borough)}</div>` : ""}
+          ${t.location ? `<div><strong>Place:</strong> ${esc(t.location)}</div>` : ""}
+          ${t.bloom_period ? `<div><strong>Peak:</strong> ${esc(t.bloom_period)}</div>` : ""}
+        </div>
+
+        <div class="popupScore">${activityLabel}</div>
+
+        <div class="popupMeta" style="margin-bottom:10px;">
+          👍 <strong>${votes.upvotes}</strong> people spotted blooms
+        </div>
+
+        <div class="popupVotes">
+          <button class="popupVoteBtn ${mine === 1 ? "active up" : ""}" data-spot="${esc(t.id)}" data-vote="1" type="button">👍 <span>${votes.upvotes}</span></button>
+          <button class="popupVoteBtn ${mine === -1 ? "active down" : ""}" data-spot="${esc(t.id)}" data-vote="-1" type="button">👎 <span>${votes.downvotes}</span></button>
+        </div>
+
+        <div class="popupLinks">
+          <a class="popupLink" href="${mapsUrl(t.lat,t.lon)}" target="_blank" rel="noopener noreferrer">See directions ↗</a>
+        </div>
+      </div>
+    `;
   }
 
   function renderMarkers() {
     const valid = state.visibleTrees.filter(t => Number.isFinite(t.lat) && Number.isFinite(t.lon));
     const newIds = new Set(valid.map(t => String(t.id)));
+
     for (const id of state.markersById.keys()) {
-      if (!newIds.has(id)) { markerClusterLayer.removeLayer(state.markersById.get(id)); state.markersById.delete(id); }
+      if (!newIds.has(id)) {
+        markerClusterLayer.removeLayer(state.markersById.get(id));
+        state.markersById.delete(id);
+      }
     }
+
     const bounds = [];
+
     valid.forEach(t => {
       const id = String(t.id);
       const isSelected = id === String(state.selectedId);
+
       if (state.markersById.has(id)) {
         const marker = state.markersById.get(id);
         marker.setIcon(createTreeIcon(t, isSelected));
         marker.setPopupContent(popupHtml(t));
       } else {
-        const marker = L.marker([t.lat, t.lon], { icon: createTreeIcon(t, isSelected), keyboard: false }).bindPopup(popupHtml(t));
+        const marker = L.marker([t.lat, t.lon], {
+          icon: createTreeIcon(t, isSelected),
+          keyboard: false
+        }).bindPopup(popupHtml(t));
+
         marker.on("click", () => selectTree(t.id, false));
         markerClusterLayer.addLayer(marker);
         state.markersById.set(id, marker);
       }
+
       bounds.push([t.lat, t.lon]);
     });
+
     if (bounds.length && !state.hasInitialFit) {
       map.fitBounds(bounds, { padding: [28, 28] });
       state.hasInitialFit = true;
@@ -1498,53 +1709,146 @@
   }
 
   function renderHeatmap() {
-    const points = state.visibleTrees.filter(t => Number.isFinite(t.lat) && Number.isFinite(t.lon)).map(t => [t.lat, t.lon, 0.6]);
+    const points = state.visibleTrees
+      .filter(t => Number.isFinite(t.lat) && Number.isFinite(t.lon))
+      .map(t => [t.lat, t.lon, 0.6]);
+
     heatLayer.setLatLngs(points);
   }
 
   function renderInsightsForSelected() {
     if (!state.selectedId) {
-      insightsBodyEl.innerHTML = `<div class="insightRow"><span class="insightLabel">Status</span><span class="insightValue">No place selected</span></div>`;
+      const featured = state.visibleTrees
+        .filter(t => Number.isFinite(t.lat) && Number.isFinite(t.lon))
+        .slice(0, 3);
+
+      if (!featured.length) {
+        insightsBodyEl.innerHTML = `
+          <div class="insightRow">
+            <span class="insightLabel">Status</span>
+            <span class="insightValue">No spots visible</span>
+          </div>
+        `;
+        return;
+      }
+
+      insightsBodyEl.innerHTML = `
+        <div class="activityList">
+          ${featured.map(t => {
+            const votes = getVoteTotals(t.id);
+            const totalVotes = totalVotesFor(t.id);
+            const stateLabel =
+              totalVotes >= 10 ? "Busy today" :
+              totalVotes >= 4 ? "Picked recently" :
+              "Quiet now";
+
+            return `
+              <div class="activityCard" data-activity-id="${esc(t.id)}">
+                <div class="activityTop">
+                  <div class="activityName">${esc(t.common_name)}</div>
+                  <div class="activityState">${stateLabel}</div>
+                </div>
+                <div class="activityMeta">
+                  ${t.location ? `${esc(t.location)}<br>` : ""}
+                  ${t.borough ? `${esc(t.borough)}<br>` : ""}
+                  👍 ${votes.upvotes} people spotted blooms
+                </div>
+              </div>
+            `;
+          }).join("")}
+        </div>
+        <button class="panelActionBtn" type="button" id="openFiltersFromPanel">See nearby spots</button>
+      `;
+
+      insightsBodyEl.querySelectorAll("[data-activity-id]").forEach(card => {
+        card.addEventListener("click", () => {
+          selectTree(card.dataset.activityId, true);
+        });
+      });
+
+      document.getElementById("openFiltersFromPanel")?.addEventListener("click", () => {
+        openSidebar();
+      });
+
       return;
     }
+
     const tree = state.allTrees.find(t => String(t.id) === String(state.selectedId));
     if (!tree) return;
+
     const votes = getVoteTotals(tree.id);
     const totalVotes = totalVotesFor(tree.id);
+
+    const stateLabel =
+      totalVotes >= 10 ? "Busy today" :
+      totalVotes >= 4 ? "Picked recently" :
+      "Be the first to confirm";
+
     insightsBodyEl.innerHTML = `
       <div class="insightSub" style="margin-bottom:8px;">
         <strong style="display:block;color:var(--bark);font-family:var(--font-display);font-size:1.05rem;">${esc(tree.common_name)}</strong>
         ${tree.location ? `${esc(tree.location)}<br>` : ""}
-        ${tree.borough ? `${esc(tree.borough)}` : ""}
+        ${tree.borough ? `${esc(tree.borough)}<br>` : ""}
+        ${tree.bloom_period ? `Peak: ${esc(tree.bloom_period)}` : ""}
       </div>
-      <div class="insightPill">Community score ${votes.score>=0?"+":""}${votes.score}</div>
-      <div class="insightRow"><span class="insightLabel">Upvotes</span><span class="insightValue">${votes.upvotes}</span></div>
-      <div class="insightRow"><span class="insightLabel">Downvotes</span><span class="insightValue">${votes.downvotes}</span></div>
-      <div class="insightRow"><span class="insightLabel">Total votes</span><span class="insightValue">${totalVotes}</span></div>
-      ${totalVotes < 3 ? `<div class="waitingBox"><strong>Waiting for votes 🙂</strong>Would you like to vote? This blossom spot still needs community input.</div>` : ""}
+
+      <div class="insightPill">${stateLabel}</div>
+
+      <div class="insightRow">
+        <span class="insightLabel">People spotted blooms</span>
+        <span class="insightValue">${votes.upvotes}</span>
+      </div>
+
+      <div class="insightRow">
+        <span class="insightLabel">Not in bloom votes</span>
+        <span class="insightValue">${votes.downvotes}</span>
+      </div>
+
+      <div class="insightRow">
+        <span class="insightLabel">Total activity</span>
+        <span class="insightValue">${totalVotes}</span>
+      </div>
+
+      <button class="panelActionBtn" type="button" id="voteSpotBtn">Vote on this spot</button>
     `;
+
+    document.getElementById("voteSpotBtn")?.addEventListener("click", () => {
+      const mine = getMyVote(tree.id);
+      castVote(tree.id, mine === 1 ? 0 : 1);
+    });
   }
 
   function refreshPopupIfSelected(spotId) {
     const marker = state.markersById.get(String(spotId));
     const tree = state.allTrees.find(t => String(t.id) === String(spotId));
     if (!marker || !tree) return;
+
     marker.setPopupContent(popupHtml(tree));
-    if (state.selectedId && String(state.selectedId) === String(spotId) && marker.isPopupOpen()) marker.openPopup();
+
+    if (state.selectedId && String(state.selectedId) === String(spotId) && marker.isPopupOpen()) {
+      marker.openPopup();
+    }
   }
 
   function selectTree(id, flyTo = true) {
     const tree = state.allTrees.find(t => String(t.id) === String(id));
     if (!tree) return;
+
     const prevId = state.selectedId;
     state.selectedId = tree.id;
+
     if (prevId !== null && state.markersById.has(String(prevId))) {
       const prevTree = state.allTrees.find(t => String(t.id) === String(prevId));
-      if (prevTree) state.markersById.get(String(prevId)).setIcon(createTreeIcon(prevTree, false));
+      if (prevTree) {
+        state.markersById.get(String(prevId)).setIcon(createTreeIcon(prevTree, false));
+      }
     }
+
     const marker = state.markersById.get(String(tree.id));
     if (marker) marker.setIcon(createTreeIcon(tree, true));
+
     renderInsightsForSelected();
+
     if (flyTo && Number.isFinite(tree.lat) && Number.isFinite(tree.lon)) {
       map.flyTo([tree.lat, tree.lon], Math.max(map.getZoom(), 15), { duration: 0.7 });
       map.once("moveend", () => marker?.openPopup());
@@ -1558,19 +1862,27 @@
     state.selectedId = null;
     state.searchCenter = null;
     state.searchRadiusMiles = 5;
+
     radiusRangeEl.value = "5";
     radiusValueEl.textContent = "5";
     locationInput.value = "";
+
     document.querySelectorAll("#monthChips .chip").forEach(btn => btn.classList.remove("active"));
     document.querySelector('#monthChips .chip[data-month="all"]')?.classList.add("active");
+
     buildFlowerGrid();
     applyFilters();
     renderInsightsForSelected();
-    if (LONDON_BOUNDS) map.fitBounds(LONDON_BOUNDS, { padding: [24, 24] });
+    updateMobileCtaLabel();
+
+    if (LONDON_BOUNDS) {
+      map.fitBounds(LONDON_BOUNDS, { padding: [24, 24] });
+    }
   }
 
   function initMap() {
     LONDON_BOUNDS = L.latLngBounds([51.28, -0.52], [51.70, 0.33]);
+
     map = L.map("map", {
       zoomControl: true,
       preferCanvas: true,
@@ -1618,7 +1930,6 @@
     map.on("popupopen", () => {
       if (window.innerWidth <= 640) {
         insightsPanelEl.classList.add("popup-open");
-        // Defer sidebar close so it doesn't interfere with popup rendering
         setTimeout(closeSidebar, 50);
       }
     });
@@ -1633,7 +1944,6 @@
       }
     });
 
-    /* Invalidate map size when sidebar opens/closes (desktop) */
     const ro = new ResizeObserver(() => map.invalidateSize());
     ro.observe(document.getElementById("mapWrap"));
   }
@@ -1642,15 +1952,51 @@
     document.addEventListener("click", async e => {
       const btn = e.target.closest(".popupVoteBtn");
       if (!btn) return;
+
       e.preventDefault();
+
       const spotId = btn.dataset.spot;
       const vote = Number(btn.dataset.vote);
+
       if (!spotId || !vote) return;
       await castVote(spotId, vote);
     });
   }
 
-  /* ── SHARE ─────────────────────────────────────────── */
+  async function focusSearchExperience() {
+    if (state.searchCenter && state.visibleTrees.length) {
+      openSidebar();
+      return;
+    }
+
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        async pos => {
+          const placeObj = {
+            label: "Your location",
+            lat: pos.coords.latitude,
+            lon: pos.coords.longitude
+          };
+          await setSearchCenter(placeObj);
+        },
+        () => {
+          openSidebar();
+          locationInput.focus();
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 8000,
+          maximumAge: 120000
+        }
+      );
+    } else {
+      openSidebar();
+      locationInput.focus();
+    }
+  }
+
+  primaryCtaBtn.addEventListener("click", focusSearchExperience);
+
   const SHARE_URL  = "https://cafeco09.github.io/london-blooms/";
   const SHARE_TEXT = "Find cherry blossoms blooming across London 🌸";
 
@@ -1672,8 +2018,13 @@
   async function shareNative() {
     closeShareDropdown();
     const data = { title: "London Blooms 🌸", text: SHARE_TEXT, url: SHARE_URL };
-    if (navigator.share && navigator.canShare(data)) {
-      try { await navigator.share(data); } catch (err) { if (err.name !== "AbortError") copyLink(); }
+
+    if (navigator.share) {
+      try {
+        await navigator.share(data);
+      } catch (err) {
+        if (err.name !== "AbortError") copyLink();
+      }
     } else {
       copyLink();
     }
@@ -1695,6 +2046,7 @@
     wirePopupVoteDelegation();
     buildFlowerGrid();
     renderInsightsForSelected();
+    updateMobileCtaLabel();
 
     document.querySelectorAll("#monthChips .chip").forEach(btn => {
       btn.addEventListener("click", () => {
@@ -1725,6 +2077,7 @@
     renderMarkers();
     renderHeatmap();
     renderInsightsForSelected();
+    updateMobileCtaLabel();
   });
 </script>
 </body>
